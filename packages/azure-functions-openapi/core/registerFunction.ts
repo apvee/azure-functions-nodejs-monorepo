@@ -4,6 +4,42 @@ import { registry } from "./registry";
 import { FunctionRouteConfig } from "./types";
 
 /**
+ * Normalizes a path for OpenAPI documentation.
+ * Ensures the path starts with a single leading slash and removes multiple consecutive slashes.
+ * 
+ * @param azureFunctionRoutePrefix - Optional route prefix for the Azure Function
+ * @param route - The route path
+ * @returns Normalized path string for OpenAPI (always starts with /)
+ */
+function normalizeOpenAPIPath(azureFunctionRoutePrefix: string | undefined, route: string): string {
+    let fullPath = azureFunctionRoutePrefix
+        ? `/${azureFunctionRoutePrefix}/${route}`
+        : route;
+    
+    // Replace multiple slashes with a single slash, and ensure leading slash
+    fullPath = '/' + fullPath.replace(/^\/+/, '');
+    fullPath = fullPath.replace(/\/+/g, '/');
+    
+    return fullPath;
+}
+
+/**
+ * Normalizes a route for Azure Functions registration.
+ * Azure Functions expects routes without leading slashes and handles prefixes via configuration.
+ * This function cleans the route by removing leading slashes, trailing slashes, and multiple consecutive slashes.
+ * 
+ * @param route - The route path
+ * @returns Normalized route for Azure Functions (no leading slash, no trailing slash)
+ */
+function normalizeAzureFunctionRoute(route: string): string {
+    // Remove leading slashes, trailing slashes, and replace multiple slashes with single slash
+    let normalizedRoute = route.replace(/^\/+/, '').replace(/\/+$/, '').replace(/\/+/g, '/');
+    
+    // If the route becomes empty (was just slashes), return empty string (root route)
+    return normalizedRoute || '';
+}
+
+/**
  * Registers a function with the specified configuration.
  *
  * @param {string} name - The name of the function.
@@ -100,19 +136,24 @@ function registerPath(
     isWebHook: boolean,
     options: FunctionRouteConfig) {
 
+    // Normalize the route for Azure Functions registration (without leading slash and prefix)
+    const normalizedRoute = normalizeAzureFunctionRoute(options.route);
+
     app.http(name, {
         methods: options.methods,
         authLevel: options.authLevel,
         handler: options.handler,
-        route: options.route
+        route: normalizedRoute
     });
 
     options.methods.forEach(method => {
+        // Normalize the path for OpenAPI (with prefix and leading slash)
+        const fullPath = normalizeOpenAPIPath(options.azureFunctionRoutePrefix, options.route);
+
         const routeConfig: RouteConfig = {
             summary: summary,
             method: mapHttpMethod(method),
-            // Add the route to the OpenAPI registry, with the route prefix if it exists
-            path: (options.azureFunctionRoutePrefix) ? `/${options.azureFunctionRoutePrefix}/${options.route}` : options.route,
+            path: fullPath,
             security: options.security,
             request: options.request,
             responses: options.responses,
