@@ -50,8 +50,9 @@ export function registerOpenAPIHandler(
             return {
                 status: 200,
                 headers: { 'Content-Type': format === 'json' ? 'application/json' : 'application/x-yaml' },
-                body: (format === 'yaml') ? yamlStringify(openAPIDefinition) : undefined,
-                jsonBody: (format === 'json') ? openAPIDefinition : undefined,
+                body: (format === 'yaml') 
+                    ? yamlStringify(openAPIDefinition) 
+                    : JSON.stringify(openAPIDefinition, null, 2),
             };
         },
         route: finalRoute
