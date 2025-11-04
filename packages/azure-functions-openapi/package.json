@@ -1,6 +1,6 @@
 {
   "name": "@apvee/azure-functions-openapi",
-  "version": "1.0.2",
+  "version": "2.0.0-alpha.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/apvee/azure-functions-nodejs-monorepo.git"
@@ -9,13 +9,14 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
+    "assets/",
     "dist/",
     "README.md",
     "LICENSE",
     "package.json"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && tsc",
     "clean": "rimraf dist"
   },
   "keywords": [
@@ -31,14 +32,15 @@
   "license": "MIT",
   "description": "An extension for Azure Functions V4 that provides support for exporting OpenAPI spec files from annotated Azure Functions.",
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^7.1.1",
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.clonedeep": "^4.5.0",
+    "swagger-ui-dist": "^5.30.2",
     "yaml": "^2.5.1"
   },
   "peerDependencies": {
     "@azure/functions": "^4.0.0",
-    "zod": "^3.0.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/lodash.camelcase": "^4.3.9",

@@ -7,4 +7,4 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
  * for the application. It provides methods to register and retrieve
  * OpenAPI components such as schemas, paths, and responses.
  */
-export const registry = new OpenAPIRegistry();
+export const openAPIRegistry = new OpenAPIRegistry();
