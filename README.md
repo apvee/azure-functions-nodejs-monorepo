@@ -44,29 +44,6 @@ A powerful extension for **Azure Functions V4** that automatically generates and
 - 🎨 **Customizable** - Full control over your OpenAPI specification
 - 📊 **Zod Integration** - Leverage Zod for runtime validation and type safety
 
-#### 🚀 Quick Example
-
-```typescript
-import { z } from 'zod';
-import { createOpenAPIHttpTrigger } from '@apvee/azure-functions-openapi';
-
-const TodoSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  completed: z.boolean()
-});
-
-export const getTodo = createOpenAPIHttpTrigger({
-  summary: 'Get a todo item',
-  responses: {
-    200: { description: 'Success', schema: TodoSchema }
-  },
-  handler: async (context) => {
-    return { status: 200, body: { id: '1', title: 'Example', completed: false } };
-  }
-});
-```
-
 [📚 Full Documentation](./packages/azure-functions-openapi/README.md)
 
 ---
@@ -84,15 +61,6 @@ A comprehensive **sample application** demonstrating the usage of the OpenAPI li
 - 📝 **Best Practices** - Production-ready code structure and patterns
 - 🧪 **Real-World Scenarios** - Webhook handlers, batch operations, and more
 - 📚 **Learning Resource** - Well-commented code to help you get started
-
-#### 🗂️ Example Endpoints
-
-- `GET /api/todos` - List all todos
-- `GET /api/todos/{id}` - Get a single todo
-- `POST /api/todos` - Create a new todo
-- `PUT /api/todos/{id}` - Update a todo
-- `DELETE /api/todos/{id}` - Delete a todo
-- `POST /api/todos/export` - Export todos to various formats
 
 [📚 View Examples](./packages/test-functions/src/functions)
 
