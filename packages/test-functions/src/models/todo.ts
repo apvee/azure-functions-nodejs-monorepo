@@ -1,4 +1,4 @@
-import { registerTypeSchema } from "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
 import { z } from "zod";
 
 export const TodoSchema = z.object({
@@ -8,11 +8,11 @@ export const TodoSchema = z.object({
     isDone: z.boolean().describe("Is the todo item done"),
 }).describe("The todo item");
 export type Todo = z.infer<typeof TodoSchema>;
-registerTypeSchema('Todo', TodoSchema);
+app.openapiSchema('Todo', TodoSchema);
 
 export const TodoListSchema = z.array(TodoSchema).describe("List of todo items");
 export type TodoList = z.infer<typeof TodoListSchema>;
-registerTypeSchema('TodoList', TodoListSchema);
+app.openapiSchema('TodoList', TodoListSchema);
 
 export const TodoParamIDSchema = z.object({
     id: z.string().uuid().describe("UUID of the todo item"),
@@ -23,10 +23,10 @@ export const NewTodoSchema = z.object({
     description: z.string().describe("Description of the todo item"),
 }).describe("The todo item");
 export type NewTodo = z.infer<typeof NewTodoSchema>;
-registerTypeSchema('NewTodo', NewTodoSchema);
+app.openapiSchema('NewTodo', NewTodoSchema);
 
 export const UpdateTodoSchema = z.object({
     isDone: z.boolean().describe("Is the todo item done"),
 }).merge(NewTodoSchema).describe("The todo item");
 export type UpdateTodo = z.infer<typeof UpdateTodoSchema>;
-registerTypeSchema('UpdateTodo', UpdateTodoSchema);
+app.openapiSchema('UpdateTodo', UpdateTodoSchema);

@@ -1,82 +1,71 @@
-import { convertURLSearchParamsToObject, registerFunction } from "@apvee/azure-functions-openapi";
-import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { apiKeySecurity } from "..";
+import { parseQueryParams, ValidationError } from "@apvee/azure-functions-openapi";
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { z } from "zod";
 import { ErrorResponse, ErrorResponseSchema } from "../models/errors";
 import { FilterParamsSchema } from "../models/params";
 import { TodoListSchema } from "../models/todo";
 import { TodoService } from "../services/TodoService";
 
 /**
- * Handles HTTP requests to retrieve a list of todos.
- *
- * @param request - The HTTP request object containing query parameters.
- * @param context - The invocation context providing logging and other utilities.
- * @returns A promise that resolves to an HTTP response with the list of todos or an error message.
- *
- * The function processes the request URL and extracts query parameters to filter the list of todos.
- * If the query parameters are valid, it retrieves the todo list from the service and returns a subset
- * based on the provided skip and limit parameters. If the query parameters are invalid, it returns
- * a 400 status with an error message.
+ * Retrieves a list of todos with optional pagination.
+ * Supports skip and limit query parameters for pagination.
  */
 export async function GetAllTodos(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`Http function processed request for url "${request.url}"`);
+    context.log(`Processing GET request for todos list: "${request.url}"`);
 
-    console.log('request.query', request.query);
-    const filterParams = FilterParamsSchema.safeParse(convertURLSearchParamsToObject(request.query));
+    try {
+        const filterParams = parseQueryParams(request.query, FilterParamsSchema);
 
-    if (filterParams.success) {
         const todos = await TodoService.getToDoList();
-        const actualSkip = filterParams.data.skip ?? 0;
-        const actualLimit = filterParams.data.limit ?? todos.length;
-        const result = todos.slice(actualSkip, Math.min(todos.length, actualSkip + actualLimit));
+        const skip = filterParams.skip ?? 0;
+        const limit = filterParams.limit ?? todos.length;
+        const result = todos.slice(skip, Math.min(todos.length, skip + limit));
 
-
-        console.log('filterParams.data.skip', filterParams.data.skip);
-        console.log('filterParams.data.limit', filterParams.data.limit);
-
-        console.log('actualSkip', actualSkip);
-        console.log('actualLimit', actualLimit);
-        console.log('result', result);
-
-        return { status: 200, jsonBody: result };
-    }
-
-    return { status: 400, jsonBody: { code: 400, message: filterParams.error.errors.map(err => `'${err.path}': ${err.message}`).join(', ') } as ErrorResponse };
-};
-
-registerFunction(
-    'GetAllTodos',
-    'Get All Todos',
-    {
-        handler: GetAllTodos,
-        methods: ['GET'],
-        authLevel: 'anonymous',
-        security: [apiKeySecurity],
-        azureFunctionRoutePrefix: 'api',
-        route: 'todos',
-        request: {
-            query: FilterParamsSchema
-        },
-        responses: {
-            200: {
-                description: 'Success',
-                content: {
-                    'application/json': {
-                        schema: TodoListSchema,
-                    }
-                }
-            },
-            400: {
-                description: 'Bad Request',
-                content: {
-                    'application/json': {
-                        schema: ErrorResponseSchema
-                    }
-                }
+        return { 
+            status: 200, 
+            jsonBody: result,
+            headers: {
+                'X-Total-Count': todos.length.toString(),
+                'X-Page-Offset': skip.toString(),
+                'X-Page-Limit': limit.toString(),
+                'X-Returned-Count': result.length.toString()
             }
+        };
+    } catch (error) {
+        if (error instanceof ValidationError) {
+            const errorMessage = error.zodError?.issues
+                .map(err => `'${err.path.join('.')}': ${err.message}`)
+                .join(', ') || error.message;
+
+            return { 
+                status: 400, 
+                jsonBody: { code: 400, message: errorMessage } as ErrorResponse 
+            };
+        }
+        throw error;
+    }
+}
+
+app.openapiPath('GetAllTodos', 'Get All Todos', {
+    handler: GetAllTodos,
+    methods: ['GET'],
+    route: 'todos',
+    query: FilterParamsSchema,
+    responses: [
+        { 
+            httpCode: 200, 
+            schema: TodoListSchema,
+            headers: z.object({
+                'X-Total-Count': z.string().describe('Total number of todos available'),
+                'X-Page-Offset': z.string().describe('Pagination offset (skip)'),
+                'X-Page-Limit': z.string().describe('Pagination limit'),
+                'X-Returned-Count': z.string().describe('Number of items returned in this response')
+            }),
+            description: 'Success - Returns paginated list with pagination headers'
         },
-        tags: ['Todos'],
-        description: 'Get all todos',
-        operationId: 'GetAllTodos',
-        deprecated: false
-    })
+        { httpCode: 400, schema: ErrorResponseSchema }
+    ],
+    tags: ['Todos'],
+    description: 'Get all todos with optional pagination. Returns custom headers with pagination metadata.',
+    operationId: 'GetAllTodos'
+});

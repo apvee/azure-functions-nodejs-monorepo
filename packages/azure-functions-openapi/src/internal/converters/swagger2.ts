@@ -25,9 +25,9 @@ function capitalizeFirstLetter(str: string): string {
 }
 
 /**
- * Trasforma OpenAPI 3.0 in Swagger 2.0
+ * Converts OpenAPI 3.x specifications to Swagger 2.0 format.
  */
-export default class Converter {
+export class Swagger2Converter {
     spec: any;
 
     constructor(openApiSpec: any) {
