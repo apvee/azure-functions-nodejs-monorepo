@@ -1,6 +1,6 @@
 {
   "name": "@apvee/azure-functions-openapi",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0-alpha.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/apvee/azure-functions-nodejs-monorepo.git"
@@ -9,7 +9,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "assets/",
     "dist/",
     "README.md",
     "LICENSE",

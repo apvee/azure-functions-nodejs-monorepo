@@ -4,7 +4,7 @@
 
 > **Version 2.0** - A complete rewrite with improved TypeScript support, automatic type inference, and enhanced Azure integration.
 
-![Apvee Azure Functions OpenAPI v2](./assets/apvee-azure-functions-openapi-v2.png)
+![Apvee Azure Functions OpenAPI v2](https://raw.githubusercontent.com/apvee/azure-functions-nodejs-monorepo/main/packages/azure-functions-openapi/assets/apvee-azure-functions-openapi-v2.png)
 
 ## 📖 Overview
 
