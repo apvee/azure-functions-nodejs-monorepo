@@ -23,7 +23,7 @@ extendZodWithOpenApi(z);
  * 
  * @internal
  * This is an internal implementation function. Do not use directly.
- * Use app.openapiSchema() instead.
+ * Use app.openAPISchema() instead.
  * 
  * This allows the schema to be referenced by name in OpenAPI documentation,
  * promoting reusability and keeping the generated spec cleaner.
@@ -78,7 +78,7 @@ function sanitizeSchemeNameFromParameter(paramName: string): string {
  * 
  * @internal
  * This is an internal implementation function. Do not use directly.
- * Use app.openapiKeySecurity() or app.openapiCustomApiKey() instead.
+ * Use app.openAPIKeySecurity() or app.openAPICustomApiKey() instead.
  * 
  * This creates a security scheme that requires an API key to be provided in the specified location
  * (header, query parameter, or cookie). The security requirement can then be applied to endpoints.
@@ -130,7 +130,7 @@ export function registerApiKeySecuritySchema(
  * 
  * @internal
  * This is an internal implementation function. Do not use directly.
- * Use app.openapiAzureFunctionKey() instead.
+ * Use app.openAPIAzureFunctionKey() instead.
  * 
  * @param config - Azure Function Key configuration
  * @returns Security requirement object
@@ -151,7 +151,7 @@ export function registerAzureFunctionKeySecurity(
  * 
  * @internal
  * This is an internal implementation function. Do not use directly.
- * Use app.openapiEasyAuth() instead.
+ * Use app.openAPIEasyAuth() instead.
  * 
  * @param config - Azure EasyAuth configuration
  * @returns Security requirement object
@@ -172,7 +172,7 @@ export function registerAzureEasyAuthSecurity(
  * 
  * @internal
  * This is an internal implementation function. Do not use directly.
- * Use app.openapiAzureADBearer() instead.
+ * Use app.openAPIAzureADBearer() instead.
  * 
  * @param config - Azure AD Bearer Token configuration
  * @returns Security requirement object
@@ -193,7 +193,7 @@ export function registerAzureADBearerSecurity(
  * 
  * @internal
  * This is an internal implementation function. Do not use directly.
- * Use app.openapiAzureADClientCredentials() instead.
+ * Use app.openAPIAzureADClientCredentials() instead.
  * 
  * @param config - Azure AD Client Credentials configuration
  * @returns Security requirement object

@@ -16,14 +16,14 @@ interface GlobalOpenAPIConfig {
 
 /**
  * Singleton manager for global OpenAPI configuration.
- * Stores centralized settings initialized by app.openapiSetup() and used by openapiPath/openapiWebhook.
+ * Stores centralized settings initialized by app.openAPISetup() and used by openAPIPath/openAPIWebhook.
  */
 class OpenAPIConfigManager {
     private config: GlobalOpenAPIConfig | null = null;
 
     /**
      * Sets the global OpenAPI configuration.
-     * Should be called once during app initialization via app.openapiSetup().
+     * Should be called once during app initialization via app.openAPISetup().
      *
      * @param config - The global configuration to store
      */
@@ -41,7 +41,7 @@ class OpenAPIConfigManager {
         if (!this.config) {
             throw new Error(
                 'OpenAPI configuration not initialized. ' +
-                'Please call app.openapiSetup() before registering functions.'
+                'Please call app.openAPISetup() before registering functions.'
             );
         }
         return this.config.routePrefix;
@@ -66,7 +66,7 @@ class OpenAPIConfigManager {
         if (!this.config) {
             throw new Error(
                 'OpenAPI configuration not initialized. ' +
-                'Please call app.openapiSetup() before generating OpenAPI documents.'
+                'Please call app.openAPISetup() before generating OpenAPI documents.'
             );
         }
         return this.config.openAPIConfig;

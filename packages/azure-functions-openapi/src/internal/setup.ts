@@ -5,14 +5,14 @@ import { registerSwaggerUIHandler } from './handlers/ui';
 
 /**
  * Sets up OpenAPI documentation and Swagger UI for Azure Functions.
- * This function is assigned to app.openapiSetup() and should be called once during app initialization.
+ * This function is assigned to app.openAPISetup() and should be called once during app initialization.
  * 
  * @param config - Configuration for OpenAPI setup
  * @returns Array of generated OpenAPI document information
  * 
  * @example
  * ```typescript
- * app.openapiSetup({
+ * app.openAPISetup({
  *   info: { title: 'My API', version: '1.0.0' },
  *   routePrefix: 'api',
  *   versions: ['3.1.0', '3.0.3'],
@@ -29,7 +29,7 @@ export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] 
     const authLevel = config.authLevel || 'anonymous';
     const routePrefix = config.routePrefix || 'api';
 
-    // Store global configuration for use by openapiPath/openapiWebhook
+    // Store global configuration for use by openAPIPath/openAPIWebhook
     globalConfigManager.setConfig({
         routePrefix,
         defaultAuthLevel: authLevel,

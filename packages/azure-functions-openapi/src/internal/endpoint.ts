@@ -97,7 +97,7 @@ function registerPath(
     // Normalize the route for Azure Functions registration (without leading slash and prefix)
     const normalizedRoute = normalizeAzureFunctionRoute(options.route);
 
-    // Auth level: explicit option > global default (set by openapiSetup) > 'anonymous'
+    // Auth level: explicit option > global default (set by openAPISetup) > 'anonymous'
     const authLevel = options.authLevel || globalConfigManager.getDefaultAuthLevel();
 
     // Register with Azure Functions

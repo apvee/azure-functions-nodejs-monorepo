@@ -46,7 +46,7 @@ export async function GetAllTodos(request: HttpRequest, context: InvocationConte
     }
 }
 
-app.openapiPath('GetAllTodos', 'Get All Todos', {
+app.openAPIPath('GetAllTodos', 'Get All Todos', {
     handler: GetAllTodos,
     methods: ['GET'],
     route: 'todos',

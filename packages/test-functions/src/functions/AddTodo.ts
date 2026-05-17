@@ -8,7 +8,7 @@ import { TodoService } from "../services/TodoService";
  * Request body is automatically validated and typed from NewTodoSchema.
  * Validation errors return 400 Bad Request automatically.
  */
-app.openapiPath('AddTodo', 'Add a new todo', {
+app.openAPIPath('AddTodo', 'Add a new todo', {
     typedHandler: async ({ body, context }) => {
         // body is already validated and typed as NewTodo!
         // Type inference: body.title: string, body.description: string

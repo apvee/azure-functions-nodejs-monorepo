@@ -27,7 +27,7 @@ const WebhookAckSchema = z.object({
  * This demonstrates how external systems should handle our webhook notifications.
  * In a real scenario, this would be implemented by the webhook consumer, not us.
  */
-app.openapiWebhook('TodoCreated', 'Todo Creation Webhook', {
+app.openAPIWebhook('TodoCreated', 'Todo Creation Webhook', {
     typedHandler: async ({ body, context }) => {
         // body is already validated and typed as TodoEvent!
         // Type inference: body.event: 'todo.created', body.data: Todo

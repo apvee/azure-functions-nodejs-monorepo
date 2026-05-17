@@ -275,7 +275,7 @@ export type OpenAPIObjectConfig = Omit<OpenAPIObject, 'paths' | 'components' | '
 
 /**
  * Configuration for setting up OpenAPI documentation and Swagger UI.
- * Used by app.openapiSetup() to initialize OpenAPI support for Azure Functions.
+ * Used by app.openAPISetup() to initialize OpenAPI support for Azure Functions.
  */
 export type OpenAPISetupConfig = {
     /** OpenAPI info object (title, version, description, etc.) - Required */
@@ -559,7 +559,7 @@ export type ResponseConfig = {
  * 
  * @example Basic usage with type inference
  * ```typescript
- * app.openapiPath('GetTodo', 'Get todo by ID', {
+ * app.openAPIPath('GetTodo', 'Get todo by ID', {
  *   typedHandler: async ({ params, context }) => {
  *     // params.id is automatically typed as string!
  *     return { jsonBody: { id: params.id } };
@@ -572,7 +572,7 @@ export type ResponseConfig = {
  * 
  * @example Complex usage with multiple schemas
  * ```typescript
- * app.openapiPath('UpdateTodo', 'Update todo', {
+ * app.openAPIPath('UpdateTodo', 'Update todo', {
  *   typedHandler: async ({ params, body, query, context }) => {
  *     // All parameters fully typed automatically!
  *     // params.id: string
@@ -821,7 +821,7 @@ export type FunctionRouteConfig<
 
 /**
  * Information about a registered OpenAPI document.
- * Returned by app.openapiSetup() for reference.
+ * Returned by app.openAPISetup() for reference.
  */
 export type OpenAPIDocumentInfo = {
     /** Display title of the document */

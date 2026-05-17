@@ -19,8 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Azure Function Key OpenAPI mapping.
 - Automatic disambiguation of `operationId` when an endpoint is registered
   with multiple HTTP methods, ensuring a valid OpenAPI document.
-- Default `authLevel` configured by `app.openapiSetup({ authLevel })` is now
-  applied to subsequent `openapiPath` / `openapiWebhook` registrations that
+- Default `authLevel` configured by `app.openAPISetup({ authLevel })` is now
+  applied to subsequent `openAPIPath` / `openAPIWebhook` registrations that
   omit the option explicitly.
 
 ### Changed

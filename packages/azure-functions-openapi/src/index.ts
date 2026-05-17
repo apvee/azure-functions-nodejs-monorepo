@@ -39,7 +39,7 @@ declare module '@azure/functions' {
          * import '@apvee/azure-functions-openapi';
          * import { app } from '@azure/functions';
          * 
-         * app.openapiSetup({
+         * app.openAPISetup({
          *   info: { title: 'My API', version: '1.0.0' },
          *   routePrefix: 'api',
          *   versions: ['3.1.0'],
@@ -48,14 +48,14 @@ declare module '@azure/functions' {
          * });
          * ```
          */
-        export function openapiSetup(config: OpenAPISetupConfig): OpenAPIDocumentInfo[];
+        export function openAPISetup(config: OpenAPISetupConfig): OpenAPIDocumentInfo[];
 
         /**
          * Registers an Azure Function HTTP path with OpenAPI documentation.
          * 
          * The function will be registered with both the Azure Functions runtime and the OpenAPI registry.
          * Paths are documented in the 'paths' section of the OpenAPI specification.
-         * If azureFunctionRoutePrefix is not provided, it will use the global route prefix set by app.openapiSetup().
+         * If azureFunctionRoutePrefix is not provided, it will use the global route prefix set by app.openAPISetup().
          * 
          * **Type Inference**: When using `typedHandler`, TypeScript automatically infers parameter types
          * from the provided schemas. No type assertions needed!
@@ -71,7 +71,7 @@ declare module '@azure/functions' {
          * 
          * @example Simple GET path with traditional handler
          * ```typescript
-         * app.openapiPath('GetUser', 'Get user by ID', {
+         * app.openAPIPath('GetUser', 'Get user by ID', {
          *   handler: getUserHandler,
          *   methods: ['GET'],
          *   route: 'users/{id}',
@@ -82,7 +82,7 @@ declare module '@azure/functions' {
          * 
          * @example Typed handler with automatic type inference
          * ```typescript
-         * app.openapiPath('UpdateTodo', 'Update todo', {
+         * app.openAPIPath('UpdateTodo', 'Update todo', {
          *   typedHandler: async ({ params, body, context }) => {
          *     // params.id is automatically typed as string!
          *     // body.title is automatically typed as string!
@@ -102,7 +102,7 @@ declare module '@azure/functions' {
          * 
          * @example POST with multiple responses
          * ```typescript
-         * app.openapiPath('CreateUser', 'Create new user', {
+         * app.openAPIPath('CreateUser', 'Create new user', {
          *   handler: createUserHandler,
          *   methods: ['POST'],
          *   route: 'users',
@@ -117,7 +117,7 @@ declare module '@azure/functions' {
          * 
          * @example Advanced: Multiple content types
          * ```typescript
-         * app.openapiPath('GetReport', 'Get report in multiple formats', {
+         * app.openAPIPath('GetReport', 'Get report in multiple formats', {
          *   handler: getReportHandler,
          *   methods: ['GET'],
          *   route: 'reports/{id}',
@@ -134,7 +134,7 @@ declare module '@azure/functions' {
          * });
          * ```
          */
-        export function openapiPath<
+        export function openAPIPath<
             TParams extends z.ZodTypeAny | undefined = undefined,
             TQuery extends z.ZodTypeAny | undefined = undefined,
             TBody extends z.ZodTypeAny | undefined = undefined,
@@ -150,7 +150,7 @@ declare module '@azure/functions' {
          * 
          * Webhooks are documented in the 'webhooks' section of the OpenAPI specification.
          * They represent outgoing HTTP requests that your service makes to external URLs.
-         * If azureFunctionRoutePrefix is not provided, it will use the global route prefix set by app.openapiSetup().
+         * If azureFunctionRoutePrefix is not provided, it will use the global route prefix set by app.openAPISetup().
          * 
          * **Type Inference**: When using `typedHandler`, TypeScript automatically infers parameter types
          * from the provided schemas. No type assertions needed!
@@ -166,7 +166,7 @@ declare module '@azure/functions' {
          * 
          * @example Simple webhook
          * ```typescript
-         * app.openapiWebhook('UserUpdated', 'Notify when user is updated', {
+         * app.openAPIWebhook('UserUpdated', 'Notify when user is updated', {
          *   handler: userUpdatedHandler,
          *   methods: ['POST'],
          *   body: UserEventSchema,
@@ -178,7 +178,7 @@ declare module '@azure/functions' {
          * 
          * @example Typed webhook with automatic type inference
          * ```typescript
-         * app.openapiWebhook('OrderCreated', 'Notify when order is created', {
+         * app.openAPIWebhook('OrderCreated', 'Notify when order is created', {
          *   typedHandler: async ({ body, context }) => {
          *     // body is automatically typed from OrderEventSchema!
          *     context.log(`Order ${body.orderId} created`);
@@ -194,7 +194,7 @@ declare module '@azure/functions' {
          * });
          * ```
          */
-        export function openapiWebhook<
+        export function openAPIWebhook<
             TParams extends z.ZodTypeAny | undefined = undefined,
             TQuery extends z.ZodTypeAny | undefined = undefined,
             TBody extends z.ZodTypeAny | undefined = undefined,
@@ -224,15 +224,15 @@ declare module '@azure/functions' {
          *   email: z.string().email()
          * });
          * 
-         * app.openapiSchema('User', UserSchema);
+         * app.openAPISchema('User', UserSchema);
          * ```
          */
-        export function openapiSchema(typeName: string, schema: z.ZodTypeAny): void;
+        export function openAPISchema(typeName: string, schema: z.ZodTypeAny): void;
 
         /**
          * Registers an API key security schema in the OpenAPI registry.
          * This is for CUSTOM API keys with user-implemented validation logic.
-         * For native Azure Function Keys, use openapiAzureFunctionKey() instead.
+         * For native Azure Function Keys, use openAPIAzureFunctionKey() instead.
          * 
          * This creates a security scheme that requires an API key to be provided in the specified location
          * (header, query parameter, or cookie). The security requirement can then be applied to endpoints.
@@ -248,10 +248,10 @@ declare module '@azure/functions' {
          * import { app } from '@azure/functions';
          * 
          * // Register custom API key in header
-         * const apiKeySecurity = app.openapiKeySecurity('X-API-Key', 'header', 'Custom API key for authentication');
+         * const apiKeySecurity = app.openAPIKeySecurity('X-API-Key', 'header', 'Custom API key for authentication');
          * 
          * // Use in path configuration
-         * app.openapiPath('GetData', 'Get data', {
+         * app.openAPIPath('GetData', 'Get data', {
          *   handler: getDataHandler,
          *   methods: ['GET'],
          *   route: 'data',
@@ -261,28 +261,28 @@ declare module '@azure/functions' {
          * 
          * @example Query parameter API key
          * ```typescript
-         * const apiKeySecurity = app.openapiKeySecurity('api_key', 'query');
+         * const apiKeySecurity = app.openAPIKeySecurity('api_key', 'query');
          * ```
          */
-        export function openapiKeySecurity(
+        export function openAPIKeySecurity(
             name: string,
             input: 'header' | 'query' | 'cookie',
             description?: string
         ): SecurityRequirementObject;
 
         /**
-         * Alias for openapiKeySecurity for better clarity.
+         * Alias for openAPIKeySecurity for better clarity.
          * Explicitly indicates this is for custom (user-implemented) API keys,
          * not Azure native Function Keys.
          * 
-         * @see openapiKeySecurity
+         * @see openAPIKeySecurity
          * 
          * @example
          * ```typescript
-         * const apiKeySecurity = app.openapiCustomApiKey('X-Custom-Key', 'header');
+         * const apiKeySecurity = app.openAPICustomApiKey('X-Custom-Key', 'header');
          * ```
          */
-        export function openapiCustomApiKey(
+        export function openAPICustomApiKey(
             name: string,
             input: 'header' | 'query' | 'cookie',
             description?: string
@@ -306,9 +306,9 @@ declare module '@azure/functions' {
          * 
          * @example Simple usage with authLevel
          * ```typescript
-         * const functionKeySecurity = app.openapiAzureFunctionKey('function');
+         * const functionKeySecurity = app.openAPIAzureFunctionKey('function');
          * 
-         * app.openapiPath('GetData', 'Get data', {
+         * app.openAPIPath('GetData', 'Get data', {
          *   handler: getDataHandler,
          *   methods: ['GET'],
          *   route: 'data',
@@ -318,7 +318,7 @@ declare module '@azure/functions' {
          * 
          * @example Advanced configuration
          * ```typescript
-         * const adminKeySecurity = app.openapiAzureFunctionKey({
+         * const adminKeySecurity = app.openAPIAzureFunctionKey({
          *   name: 'AdminKey',
          *   authLevel: 'admin',
          *   description: 'Admin/master key required for this operation',
@@ -327,7 +327,7 @@ declare module '@azure/functions' {
          * });
          * ```
          */
-        export function openapiAzureFunctionKey(
+        export function openAPIAzureFunctionKey(
             config: { name: string; authLevel: 'anonymous' | 'function' | 'admin'; description?: string; allowQueryParameter?: boolean; allowHeader?: boolean } | 'anonymous' | 'function' | 'admin'
         ): SecurityRequirementObject;
 
@@ -355,9 +355,9 @@ declare module '@azure/functions' {
          * 
          * @example Simple usage with single provider
          * ```typescript
-         * const aadSecurity = app.openapiEasyAuth('aad');
+         * const aadSecurity = app.openAPIEasyAuth('aad');
          * 
-         * app.openapiPath('GetProfile', 'Get user profile', {
+         * app.openAPIPath('GetProfile', 'Get user profile', {
          *   handler: getProfileHandler,
          *   methods: ['GET'],
          *   route: 'profile',
@@ -368,14 +368,14 @@ declare module '@azure/functions' {
          * 
          * @example Multiple providers
          * ```typescript
-         * const socialAuth = app.openapiEasyAuth({
+         * const socialAuth = app.openAPIEasyAuth({
          *   name: 'SocialAuth',
          *   providers: ['aad', 'google', 'github'],
          *   description: 'Sign in with Microsoft, Google, or GitHub'
          * });
          * ```
          */
-        export function openapiEasyAuth(
+        export function openAPIEasyAuth(
             config: { name: string; providers: EasyAuthProvider | EasyAuthProvider[]; description?: string; requirePrincipalHeader?: boolean } | EasyAuthProvider
         ): SecurityRequirementObject;
 
@@ -396,9 +396,9 @@ declare module '@azure/functions' {
          * 
          * @example Simple usage
          * ```typescript
-         * const bearerSecurity = app.openapiAzureADBearer('AzureAD');
+         * const bearerSecurity = app.openAPIAzureADBearer('AzureAD');
          * 
-         * app.openapiPath('GetData', 'Get data', {
+         * app.openAPIPath('GetData', 'Get data', {
          *   handler: getDataHandler,
          *   methods: ['GET'],
          *   route: 'data',
@@ -408,7 +408,7 @@ declare module '@azure/functions' {
          * 
          * @example Advanced with tenant and scopes
          * ```typescript
-         * const bearerSecurity = app.openapiAzureADBearer({
+         * const bearerSecurity = app.openAPIAzureADBearer({
          *   name: 'AzureADBearer',
          *   tenantId: '11111111-1111-1111-1111-111111111111',
          *   audience: 'api://my-function-app',
@@ -417,7 +417,7 @@ declare module '@azure/functions' {
          * });
          * ```
          */
-        export function openapiAzureADBearer(
+        export function openAPIAzureADBearer(
             config: { name: string; tenantId?: string; audience?: string; issuer?: string; scopes?: string[]; description?: string } | string
         ): SecurityRequirementObject;
 
@@ -435,9 +435,9 @@ declare module '@azure/functions' {
          * 
          * @example Simple usage
          * ```typescript
-         * const clientCredsSecurity = app.openapiAzureADClientCredentials('ServiceAuth');
+         * const clientCredsSecurity = app.openAPIAzureADClientCredentials('ServiceAuth');
          * 
-         * app.openapiPath('ProcessData', 'Process data (service-to-service)', {
+         * app.openAPIPath('ProcessData', 'Process data (service-to-service)', {
          *   handler: processDataHandler,
          *   methods: ['POST'],
          *   route: 'process',
@@ -447,7 +447,7 @@ declare module '@azure/functions' {
          * 
          * @example Advanced with roles
          * ```typescript
-         * const clientCredsSecurity = app.openapiAzureADClientCredentials({
+         * const clientCredsSecurity = app.openAPIAzureADClientCredentials({
          *   name: 'ServiceAuth',
          *   tenantId: '11111111-1111-1111-1111-111111111111',
          *   audience: 'api://my-service',
@@ -456,7 +456,7 @@ declare module '@azure/functions' {
          * });
          * ```
          */
-        export function openapiAzureADClientCredentials(
+        export function openAPIAzureADClientCredentials(
             config: { name: string; tenantId?: string; audience?: string; roles?: string[]; description?: string } | string
         ): SecurityRequirementObject;
     }
@@ -466,34 +466,34 @@ declare module '@azure/functions' {
  * Auto-extension of Azure Functions app with OpenAPI support.
  * This side-effect extends the app object with the OpenAPI methods when the package is imported.
  */
-if (!(app as any).openapiSetup) {
-    (app as any).openapiSetup = setupOpenAPI;
+if (!(app as any).openAPISetup) {
+    (app as any).openAPISetup = setupOpenAPI;
 }
 
-if (!(app as any).openapiPath) {
-    (app as any).openapiPath = registerOpenAPIPath;
+if (!(app as any).openAPIPath) {
+    (app as any).openAPIPath = registerOpenAPIPath;
 }
 
-if (!(app as any).openapiWebhook) {
-    (app as any).openapiWebhook = registerOpenAPIWebhook;
+if (!(app as any).openAPIWebhook) {
+    (app as any).openAPIWebhook = registerOpenAPIWebhook;
 }
 
-if (!(app as any).openapiSchema) {
-    (app as any).openapiSchema = registerTypeSchema;
+if (!(app as any).openAPISchema) {
+    (app as any).openAPISchema = registerTypeSchema;
 }
 
-if (!(app as any).openapiKeySecurity) {
-    (app as any).openapiKeySecurity = registerApiKeySecuritySchema;
+if (!(app as any).openAPIKeySecurity) {
+    (app as any).openAPIKeySecurity = registerApiKeySecuritySchema;
 }
 
 // Alias for custom API key (backward compatibility + clarity)
-if (!(app as any).openapiCustomApiKey) {
-    (app as any).openapiCustomApiKey = registerApiKeySecuritySchema;
+if (!(app as any).openAPICustomApiKey) {
+    (app as any).openAPICustomApiKey = registerApiKeySecuritySchema;
 }
 
 // Azure Function Keys
-if (!(app as any).openapiAzureFunctionKey) {
-    (app as any).openapiAzureFunctionKey = (config: any) => {
+if (!(app as any).openAPIAzureFunctionKey) {
+    (app as any).openAPIAzureFunctionKey = (config: any) => {
         // Support simple string authLevel OR full config object
         if (typeof config === 'string') {
             return registerAzureFunctionKeySecurity({
@@ -506,8 +506,8 @@ if (!(app as any).openapiAzureFunctionKey) {
 }
 
 // Azure EasyAuth
-if (!(app as any).openapiEasyAuth) {
-    (app as any).openapiEasyAuth = (config: any) => {
+if (!(app as any).openAPIEasyAuth) {
+    (app as any).openAPIEasyAuth = (config: any) => {
         // Support simple string provider OR full config object
         if (typeof config === 'string') {
             return registerAzureEasyAuthSecurity({
@@ -520,8 +520,8 @@ if (!(app as any).openapiEasyAuth) {
 }
 
 // Azure AD Bearer Token
-if (!(app as any).openapiAzureADBearer) {
-    (app as any).openapiAzureADBearer = (config: any) => {
+if (!(app as any).openAPIAzureADBearer) {
+    (app as any).openAPIAzureADBearer = (config: any) => {
         // Support simple string name OR full config object
         if (typeof config === 'string') {
             return registerAzureADBearerSecurity({
@@ -533,8 +533,8 @@ if (!(app as any).openapiAzureADBearer) {
 }
 
 // Azure AD Client Credentials
-if (!(app as any).openapiAzureADClientCredentials) {
-    (app as any).openapiAzureADClientCredentials = (config: any) => {
+if (!(app as any).openAPIAzureADClientCredentials) {
+    (app as any).openAPIAzureADClientCredentials = (config: any) => {
         // Support simple string name OR full config object
         if (typeof config === 'string') {
             return registerAzureADClientCredentialsSecurity({
@@ -548,8 +548,8 @@ if (!(app as any).openapiAzureADClientCredentials) {
 /**
  * Export all public APIs.
  * Only types and utils are exported - internal implementation is not exposed.
- * Use app.openapiSetup(), app.openapiPath(), app.openapiWebhook(),
- * app.openapiSchema(), and app.openapiKeySecurity() for functionality.
+ * Use app.openAPISetup(), app.openAPIPath(), app.openAPIWebhook(),
+ * app.openAPISchema(), and app.openAPIKeySecurity() for functionality.
  */
 export * from './types';
 export * from './utils';

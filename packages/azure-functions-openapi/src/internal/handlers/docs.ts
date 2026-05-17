@@ -8,7 +8,7 @@ import { openAPIRegistry } from "../registry";
 
 /**
  * Registers an OpenAPI document handler for Azure Functions.
- * This function is internal and should not be called directly - use app.openapiSetup() instead.
+ * This function is internal and should not be called directly - use app.openAPISetup() instead.
  * 
  * Creates an HTTP GET endpoint that serves the OpenAPI specification in the requested format and version.
  * Automatically converts OpenAPI 3.x to Swagger 2.0 when version '2.0' is requested.

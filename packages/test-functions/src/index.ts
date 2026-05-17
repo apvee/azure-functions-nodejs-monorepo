@@ -14,13 +14,13 @@ app.setup({
  * 
  * Exported for use in function registrations.
  */
-export const functionKeySecurity = app.openapiAzureFunctionKey('function');
+export const functionKeySecurity = app.openAPIAzureFunctionKey('function');
 
 /**
  * Configure OpenAPI documentation with all versions and formats.
  * This single call replaces multiple registerOpenAPIHandler and registerSwaggerUIHandler calls.
  */
-app.openapiSetup({
+app.openAPISetup({
     routePrefix: 'api',
     authLevel: 'function',
     security: [functionKeySecurity],

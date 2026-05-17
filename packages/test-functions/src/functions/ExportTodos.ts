@@ -95,7 +95,7 @@ export async function ExportTodos(request: HttpRequest, context: InvocationConte
     }
 }
 
-app.openapiPath('ExportTodos', 'Export Todos in Multiple Formats', {
+app.openAPIPath('ExportTodos', 'Export Todos in Multiple Formats', {
     handler: ExportTodos,
     methods: ['GET'],
     route: 'todos/export',

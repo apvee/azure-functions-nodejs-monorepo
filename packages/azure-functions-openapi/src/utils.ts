@@ -460,7 +460,7 @@ export function extractFunctionKey(request: HttpRequest): string | undefined {
  *   }
  * );
  * 
- * app.openapiPath('DeleteTodo', 'Delete todo', {
+ * app.openAPIPath('DeleteTodo', 'Delete todo', {
  *   handler: deleteHandler,  // Use as regular handler
  *   methods: ['DELETE'],
  *   route: 'todos/{id}',

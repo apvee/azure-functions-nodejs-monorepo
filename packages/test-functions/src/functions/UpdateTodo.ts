@@ -9,7 +9,7 @@ import { TodoNotFoundError, TodoService } from "../services/TodoService";
  * Validation errors return 400 Bad Request automatically. A missing todo
  * surfaces a structured 404 Not Found response.
  */
-app.openapiPath('UpdateTodo', 'Update Single Todo', {
+app.openAPIPath('UpdateTodo', 'Update Single Todo', {
     typedHandler: async ({ params, body, context }) => {
         // params and body are already validated and typed!
         context.log(`Processing request to update todo: ${params.id}`);

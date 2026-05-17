@@ -50,7 +50,7 @@ export function registerCustomApiKey(config: CustomApiKeyConfig): SecurityRequir
 
 /**
  * Default custom API key configuration.
- * Maintains backward compatibility with existing openapiKeySecurity API.
+ * Maintains backward compatibility with existing openAPIKeySecurity API.
  * 
  * @internal
  */

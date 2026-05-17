@@ -3,8 +3,8 @@
 This package is the **runnable sample** for `@apvee/azure-functions-openapi` v2.x.
 It is **not published to npm**. The package exists to:
 
-- demonstrate the library's public API end-to-end (`openapiSetup`, `openapiPath`,
-  `openapiWebhook`, `openapiSchema`, `openapiAzureFunctionKey`),
+- demonstrate the library's public API end-to-end (`openAPISetup`, `openAPIPath`,
+  `openAPIWebhook`, `openAPISchema`, `openAPIAzureFunctionKey`),
 - exercise the OpenAPI document generation against a realistic CRUD-style API,
 - give contributors a fast feedback loop when changing the library.
 
@@ -46,7 +46,7 @@ generated bundle. Useful URLs once the host is running on the default port:
 | `GetAllTodos`                 | `GET`       | Pagination + custom response headers                |
 | `ExportTodos`                 | `GET`       | Content negotiation (`application/json`/`text/csv`/`application/xml`) |
 | `DeleteTodo`                  | `DELETE`    | 204 No Content                                      |
-| `TodoCreatedWebhook`          | `POST`      | `app.openapiWebhook` documentation                  |
+| `TodoCreatedWebhook`          | `POST`      | `app.openAPIWebhook` documentation                  |
 
 ## Authentication
 

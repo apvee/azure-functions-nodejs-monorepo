@@ -40,7 +40,7 @@ export async function GetSingleTodo(request: HttpRequest, context: InvocationCon
     }
 }
 
-app.openapiPath('GetSingleTodo', 'Get Single Todo', {
+app.openAPIPath('GetSingleTodo', 'Get Single Todo', {
     handler: GetSingleTodo,
     methods: ['GET'],
     route: 'todos/{id}',

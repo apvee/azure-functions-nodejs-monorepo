@@ -87,7 +87,7 @@ async function loadAsset(file: string): Promise<CachedAsset | null> {
 
 /**
  * Registers Swagger UI handlers for Azure Functions.
- * This function is internal and should not be called directly - use app.openapiSetup() instead.
+ * This function is internal and should not be called directly - use app.openAPISetup() instead.
  * 
  * Creates two HTTP GET endpoints:
  * - Custom UI route (default: `/swagger-ui`) - Serves the Swagger UI HTML page

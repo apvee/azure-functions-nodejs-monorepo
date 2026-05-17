@@ -11,7 +11,7 @@ migration guide, see
 - `convertURLSearchParamsToObject(...)` ➜ `parseQueryParams(request.query, schema)`
 - Validation now throws `ValidationError` instead of returning `safeParse` results.
 - Many handlers can be simplified further by using the new `typedHandler` form
-  on `app.openapiPath` / `app.openapiWebhook`, which moves validation into the
+  on `app.openAPIPath` / `app.openAPIWebhook`, which moves validation into the
   framework and exposes already-typed `params`, `query`, `body`, `headers`.
 
 ## Available validation helpers (v2.x)
@@ -63,7 +63,7 @@ export async function MyFunction(request: HttpRequest): Promise<HttpResponseInit
 ### Preferred v2.x form — `typedHandler`
 
 ```typescript
-app.openapiPath('GetSingleTodo', 'Get Single Todo', {
+app.openAPIPath('GetSingleTodo', 'Get Single Todo', {
     typedHandler: async ({ params, context }) => {
         // params.id is already validated and strongly typed
         const todo = await TodoService.getById(params.id);
@@ -86,7 +86,7 @@ app.openapiPath('GetSingleTodo', 'Get Single Todo', {
 | `functions/AddTodo.ts`          | `typedHandler` (body)                                      |
 | `functions/UpdateTodo.ts`       | `typedHandler` (params + body) with structured 404 mapping |
 | `functions/AcceptTodo.ts`       | `typedHandler` (params) returning 204                      |
-| `functions/TodoCreatedWebhook.ts` | `app.openapiWebhook` with `typedHandler`                 |
+| `functions/TodoCreatedWebhook.ts` | `app.openAPIWebhook` with `typedHandler`                 |
 | `functions/GetSingleTodo.ts`    | Manual `parseRouteParams` + `ValidationError`              |
 | `functions/GetAllTodos.ts`      | Manual `parseQueryParams` with custom response headers     |
 | `functions/ExportTodos.ts`      | Manual `parseQueryParams` + multi content-type response    |
