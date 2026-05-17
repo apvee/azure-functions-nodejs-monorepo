@@ -57,20 +57,29 @@ Version 2.0 is a complete rewrite that brings significant improvements in develo
 ### 🎨 Modern API with Module Augmentation
 
 **Before (v1.x):**
-```typescript
-import { registerFunction, registerOpenAPIHandler } from '@apvee/azure-functions-openapi';
 
-registerOpenAPIHandler('anonymous', config, '3.1.0', 'json');
-registerFunction('GetUser', 'Get user', { /* ... */ });
+```typescript
+import {
+  registerFunction,
+  registerOpenAPIHandler,
+} from "@apvee/azure-functions-openapi";
+
+registerOpenAPIHandler("anonymous", config, "3.1.0", "json");
+registerFunction("GetUser", "Get user", {
+  /* ... */
+});
 ```
 
 **Now (v2.x):**
-```typescript
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
 
-app.openapiSetup({ info: { title: 'My API', version: '1.0.0' } });
-app.openapiPath('GetUser', 'Get user', { /* ... */ });
+```typescript
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
+
+app.openapiSetup({ info: { title: "My API", version: "1.0.0" } });
+app.openapiPath("GetUser", "Get user", {
+  /* ... */
+});
 ```
 
 The new API extends Azure Functions natively, providing better IDE support and a more intuitive developer experience.
@@ -80,27 +89,27 @@ The new API extends Azure Functions natively, providing better IDE support and a
 The biggest feature in v2.0 is **automatic type inference**. No more manual type assertions!
 
 ```typescript
-app.openapiPath('UpdateUser', 'Update user information', {
+app.openapiPath("UpdateUser", "Update user information", {
   typedHandler: async ({ params, body, query, context }) => {
     // All parameters are automatically typed from your schemas!
     // params.id: string (from UUID schema)
     // body.name: string
     // body.email: string
     // query.notify: boolean | undefined
-    
+
     await updateUser(params.id, body);
     return { jsonBody: { success: true } };
   },
-  methods: ['PUT'],
-  route: 'users/{id}',
+  methods: ["PUT"],
+  route: "users/{id}",
   params: z.object({ id: z.string().uuid() }),
-  body: z.object({ 
+  body: z.object({
     name: z.string().min(1),
-    email: z.string().email() 
+    email: z.string().email(),
   }),
-  query: z.object({ 
-    notify: z.boolean().optional() 
-  })
+  query: z.object({
+    notify: z.boolean().optional(),
+  }),
 });
 ```
 
@@ -116,15 +125,15 @@ v2.0 introduces native support for multiple Azure authentication methods:
 
 ```typescript
 // Azure EasyAuth example
-const easyAuth = app.openapiEasyAuth('aad');
+const easyAuth = app.openapiEasyAuth("aad");
 
-app.openapiPath('GetProfile', 'Get user profile', {
+app.openapiPath("GetProfile", "Get user profile", {
   handler: getProfileHandler,
-  methods: ['GET'],
-  route: 'profile',
-  authLevel: 'anonymous', // Required for EasyAuth
+  methods: ["GET"],
+  route: "profile",
+  authLevel: "anonymous", // Required for EasyAuth
   security: [easyAuth],
-  response: ProfileSchema
+  response: ProfileSchema,
 });
 ```
 
@@ -156,16 +165,14 @@ Fully aligned with **Zod 4.x**, ensuring compatibility with the latest validatio
 Document callback endpoints that your API calls using the new **webhooks** feature:
 
 ```typescript
-app.openapiWebhook('OrderCreated', 'Notify when order is created', {
+app.openapiWebhook("OrderCreated", "Notify when order is created", {
   typedHandler: async ({ body, context }) => {
     context.log(`Webhook received: Order ${body.orderId}`);
     return { jsonBody: { received: true } };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   body: OrderEventSchema,
-  responses: [
-    { httpCode: 200, description: 'Success' }
-  ]
+  responses: [{ httpCode: 200, description: "Success" }],
 });
 ```
 
@@ -176,14 +183,14 @@ Setup is now **much simpler** with a single `openapiSetup()` call:
 ```typescript
 // Generates all versions and formats automatically
 app.openapiSetup({
-  info: { title: 'My API', version: '1.0.0' },
-  routePrefix: 'api',
-  versions: ['3.1.0', '3.0.3', '2.0'], // Optional, defaults to ['3.1.0']
-  formats: ['json', 'yaml'],           // Optional, defaults to ['json', 'yaml']
-  swaggerUI: { 
-    enabled: true,                     // Optional, defaults to true
-    route: 'docs'                      // Optional, defaults to 'swagger-ui'
-  }
+  info: { title: "My API", version: "1.0.0" },
+  routePrefix: "api",
+  versions: ["3.1.0", "3.0.3", "2.0"], // Optional, defaults to ['3.1.0']
+  formats: ["json", "yaml"], // Optional, defaults to ['json', 'yaml']
+  swaggerUI: {
+    enabled: true, // Optional, defaults to true
+    route: "docs", // Optional, defaults to 'swagger-ui'
+  },
 });
 ```
 
@@ -204,6 +211,7 @@ Export powerful utilities for manual validation and parsing:
 While v2.0 brings many improvements, some APIs have changed. See the [Migration Guide](#-migration-guide-v1-v2) below for detailed migration steps.
 
 **Removed APIs:**
+
 - `registerOpenAPIHandler()` → Use `app.openapiSetup()`
 - `registerSwaggerUIHandler()` → Use `app.openapiSetup()`
 - `registerFunction()` → Use `app.openapiPath()` or `app.openapiWebhook()`
@@ -211,6 +219,7 @@ While v2.0 brings many improvements, some APIs have changed. See the [Migration 
 - `registerTypeSchema()` → Use `app.openapiSchema()`
 
 **Private APIs:**
+
 - `convertHttpRequestParamsToObject()` - Now internal, use `parseRouteParams()` instead
 - `convertURLSearchParamsToObject()` - Now internal, use `parseQueryParams()` instead
 
@@ -226,19 +235,19 @@ By integrating OpenAPI documentation directly into your codebase, you ensure tha
 
 ```typescript
 // Documentation is generated from the same schemas used for validation
-app.openapiPath('CreateUser', 'Create a new user', {
+app.openapiPath("CreateUser", "Create a new user", {
   typedHandler: async ({ body, context }) => {
     // This schema validates the request AND generates the documentation
     return { status: 201, jsonBody: await createUser(body) };
   },
-  methods: ['POST'],
-  route: 'users',
+  methods: ["POST"],
+  route: "users",
   body: z.object({
-    name: z.string().min(1).describe('User full name'),
-    email: z.string().email().describe('Valid email address'),
-    age: z.number().int().positive().optional().describe('User age')
+    name: z.string().min(1).describe("User full name"),
+    email: z.string().email().describe("Valid email address"),
+    age: z.number().int().positive().optional().describe("User age"),
   }),
-  response: UserSchema
+  response: UserSchema,
 });
 ```
 
@@ -290,12 +299,16 @@ By documenting with OpenAPI, your API becomes easily integrable with the entire 
 Extends `@azure/functions` natively with intuitive OpenAPI methods. No separate imports needed—just extend the app object you already use.
 
 ```typescript
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
 
 // All app.openapiXxx() methods are now available
-app.openapiSetup({ /* config */ });
-app.openapiPath('MyEndpoint', 'Description', { /* config */ });
+app.openapiSetup({
+  /* config */
+});
+app.openapiPath("MyEndpoint", "Description", {
+  /* config */
+});
 ```
 
 ### Automatic Type Inference
@@ -303,7 +316,7 @@ app.openapiPath('MyEndpoint', 'Description', { /* config */ });
 TypeScript automatically infers parameter types from Zod schemas. No manual type assertions, no type mismatches.
 
 ```typescript
-app.openapiPath('UpdateTodo', 'Update a todo item', {
+app.openapiPath("UpdateTodo", "Update a todo item", {
   typedHandler: async ({ params, body }) => {
     // params.id is automatically string (from UUID schema)
     // body.title is automatically string
@@ -311,13 +324,13 @@ app.openapiPath('UpdateTodo', 'Update a todo item', {
     const updated = { id: params.id, ...body };
     return { jsonBody: updated };
   },
-  methods: ['PUT'],
-  route: 'todos/{id}',
+  methods: ["PUT"],
+  route: "todos/{id}",
   params: z.object({ id: z.string().uuid() }),
   body: z.object({
     title: z.string(),
-    completed: z.boolean()
-  })
+    completed: z.boolean(),
+  }),
 });
 ```
 
@@ -337,11 +350,11 @@ Beautiful, interactive API documentation served automatically:
 
 ```typescript
 app.openapiSetup({
-  info: { title: 'My API', version: '1.0.0' },
+  info: { title: "My API", version: "1.0.0" },
   swaggerUI: {
     enabled: true,
-    route: 'docs' // Access at: http://localhost:7071/docs
-  }
+    route: "docs", // Access at: http://localhost:7071/docs
+  },
 });
 ```
 
@@ -362,27 +375,27 @@ Validation errors automatically return **400 Bad Request** with detailed error m
 
 Native integration with Azure authentication mechanisms:
 
-| Security Method | Use Case | Example |
-|----------------|----------|---------|
-| **Function Keys** | Azure native key-based auth | API keys managed by Azure |
-| **EasyAuth** | App Service Authentication | AAD, Google, Facebook, GitHub |
-| **Azure AD Bearer** | Manual JWT validation | Entra ID token validation |
-| **Client Credentials** | Service-to-service auth | Daemon apps, background jobs |
-| **Custom API Keys** | User-implemented auth | Header/query/cookie keys |
+| Security Method        | Use Case                    | Example                       |
+| ---------------------- | --------------------------- | ----------------------------- |
+| **Function Keys**      | Azure native key-based auth | API keys managed by Azure     |
+| **EasyAuth**           | App Service Authentication  | AAD, Google, Facebook, GitHub |
+| **Azure AD Bearer**    | Manual JWT validation       | Entra ID token validation     |
+| **Client Credentials** | Service-to-service auth     | Daemon apps, background jobs  |
+| **Custom API Keys**    | User-implemented auth       | Header/query/cookie keys      |
 
 ```typescript
 // Example: Azure AD Bearer Token
 const adAuth = app.openapiAzureADBearer({
-  name: 'AzureAD',
-  scopes: ['User.Read', 'Mail.Send']
+  name: "AzureAD",
+  scopes: ["User.Read", "Mail.Send"],
 });
 
-app.openapiPath('SendEmail', 'Send email on behalf of user', {
+app.openapiPath("SendEmail", "Send email on behalf of user", {
   handler: sendEmailHandler,
-  methods: ['POST'],
-  route: 'send-email',
+  methods: ["POST"],
+  route: "send-email",
   security: [adAuth],
-  body: EmailSchema
+  body: EmailSchema,
 });
 ```
 
@@ -391,13 +404,13 @@ app.openapiPath('SendEmail', 'Send email on behalf of user', {
 Document callback endpoints that your API calls using the webhooks feature:
 
 ```typescript
-app.openapiWebhook('PaymentCompleted', 'Notify when payment is completed', {
+app.openapiWebhook("PaymentCompleted", "Notify when payment is completed", {
   typedHandler: async ({ body, context }) => {
     context.log(`Payment ${body.paymentId} completed`);
     return { jsonBody: { acknowledged: true } };
   },
-  methods: ['POST'],
-  body: PaymentEventSchema
+  methods: ["POST"],
+  body: PaymentEventSchema,
 });
 ```
 
@@ -411,27 +424,27 @@ Support for complex response scenarios:
 - **Detailed Descriptions** - Clear documentation for each response
 
 ```typescript
-app.openapiPath('GetReport', 'Get report in multiple formats', {
+app.openapiPath("GetReport", "Get report in multiple formats", {
   handler: getReportHandler,
-  methods: ['GET'],
-  route: 'reports/{id}',
+  methods: ["GET"],
+  route: "reports/{id}",
   params: z.object({ id: z.string() }),
   responses: [
     {
       httpCode: 200,
-      description: 'Report retrieved successfully',
+      description: "Report retrieved successfully",
       content: [
-        { mediaType: 'application/json', schema: JsonReportSchema },
-        { mediaType: 'application/pdf', schema: z.instanceof(Buffer) },
-        { mediaType: 'text/csv', schema: z.string() }
-      ]
+        { mediaType: "application/json", schema: JsonReportSchema },
+        { mediaType: "application/pdf", schema: z.instanceof(Buffer) },
+        { mediaType: "text/csv", schema: z.string() },
+      ],
     },
     {
       httpCode: 404,
-      description: 'Report not found',
-      schema: ErrorSchema
-    }
-  ]
+      description: "Report not found",
+      schema: ErrorSchema,
+    },
+  ],
 });
 ```
 
@@ -448,8 +461,8 @@ import {
   parseEasyAuthPrincipal,
   extractFunctionKey,
   createTypedHandler,
-  ValidationError
-} from '@apvee/azure-functions-openapi';
+  ValidationError,
+} from "@apvee/azure-functions-openapi";
 ```
 
 ### Zero Configuration Defaults
@@ -459,24 +472,26 @@ Get started quickly with sensible defaults, customize when needed:
 ```typescript
 // Minimal setup - generates OpenAPI 3.1.0 in JSON/YAML + Swagger UI
 app.openapiSetup({
-  info: { title: 'My API', version: '1.0.0' }
+  info: { title: "My API", version: "1.0.0" },
 });
 
 // Or fully customize everything
 app.openapiSetup({
-  info: { /* ... */ },
-  routePrefix: 'api',
-  versions: ['3.1.0', '3.0.3', '2.0'],
-  formats: ['json', 'yaml'],
-  authLevel: 'anonymous',
+  info: {
+    /* ... */
+  },
+  routePrefix: "api",
+  versions: ["3.1.0", "3.0.3", "2.0"],
+  formats: ["json", "yaml"],
+  authLevel: "anonymous",
   security: [globalSecurityScheme],
-  servers: [{ url: 'https://api.example.com' }],
-  tags: [{ name: 'Users', description: 'User management' }],
+  servers: [{ url: "https://api.example.com" }],
+  tags: [{ name: "Users", description: "User management" }],
   swaggerUI: {
     enabled: true,
-    route: 'docs',
-    authLevel: 'anonymous'
-  }
+    route: "docs",
+    authLevel: "anonymous",
+  },
 });
 ```
 
@@ -500,12 +515,12 @@ npm install @azure/functions zod
 
 ### Version Compatibility
 
-| Package | Version | Notes |
-|---------|---------|-------|
-| `@apvee/azure-functions-openapi` | `^2.0.0` | This library |
-| `@azure/functions` | `^4.0.0` | Azure Functions runtime |
-| `zod` | `^4.0.0` | Schema validation |
-| Node.js | `>=18.0.0` | Recommended: Node 20 LTS |
+| Package                          | Version    | Notes                    |
+| -------------------------------- | ---------- | ------------------------ |
+| `@apvee/azure-functions-openapi` | `^2.0.0`   | This library             |
+| `@azure/functions`               | `^4.0.0`   | Azure Functions runtime  |
+| `zod`                            | `^4.0.0`   | Schema validation        |
+| Node.js                          | `>=18.0.0` | Recommended: Node 20 LTS |
 
 ### Complete Installation
 
@@ -531,11 +546,11 @@ npm install -D typescript @types/node
 Verify the installation by importing the package:
 
 ```typescript
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
-import { z } from 'zod';
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
+import { z } from "zod";
 
-console.log('✅ Installation successful!');
+console.log("✅ Installation successful!");
 ```
 
 ---
@@ -549,16 +564,16 @@ Get your first OpenAPI-documented Azure Function running in minutes.
 Create or edit your `src/index.ts` file:
 
 ```typescript
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
 
 // Configure OpenAPI documentation
 app.openapiSetup({
   info: {
-    title: 'My First API',
-    version: '1.0.0',
-    description: 'A simple API with OpenAPI documentation'
-  }
+    title: "My First API",
+    version: "1.0.0",
+    description: "A simple API with OpenAPI documentation",
+  },
 });
 ```
 
@@ -567,34 +582,34 @@ app.openapiSetup({
 Add a simple GET endpoint:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define response schema
 const GreetingSchema = z.object({
   message: z.string(),
-  timestamp: z.string()
+  timestamp: z.string(),
 });
 
 // Register endpoint with OpenAPI documentation
-app.openapiPath('GetGreeting', 'Get a greeting message', {
+app.openapiPath("GetGreeting", "Get a greeting message", {
   typedHandler: async ({ query, context }) => {
-    const name = query.name || 'World';
-    
+    const name = query.name || "World";
+
     context.log(`Greeting requested for: ${name}`);
-    
+
     return {
       jsonBody: {
         message: `Hello, ${name}!`,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   },
-  methods: ['GET'],
-  route: 'greet',
+  methods: ["GET"],
+  route: "greet",
   query: z.object({
-    name: z.string().optional().describe('Name to greet')
+    name: z.string().optional().describe("Name to greet"),
   }),
-  response: GreetingSchema
+  response: GreetingSchema,
 });
 ```
 
@@ -629,6 +644,7 @@ curl "http://localhost:7071/api/greet?name=Azure"
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Hello, Azure!",
@@ -641,52 +657,50 @@ curl "http://localhost:7071/api/greet?name=Azure"
 Here's the full `src/index.ts` file:
 
 ```typescript
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
-import { z } from 'zod';
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
+import { z } from "zod";
 
 // Setup OpenAPI
 app.openapiSetup({
   info: {
-    title: 'My First API',
-    version: '1.0.0',
-    description: 'A simple API with OpenAPI documentation',
+    title: "My First API",
+    version: "1.0.0",
+    description: "A simple API with OpenAPI documentation",
     contact: {
-      name: 'API Support',
-      email: 'support@example.com'
-    }
+      name: "API Support",
+      email: "support@example.com",
+    },
   },
-  tags: [
-    { name: 'Greetings', description: 'Greeting endpoints' }
-  ]
+  tags: [{ name: "Greetings", description: "Greeting endpoints" }],
 });
 
 // Define schemas
 const GreetingSchema = z.object({
   message: z.string(),
-  timestamp: z.string()
+  timestamp: z.string(),
 });
 
 // Register endpoint
-app.openapiPath('GetGreeting', 'Get a personalized greeting', {
+app.openapiPath("GetGreeting", "Get a personalized greeting", {
   typedHandler: async ({ query, context }) => {
-    const name = query.name || 'World';
+    const name = query.name || "World";
     context.log(`Greeting requested for: ${name}`);
-    
+
     return {
       jsonBody: {
         message: `Hello, ${name}!`,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   },
-  methods: ['GET'],
-  route: 'greet',
-  tags: ['Greetings'],
+  methods: ["GET"],
+  route: "greet",
+  tags: ["Greetings"],
   query: z.object({
-    name: z.string().optional().describe('Name to greet (default: World)')
+    name: z.string().optional().describe("Name to greet (default: World)"),
   }),
-  response: GreetingSchema
+  response: GreetingSchema,
 });
 ```
 
@@ -705,18 +719,19 @@ The `app.openapiSetup()` method is the entry point for configuring OpenAPI docum
 Minimal configuration with defaults:
 
 ```typescript
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
 
 app.openapiSetup({
   info: {
-    title: 'My API',
-    version: '1.0.0'
-  }
+    title: "My API",
+    version: "1.0.0",
+  },
 });
 ```
 
 This generates:
+
 - OpenAPI 3.1.0 in JSON and YAML formats
 - Swagger UI at `/swagger-ui`
 - Documents accessible at `/api/openapi/3.1.0.json` and `/api/openapi/3.1.0.yaml`
@@ -729,107 +744,108 @@ Full example with all available options:
 app.openapiSetup({
   // Required: API metadata
   info: {
-    title: 'Todo API',
-    version: '2.0.0',
-    description: 'A comprehensive todo management API',
-    termsOfService: 'https://example.com/terms',
+    title: "Todo API",
+    version: "2.0.0",
+    description: "A comprehensive todo management API",
+    termsOfService: "https://example.com/terms",
     contact: {
-      name: 'API Support Team',
-      email: 'api-support@example.com',
-      url: 'https://example.com/support'
+      name: "API Support Team",
+      email: "api-support@example.com",
+      url: "https://example.com/support",
     },
     license: {
-      name: 'MIT',
-      url: 'https://opensource.org/licenses/MIT'
-    }
+      name: "MIT",
+      url: "https://opensource.org/licenses/MIT",
+    },
   },
 
   // Optional: Server configurations
   servers: [
     {
-      url: 'https://api.example.com',
-      description: 'Production server'
+      url: "https://api.example.com",
+      description: "Production server",
     },
     {
-      url: 'https://staging-api.example.com',
-      description: 'Staging server'
+      url: "https://staging-api.example.com",
+      description: "Staging server",
     },
     {
-      url: 'http://localhost:7071',
-      description: 'Local development'
-    }
+      url: "http://localhost:7071",
+      description: "Local development",
+    },
   ],
 
   // Optional: Global security requirements
   security: [
-    { BearerAuth: [] }  // Apply to all endpoints by default
+    { BearerAuth: [] }, // Apply to all endpoints by default
   ],
 
   // Optional: External documentation
   externalDocs: {
-    description: 'Full API Documentation',
-    url: 'https://docs.example.com/api'
+    description: "Full API Documentation",
+    url: "https://docs.example.com/api",
   },
 
   // Optional: Tags for organizing endpoints
   tags: [
     {
-      name: 'Todos',
-      description: 'Todo item operations',
+      name: "Todos",
+      description: "Todo item operations",
       externalDocs: {
-        description: 'Todo guide',
-        url: 'https://docs.example.com/todos'
-      }
+        description: "Todo guide",
+        url: "https://docs.example.com/todos",
+      },
     },
     {
-      name: 'Users',
-      description: 'User management operations'
-    }
+      name: "Users",
+      description: "User management operations",
+    },
   ],
 
   // Optional: Azure Functions route prefix (default: 'api')
-  routePrefix: 'api',
+  routePrefix: "api",
 
   // Optional: Authorization level for OpenAPI endpoints (default: 'anonymous')
-  authLevel: 'anonymous',
+  authLevel: "anonymous",
 
   // Optional: OpenAPI versions to generate (default: ['3.1.0'])
-  versions: ['3.1.0', '3.0.3', '2.0'],
+  versions: ["3.1.0", "3.0.3", "2.0"],
 
   // Optional: Output formats (default: ['json', 'yaml'])
-  formats: ['json', 'yaml'],
+  formats: ["json", "yaml"],
 
   // Optional: Swagger UI configuration
   swaggerUI: {
-    enabled: true,              // default: true
-    route: 'docs',              // default: 'swagger-ui'
-    authLevel: 'anonymous'      // default: same as main authLevel
-  }
+    enabled: true, // default: true
+    route: "docs", // default: 'swagger-ui'
+    authLevel: "anonymous", // default: same as main authLevel
+  },
 });
 ```
 
 #### Configuration Options Reference
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `info` | `InfoObject` | **Required** | API metadata (title, version, description, etc.) |
-| `servers` | `ServerObject[]` | `undefined` | Server URLs for different environments |
-| `security` | `SecurityRequirementObject[]` | `undefined` | Global security requirements |
-| `externalDocs` | `ExternalDocumentationObject` | `undefined` | Link to external documentation |
-| `tags` | `TagObject[]` | `undefined` | Tags for organizing endpoints |
-| `routePrefix` | `string` | `'api'` | Azure Functions route prefix |
-| `authLevel` | `'anonymous' \| 'function' \| 'admin'` | `'anonymous'` | Auth level for OpenAPI/Swagger endpoints |
-| `versions` | `Array<'2.0' \| '3.0.3' \| '3.1.0'>` | `['3.1.0']` | OpenAPI versions to generate |
-| `formats` | `Array<'json' \| 'yaml'>` | `['json', 'yaml']` | Output formats |
-| `swaggerUI.enabled` | `boolean` | `true` | Enable/disable Swagger UI |
-| `swaggerUI.route` | `string` | `'swagger-ui'` | Swagger UI route |
-| `swaggerUI.authLevel` | `'anonymous' \| 'function' \| 'admin'` | Same as main `authLevel` | Auth level for Swagger UI |
+| Option                | Type                                   | Default                  | Description                                      |
+| --------------------- | -------------------------------------- | ------------------------ | ------------------------------------------------ |
+| `info`                | `InfoObject`                           | **Required**             | API metadata (title, version, description, etc.) |
+| `servers`             | `ServerObject[]`                       | `undefined`              | Server URLs for different environments           |
+| `security`            | `SecurityRequirementObject[]`          | `undefined`              | Global security requirements                     |
+| `externalDocs`        | `ExternalDocumentationObject`          | `undefined`              | Link to external documentation                   |
+| `tags`                | `TagObject[]`                          | `undefined`              | Tags for organizing endpoints                    |
+| `routePrefix`         | `string`                               | `'api'`                  | Azure Functions route prefix                     |
+| `authLevel`           | `'anonymous' \| 'function' \| 'admin'` | `'anonymous'`            | Auth level for OpenAPI/Swagger endpoints         |
+| `versions`            | `Array<'2.0' \| '3.0.3' \| '3.1.0'>`   | `['3.1.0']`              | OpenAPI versions to generate                     |
+| `formats`             | `Array<'json' \| 'yaml'>`              | `['json', 'yaml']`       | Output formats                                   |
+| `swaggerUI.enabled`   | `boolean`                              | `true`                   | Enable/disable Swagger UI                        |
+| `swaggerUI.route`     | `string`                               | `'swagger-ui'`           | Swagger UI route                                 |
+| `swaggerUI.authLevel` | `'anonymous' \| 'function' \| 'admin'` | Same as main `authLevel` | Auth level for Swagger UI                        |
 
 #### Generated Endpoints
 
 Based on your configuration, the following endpoints are automatically created:
 
 **OpenAPI Documents:**
+
 ```
 GET /{routePrefix}/openapi/3.1.0.json
 GET /{routePrefix}/openapi/3.1.0.yaml
@@ -840,6 +856,7 @@ GET /{routePrefix}/openapi/2.0.yaml
 ```
 
 **Swagger UI:**
+
 ```
 GET /{swaggerUI.route}
 GET /{swaggerUI.route}/assets/{file}
@@ -852,22 +869,22 @@ Configure different servers for different deployment stages:
 ```typescript
 app.openapiSetup({
   info: {
-    title: 'Multi-Environment API',
-    version: '1.0.0'
+    title: "Multi-Environment API",
+    version: "1.0.0",
   },
   servers: [
     {
-      url: 'https://{environment}.api.example.com',
-      description: 'Environment-based server',
+      url: "https://{environment}.api.example.com",
+      description: "Environment-based server",
       variables: {
         environment: {
-          default: 'prod',
-          enum: ['prod', 'staging', 'dev'],
-          description: 'Environment name'
-        }
-      }
-    }
-  ]
+          default: "prod",
+          enum: ["prod", "staging", "dev"],
+          description: "Environment name",
+        },
+      },
+    },
+  ],
 });
 ```
 
@@ -878,19 +895,20 @@ Require authentication to view OpenAPI docs and Swagger UI:
 ```typescript
 app.openapiSetup({
   info: {
-    title: 'Secured API',
-    version: '1.0.0'
+    title: "Secured API",
+    version: "1.0.0",
   },
-  authLevel: 'function',  // Require function key
+  authLevel: "function", // Require function key
   swaggerUI: {
     enabled: true,
-    route: 'docs',
-    authLevel: 'admin'    // Require admin key for Swagger UI
-  }
+    route: "docs",
+    authLevel: "admin", // Require admin key for Swagger UI
+  },
 });
 ```
 
 Access requires a key:
+
 ```bash
 # Access OpenAPI with function key
 curl "http://localhost:7071/api/openapi/3.1.0.json?code=YOUR_FUNCTION_KEY"
@@ -910,27 +928,27 @@ The `app.openapiPath()` method registers HTTP endpoints with OpenAPI documentati
 Simple GET endpoint without parameters:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const StatusSchema = z.object({
   status: z.string(),
   timestamp: z.string(),
-  version: z.string()
+  version: z.string(),
 });
 
-app.openapiPath('GetStatus', 'Get API status', {
+app.openapiPath("GetStatus", "Get API status", {
   handler: async (request, context) => {
     return {
       jsonBody: {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date().toISOString(),
-        version: '1.0.0'
-      }
+        version: "1.0.0",
+      },
     };
   },
-  methods: ['GET'],
-  route: 'status',
-  response: StatusSchema
+  methods: ["GET"],
+  route: "status",
+  response: StatusSchema,
 });
 ```
 
@@ -942,23 +960,23 @@ Extract values from the URL path:
 const UserSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string()
+  email: z.string(),
 });
 
-app.openapiPath('GetUser', 'Get user by ID', {
+app.openapiPath("GetUser", "Get user by ID", {
   typedHandler: async ({ params, context }) => {
     // params.id is automatically typed as string and validated as UUID
     context.log(`Fetching user: ${params.id}`);
-    
+
     const user = await getUserById(params.id);
     return { jsonBody: user };
   },
-  methods: ['GET'],
-  route: 'users/{id}',
+  methods: ["GET"],
+  route: "users/{id}",
   params: z.object({
-    id: z.string().uuid().describe('User unique identifier')
+    id: z.string().uuid().describe("User unique identifier"),
   }),
-  response: UserSchema
+  response: UserSchema,
 });
 ```
 
@@ -971,35 +989,44 @@ const TodoListSchema = z.object({
   todos: z.array(TodoSchema),
   total: z.number(),
   page: z.number(),
-  pageSize: z.number()
+  pageSize: z.number(),
 });
 
-app.openapiPath('ListTodos', 'List todos with pagination', {
+app.openapiPath("ListTodos", "List todos with pagination", {
   typedHandler: async ({ query, context }) => {
     // query parameters are automatically typed and coerced
     const page = query.page || 1;
     const pageSize = query.pageSize || 10;
     const status = query.status;
-    
+
     const todos = await getTodos({ page, pageSize, status });
-    
+
     return {
       jsonBody: {
         todos,
         total: todos.length,
         page,
-        pageSize
-      }
+        pageSize,
+      },
     };
   },
-  methods: ['GET'],
-  route: 'todos',
+  methods: ["GET"],
+  route: "todos",
   query: z.object({
-    page: z.coerce.number().int().positive().default(1).describe('Page number'),
-    pageSize: z.coerce.number().int().positive().max(100).default(10).describe('Items per page'),
-    status: z.enum(['pending', 'completed', 'all']).optional().describe('Filter by status')
+    page: z.coerce.number().int().positive().default(1).describe("Page number"),
+    pageSize: z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(100)
+      .default(10)
+      .describe("Items per page"),
+    status: z
+      .enum(["pending", "completed", "all"])
+      .optional()
+      .describe("Filter by status"),
   }),
-  response: TodoListSchema
+  response: TodoListSchema,
 });
 ```
 
@@ -1009,9 +1036,9 @@ POST/PUT/PATCH endpoints with JSON body:
 
 ```typescript
 const CreateTodoSchema = z.object({
-  title: z.string().min(1).max(200).describe('Todo title'),
-  description: z.string().optional().describe('Todo description'),
-  dueDate: z.string().datetime().optional().describe('Due date in ISO format')
+  title: z.string().min(1).max(200).describe("Todo title"),
+  description: z.string().optional().describe("Todo description"),
+  dueDate: z.string().datetime().optional().describe("Due date in ISO format"),
 });
 
 const TodoSchema = z.object({
@@ -1020,25 +1047,25 @@ const TodoSchema = z.object({
   description: z.string().optional(),
   dueDate: z.string().optional(),
   completed: z.boolean(),
-  createdAt: z.string()
+  createdAt: z.string(),
 });
 
-app.openapiPath('CreateTodo', 'Create a new todo', {
+app.openapiPath("CreateTodo", "Create a new todo", {
   typedHandler: async ({ body, context }) => {
     // body is automatically typed and validated
     context.log(`Creating todo: ${body.title}`);
-    
+
     const newTodo = await createTodo(body);
-    
+
     return {
       status: 201,
-      jsonBody: newTodo
+      jsonBody: newTodo,
     };
   },
-  methods: ['POST'],
-  route: 'todos',
+  methods: ["POST"],
+  route: "todos",
   body: CreateTodoSchema,
-  response: TodoSchema
+  response: TodoSchema,
 });
 ```
 
@@ -1047,31 +1074,31 @@ app.openapiPath('CreateTodo', 'Create a new todo', {
 Support multiple methods on the same route:
 
 ```typescript
-app.openapiPath('ManageTodo', 'Manage todo item', {
+app.openapiPath("ManageTodo", "Manage todo item", {
   typedHandler: async ({ request, params, body, context }) => {
     const method = request.method;
     const todoId = params.id;
-    
+
     switch (method) {
-      case 'GET':
+      case "GET":
         return { jsonBody: await getTodo(todoId) };
-      case 'PUT':
+      case "PUT":
         return { jsonBody: await updateTodo(todoId, body) };
-      case 'DELETE':
+      case "DELETE":
         await deleteTodo(todoId);
         return { status: 204 };
       default:
-        return { status: 405, body: 'Method not allowed' };
+        return { status: 405, body: "Method not allowed" };
     }
   },
-  methods: ['GET', 'PUT', 'DELETE'],
-  route: 'todos/{id}',
+  methods: ["GET", "PUT", "DELETE"],
+  route: "todos/{id}",
   params: z.object({ id: z.string().uuid() }),
   body: UpdateTodoSchema,
   responses: [
-    { httpCode: 200, schema: TodoSchema, description: 'Todo retrieved' },
-    { httpCode: 204, description: 'Todo deleted' }
-  ]
+    { httpCode: 200, schema: TodoSchema, description: "Todo retrieved" },
+    { httpCode: 204, description: "Todo deleted" },
+  ],
 });
 ```
 
@@ -1080,22 +1107,26 @@ app.openapiPath('ManageTodo', 'Manage todo item', {
 Validate custom request headers:
 
 ```typescript
-app.openapiPath('SecureEndpoint', 'Endpoint with custom API key', {
+app.openapiPath("SecureEndpoint", "Endpoint with custom API key", {
   typedHandler: async ({ headers, context }) => {
     // headers are automatically typed and validated
-    const apiKey = headers['x-api-key'];
-    
+    const apiKey = headers["x-api-key"];
+
     context.log(`Request with API key: ${apiKey.substring(0, 8)}...`);
-    
+
     return { jsonBody: { authenticated: true } };
   },
-  methods: ['GET'],
-  route: 'secure/data',
+  methods: ["GET"],
+  route: "secure/data",
   headers: z.object({
-    'x-api-key': z.string().min(32).describe('API key for authentication'),
-    'x-request-id': z.string().uuid().optional().describe('Optional request tracking ID')
+    "x-api-key": z.string().min(32).describe("API key for authentication"),
+    "x-request-id": z
+      .string()
+      .uuid()
+      .optional()
+      .describe("Optional request tracking ID"),
   }),
-  response: z.object({ authenticated: z.boolean() })
+  response: z.object({ authenticated: z.boolean() }),
 });
 ```
 
@@ -1107,124 +1138,124 @@ Document different response codes:
 const ErrorSchema = z.object({
   error: z.string(),
   code: z.string(),
-  details: z.any().optional()
+  details: z.any().optional(),
 });
 
-app.openapiPath('UpdateTodo', 'Update an existing todo', {
+app.openapiPath("UpdateTodo", "Update an existing todo", {
   typedHandler: async ({ params, body, context }) => {
     try {
       const todo = await getTodo(params.id);
-      
+
       if (!todo) {
         return {
           status: 404,
           jsonBody: {
-            error: 'Todo not found',
-            code: 'TODO_NOT_FOUND'
-          }
+            error: "Todo not found",
+            code: "TODO_NOT_FOUND",
+          },
         };
       }
-      
+
       const updated = await updateTodo(params.id, body);
-      
+
       return {
         status: 200,
-        jsonBody: updated
+        jsonBody: updated,
       };
     } catch (error) {
       return {
         status: 500,
         jsonBody: {
-          error: 'Internal server error',
-          code: 'INTERNAL_ERROR',
-          details: error.message
-        }
+          error: "Internal server error",
+          code: "INTERNAL_ERROR",
+          details: error.message,
+        },
       };
     }
   },
-  methods: ['PUT'],
-  route: 'todos/{id}',
+  methods: ["PUT"],
+  route: "todos/{id}",
   params: z.object({ id: z.string().uuid() }),
   body: UpdateTodoSchema,
   responses: [
     {
       httpCode: 200,
-      description: 'Todo updated successfully',
-      schema: TodoSchema
+      description: "Todo updated successfully",
+      schema: TodoSchema,
     },
     {
       httpCode: 404,
-      description: 'Todo not found',
-      schema: ErrorSchema
+      description: "Todo not found",
+      schema: ErrorSchema,
     },
     {
       httpCode: 500,
-      description: 'Internal server error',
-      schema: ErrorSchema
-    }
-  ]
+      description: "Internal server error",
+      schema: ErrorSchema,
+    },
+  ],
 });
 ```
 
 #### Configuration Options
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `handler` | `HttpHandler` | One of `handler` or `typedHandler` | Traditional Azure Functions handler |
-| `typedHandler` | `TypedHandler` | One of `handler` or `typedHandler` | Typed handler with auto validation |
-| `methods` | `HttpMethod[]` | ✅ Yes | HTTP methods (GET, POST, PUT, etc.) |
-| `route` | `string` | ✅ Yes | Route path (without prefix) |
-| `params` | `ZodSchema` | No | Route parameters schema |
-| `query` | `ZodSchema` | No | Query string parameters schema |
-| `body` | `ZodSchema` | No | Request body schema (JSON) |
-| `headers` | `ZodObject` | No | Request headers schema |
-| `response` | `ZodSchema` | No | Single response shortcut (assumes 200 OK) |
-| `responses` | `ResponseConfig[]` | No | Multiple response configurations |
-| `authLevel` | `'anonymous' \| 'function' \| 'admin'` | No | Azure Functions auth level |
-| `security` | `SecurityRequirementObject[]` | No | Security requirements for this endpoint |
-| `tags` | `string[]` | No | OpenAPI tags for organization |
-| `description` | `string` | No | Detailed description |
-| `deprecated` | `boolean` | No | Mark endpoint as deprecated |
-| `operationId` | `string` | No | Unique operation ID (defaults to name) |
+| Option         | Type                                   | Required                           | Description                               |
+| -------------- | -------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| `handler`      | `HttpHandler`                          | One of `handler` or `typedHandler` | Traditional Azure Functions handler       |
+| `typedHandler` | `TypedHandler`                         | One of `handler` or `typedHandler` | Typed handler with auto validation        |
+| `methods`      | `HttpMethod[]`                         | ✅ Yes                             | HTTP methods (GET, POST, PUT, etc.)       |
+| `route`        | `string`                               | ✅ Yes                             | Route path (without prefix)               |
+| `params`       | `ZodSchema`                            | No                                 | Route parameters schema                   |
+| `query`        | `ZodSchema`                            | No                                 | Query string parameters schema            |
+| `body`         | `ZodSchema`                            | No                                 | Request body schema (JSON)                |
+| `headers`      | `ZodObject`                            | No                                 | Request headers schema                    |
+| `response`     | `ZodSchema`                            | No                                 | Single response shortcut (assumes 200 OK) |
+| `responses`    | `ResponseConfig[]`                     | No                                 | Multiple response configurations          |
+| `authLevel`    | `'anonymous' \| 'function' \| 'admin'` | No                                 | Azure Functions auth level                |
+| `security`     | `SecurityRequirementObject[]`          | No                                 | Security requirements for this endpoint   |
+| `tags`         | `string[]`                             | No                                 | OpenAPI tags for organization             |
+| `description`  | `string`                               | No                                 | Detailed description                      |
+| `deprecated`   | `boolean`                              | No                                 | Mark endpoint as deprecated               |
+| `operationId`  | `string`                               | No                                 | Unique operation ID (defaults to name)    |
 
 #### Traditional Handler vs Typed Handler
 
 **Traditional Handler** - Manual parsing and validation:
 
 ```typescript
-app.openapiPath('CreateUser', 'Create user', {
+app.openapiPath("CreateUser", "Create user", {
   handler: async (request, context) => {
     // Manual parsing required
     const body = await request.json();
     const { name, email } = body;
-    
+
     // Manual validation
     if (!name || !email) {
-      return { status: 400, body: 'Missing required fields' };
+      return { status: 400, body: "Missing required fields" };
     }
-    
+
     const user = await createUser({ name, email });
     return { jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
-  body: CreateUserSchema
+  methods: ["POST"],
+  route: "users",
+  body: CreateUserSchema,
 });
 ```
 
 **Typed Handler** - Automatic parsing and validation:
 
 ```typescript
-app.openapiPath('CreateUser', 'Create user', {
+app.openapiPath("CreateUser", "Create user", {
   typedHandler: async ({ body, context }) => {
     // body is already parsed, validated, and typed!
     // No manual checks needed
     const user = await createUser(body);
     return { jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
-  body: CreateUserSchema
+  methods: ["POST"],
+  route: "users",
+  body: CreateUserSchema,
 });
 ```
 
@@ -1244,23 +1275,23 @@ const ParamsSchema = z.object({ id: z.string().uuid() });
 const QuerySchema = z.object({ include: z.string().optional() });
 const BodySchema = z.object({ title: z.string(), completed: z.boolean() });
 
-app.openapiPath('UpdateTodo', 'Update todo', {
+app.openapiPath("UpdateTodo", "Update todo", {
   typedHandler: async ({ params, query, body, context }) => {
     // TypeScript knows:
     // - params.id is string (from UUID schema)
     // - query.include is string | undefined
     // - body.title is string
     // - body.completed is boolean
-    
+
     // No type assertions needed! ✨
     const todo = await updateTodo(params.id, body);
     return { jsonBody: todo };
   },
-  methods: ['PUT'],
-  route: 'todos/{id}',
+  methods: ["PUT"],
+  route: "todos/{id}",
   params: ParamsSchema,
   query: QuerySchema,
-  body: BodySchema
+  body: BodySchema,
 });
 ```
 
@@ -1269,23 +1300,24 @@ app.openapiPath('UpdateTodo', 'Update todo', {
 Typed handlers automatically validate all request data. If validation fails, a **400 Bad Request** response is returned with detailed error information:
 
 ```typescript
-app.openapiPath('CreateUser', 'Create new user', {
+app.openapiPath("CreateUser", "Create new user", {
   typedHandler: async ({ body, context }) => {
     // If we reach here, body is guaranteed to be valid
     const user = await createUser(body);
     return { status: 201, jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
+  methods: ["POST"],
+  route: "users",
   body: z.object({
     name: z.string().min(1).max(100),
     email: z.string().email(),
-    age: z.number().int().positive().min(18)
-  })
+    age: z.number().int().positive().min(18),
+  }),
 });
 ```
 
 **Invalid request:**
+
 ```bash
 curl -X POST http://localhost:7071/api/users \
   -H "Content-Type: application/json" \
@@ -1293,6 +1325,7 @@ curl -X POST http://localhost:7071/api/users \
 ```
 
 **Automatic error response:**
+
 ```json
 {
   "error": "Request body validation failed",
@@ -1331,7 +1364,7 @@ type TypedHandlerArgs = {
 **Example with all parameters:**
 
 ```typescript
-app.openapiPath('ComplexEndpoint', 'Example with all parameters', {
+app.openapiPath("ComplexEndpoint", "Example with all parameters", {
   typedHandler: async ({ params, query, body, headers, request, context }) => {
     context.log(`Method: ${request.method}`);
     context.log(`URL: ${request.url}`);
@@ -1339,17 +1372,17 @@ app.openapiPath('ComplexEndpoint', 'Example with all parameters', {
     context.log(`Query:`, query);
     context.log(`Body:`, body);
     context.log(`Headers:`, headers);
-    
+
     return { jsonBody: { success: true } };
   },
-  methods: ['POST'],
-  route: 'complex/{id}',
+  methods: ["POST"],
+  route: "complex/{id}",
   params: z.object({ id: z.string() }),
   query: z.object({ filter: z.string().optional() }),
   body: z.object({ data: z.any() }),
   headers: z.object({
-    'x-api-key': z.string()
-  })
+    "x-api-key": z.string(),
+  }),
 });
 ```
 
@@ -1359,15 +1392,15 @@ app.openapiPath('ComplexEndpoint', 'Example with all parameters', {
 
 ```typescript
 // String parameter
-params: z.object({ id: z.string() })
+params: z.object({ id: z.string() });
 // → params.id is string
 
 // Number with coercion
-query: z.object({ page: z.coerce.number() })
+query: z.object({ page: z.coerce.number() });
 // → query.page is number
 
 // Boolean
-body: z.object({ enabled: z.boolean() })
+body: z.object({ enabled: z.boolean() });
 // → body.enabled is boolean
 ```
 
@@ -1376,8 +1409,8 @@ body: z.object({ enabled: z.boolean() })
 ```typescript
 query: z.object({
   search: z.string().optional(),
-  limit: z.coerce.number().default(10)
-})
+  limit: z.coerce.number().default(10),
+});
 // → query.search is string | undefined
 // → query.limit is number
 ```
@@ -1388,11 +1421,11 @@ query: z.object({
 body: z.object({
   user: z.object({
     name: z.string(),
-    email: z.string().email()
+    email: z.string().email(),
   }),
   tags: z.array(z.string()),
-  metadata: z.record(z.string(), z.any())
-})
+  metadata: z.record(z.string(), z.any()),
+});
 // → body.user is { name: string; email: string }
 // → body.tags is string[]
 // → body.metadata is Record<string, any>
@@ -1402,8 +1435,8 @@ body: z.object({
 
 ```typescript
 query: z.object({
-  status: z.enum(['active', 'inactive', 'pending'])
-})
+  status: z.enum(["active", "inactive", "pending"]),
+});
 // → query.status is "active" | "inactive" | "pending"
 ```
 
@@ -1411,8 +1444,8 @@ query: z.object({
 
 ```typescript
 body: z.object({
-  value: z.union([z.string(), z.number()])
-})
+  value: z.union([z.string(), z.number()]),
+});
 // → body.value is string | number
 ```
 
@@ -1421,20 +1454,20 @@ body: z.object({
 For reusable handlers, use the `createTypedHandler` utility:
 
 ```typescript
-import { createTypedHandler } from '@apvee/azure-functions-openapi';
+import { createTypedHandler } from "@apvee/azure-functions-openapi";
 
 // Define schemas
 const TodoParamsSchema = z.object({ id: z.string().uuid() });
 const UpdateTodoBodySchema = z.object({
   title: z.string().optional(),
-  completed: z.boolean().optional()
+  completed: z.boolean().optional(),
 });
 
 // Create reusable typed handler
 const updateTodoHandler = createTypedHandler(
   {
     params: TodoParamsSchema,
-    body: UpdateTodoBodySchema
+    body: UpdateTodoBodySchema,
   },
   async ({ params, body, context }) => {
     // Fully typed parameters
@@ -1445,13 +1478,13 @@ const updateTodoHandler = createTypedHandler(
 );
 
 // Use in endpoint registration
-app.openapiPath('UpdateTodo', 'Update todo', {
+app.openapiPath("UpdateTodo", "Update todo", {
   handler: updateTodoHandler, // Use as regular handler
-  methods: ['PATCH'],
-  route: 'todos/{id}',
+  methods: ["PATCH"],
+  route: "todos/{id}",
   params: TodoParamsSchema,
   body: UpdateTodoBodySchema,
-  response: TodoSchema
+  response: TodoSchema,
 });
 ```
 
@@ -1460,14 +1493,14 @@ app.openapiPath('UpdateTodo', 'Update todo', {
 **Inline Handler** (best for simple logic):
 
 ```typescript
-app.openapiPath('DeleteTodo', 'Delete todo', {
+app.openapiPath("DeleteTodo", "Delete todo", {
   typedHandler: async ({ params, context }) => {
     await deleteTodo(params.id);
     return { status: 204 };
   },
-  methods: ['DELETE'],
-  route: 'todos/{id}',
-  params: z.object({ id: z.string().uuid() })
+  methods: ["DELETE"],
+  route: "todos/{id}",
+  params: z.object({ id: z.string().uuid() }),
 });
 ```
 
@@ -1479,25 +1512,25 @@ export const deleteTodoHandler = createTypedHandler(
   { params: TodoParamsSchema },
   async ({ params, context }) => {
     context.log(`Deleting todo: ${params.id}`);
-    
+
     const todo = await getTodo(params.id);
     if (!todo) {
-      return { status: 404, jsonBody: { error: 'Todo not found' } };
+      return { status: 404, jsonBody: { error: "Todo not found" } };
     }
-    
+
     await deleteTodo(params.id);
     return { status: 204 };
   }
 );
 
 // In index.ts
-import { deleteTodoHandler } from './handlers/deleteTodo';
+import { deleteTodoHandler } from "./handlers/deleteTodo";
 
-app.openapiPath('DeleteTodo', 'Delete todo', {
+app.openapiPath("DeleteTodo", "Delete todo", {
   handler: deleteTodoHandler,
-  methods: ['DELETE'],
-  route: 'todos/{id}',
-  params: TodoParamsSchema
+  methods: ["DELETE"],
+  route: "todos/{id}",
+  params: TodoParamsSchema,
 });
 ```
 
@@ -1506,35 +1539,35 @@ app.openapiPath('DeleteTodo', 'Delete todo', {
 Validation errors are handled automatically, but you can add custom error handling:
 
 ```typescript
-app.openapiPath('RiskyOperation', 'Operation that might fail', {
+app.openapiPath("RiskyOperation", "Operation that might fail", {
   typedHandler: async ({ body, context }) => {
     try {
       const result = await performRiskyOperation(body);
       return { jsonBody: result };
     } catch (error) {
-      context.error('Operation failed:', error);
-      
+      context.error("Operation failed:", error);
+
       if (error instanceof DatabaseError) {
         return {
           status: 503,
-          jsonBody: { error: 'Service temporarily unavailable' }
+          jsonBody: { error: "Service temporarily unavailable" },
         };
       }
-      
+
       return {
         status: 500,
-        jsonBody: { error: 'Internal server error' }
+        jsonBody: { error: "Internal server error" },
       };
     }
   },
-  methods: ['POST'],
-  route: 'risky',
+  methods: ["POST"],
+  route: "risky",
   body: OperationSchema,
   responses: [
     { httpCode: 200, schema: ResultSchema },
     { httpCode: 500, schema: ErrorSchema },
-    { httpCode: 503, schema: ErrorSchema }
-  ]
+    { httpCode: 503, schema: ErrorSchema },
+  ],
 });
 ```
 
@@ -1545,7 +1578,7 @@ app.openapiPath('RiskyOperation', 'Operation that might fail', {
 ✅ **Better IDE Support** - IntelliSense shows exact types  
 ✅ **Automatic Validation** - Invalid requests rejected automatically  
 ✅ **Consistent Error Responses** - Standardized validation errors  
-✅ **Self-Documenting** - Schemas serve as both validation and documentation  
+✅ **Self-Documenting** - Schemas serve as both validation and documentation
 
 ---
 
@@ -1558,29 +1591,29 @@ The `app.openapiSchema()` method registers Zod schemas as named types in the Ope
 Register a simple schema:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define schema
 const UserSchema = z.object({
-  id: z.string().uuid().describe('Unique user identifier'),
-  name: z.string().min(1).max(100).describe('User full name'),
-  email: z.string().email().describe('User email address'),
-  createdAt: z.string().datetime().describe('Account creation timestamp')
+  id: z.string().uuid().describe("Unique user identifier"),
+  name: z.string().min(1).max(100).describe("User full name"),
+  email: z.string().email().describe("User email address"),
+  createdAt: z.string().datetime().describe("Account creation timestamp"),
 });
 
 // Register schema with a name
-app.openapiSchema('User', UserSchema);
+app.openapiSchema("User", UserSchema);
 
 // Now use it in endpoints
-app.openapiPath('GetUser', 'Get user by ID', {
+app.openapiPath("GetUser", "Get user by ID", {
   typedHandler: async ({ params }) => {
     const user = await getUserById(params.id);
     return { jsonBody: user };
   },
-  methods: ['GET'],
-  route: 'users/{id}',
+  methods: ["GET"],
+  route: "users/{id}",
   params: z.object({ id: z.string().uuid() }),
-  response: UserSchema // References 'User' in OpenAPI spec
+  response: UserSchema, // References 'User' in OpenAPI spec
 });
 ```
 
@@ -1591,13 +1624,16 @@ Register complex schemas with nested objects:
 ```typescript
 // Address schema
 const AddressSchema = z.object({
-  street: z.string().describe('Street address'),
-  city: z.string().describe('City name'),
-  state: z.string().length(2).describe('State code (2 letters)'),
-  zipCode: z.string().regex(/^\d{5}$/).describe('5-digit ZIP code')
+  street: z.string().describe("Street address"),
+  city: z.string().describe("City name"),
+  state: z.string().length(2).describe("State code (2 letters)"),
+  zipCode: z
+    .string()
+    .regex(/^\d{5}$/)
+    .describe("5-digit ZIP code"),
 });
 
-app.openapiSchema('Address', AddressSchema);
+app.openapiSchema("Address", AddressSchema);
 
 // User profile with nested address
 const UserProfileSchema = z.object({
@@ -1606,11 +1642,11 @@ const UserProfileSchema = z.object({
   phoneNumber: z.string().optional(),
   preferences: z.object({
     newsletter: z.boolean(),
-    notifications: z.boolean()
-  })
+    notifications: z.boolean(),
+  }),
 });
 
-app.openapiSchema('UserProfile', UserProfileSchema);
+app.openapiSchema("UserProfile", UserProfileSchema);
 ```
 
 #### Array Schemas
@@ -1623,35 +1659,35 @@ const TodoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   completed: z.boolean(),
-  createdAt: z.string().datetime()
+  createdAt: z.string().datetime(),
 });
 
-app.openapiSchema('Todo', TodoSchema);
+app.openapiSchema("Todo", TodoSchema);
 
 // Paginated list
 const PaginatedTodosSchema = z.object({
-  items: z.array(TodoSchema).describe('List of todos'),
-  total: z.number().int().describe('Total number of items'),
-  page: z.number().int().describe('Current page number'),
-  pageSize: z.number().int().describe('Items per page'),
-  hasMore: z.boolean().describe('Whether more pages exist')
+  items: z.array(TodoSchema).describe("List of todos"),
+  total: z.number().int().describe("Total number of items"),
+  page: z.number().int().describe("Current page number"),
+  pageSize: z.number().int().describe("Items per page"),
+  hasMore: z.boolean().describe("Whether more pages exist"),
 });
 
-app.openapiSchema('PaginatedTodos', PaginatedTodosSchema);
+app.openapiSchema("PaginatedTodos", PaginatedTodosSchema);
 
 // Use in endpoint
-app.openapiPath('ListTodos', 'List all todos with pagination', {
+app.openapiPath("ListTodos", "List all todos with pagination", {
   typedHandler: async ({ query }) => {
     const todos = await getTodos(query);
     return { jsonBody: todos };
   },
-  methods: ['GET'],
-  route: 'todos',
+  methods: ["GET"],
+  route: "todos",
   query: z.object({
     page: z.coerce.number().default(1),
-    pageSize: z.coerce.number().default(10)
+    pageSize: z.coerce.number().default(10),
   }),
-  response: PaginatedTodosSchema
+  response: PaginatedTodosSchema,
 });
 ```
 
@@ -1662,41 +1698,55 @@ Create standardized error responses:
 ```typescript
 // Base error schema
 const ErrorSchema = z.object({
-  error: z.string().describe('Error message'),
-  code: z.string().describe('Error code'),
-  timestamp: z.string().datetime().describe('When the error occurred'),
-  path: z.string().optional().describe('Request path that caused the error'),
-  details: z.any().optional().describe('Additional error details')
+  error: z.string().describe("Error message"),
+  code: z.string().describe("Error code"),
+  timestamp: z.string().datetime().describe("When the error occurred"),
+  path: z.string().optional().describe("Request path that caused the error"),
+  details: z.any().optional().describe("Additional error details"),
 });
 
-app.openapiSchema('Error', ErrorSchema);
+app.openapiSchema("Error", ErrorSchema);
 
 // Validation error schema
 const ValidationErrorSchema = z.object({
   error: z.string(),
-  code: z.literal('VALIDATION_ERROR'),
-  issues: z.array(z.object({
-    path: z.array(z.union([z.string(), z.number()])),
-    message: z.string()
-  }))
+  code: z.literal("VALIDATION_ERROR"),
+  issues: z.array(
+    z.object({
+      path: z.array(z.union([z.string(), z.number()])),
+      message: z.string(),
+    })
+  ),
 });
 
-app.openapiSchema('ValidationError', ValidationErrorSchema);
+app.openapiSchema("ValidationError", ValidationErrorSchema);
 
 // Use in endpoints
-app.openapiPath('CreateUser', 'Create new user', {
+app.openapiPath("CreateUser", "Create new user", {
   typedHandler: async ({ body }) => {
     const user = await createUser(body);
     return { status: 201, jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
+  methods: ["POST"],
+  route: "users",
   body: CreateUserSchema,
   responses: [
-    { httpCode: 201, schema: UserSchema, description: 'User created successfully' },
-    { httpCode: 400, schema: ValidationErrorSchema, description: 'Invalid request data' },
-    { httpCode: 500, schema: ErrorSchema, description: 'Internal server error' }
-  ]
+    {
+      httpCode: 201,
+      schema: UserSchema,
+      description: "User created successfully",
+    },
+    {
+      httpCode: 400,
+      schema: ValidationErrorSchema,
+      description: "Invalid request data",
+    },
+    {
+      httpCode: 500,
+      schema: ErrorSchema,
+      description: "Internal server error",
+    },
+  ],
 });
 ```
 
@@ -1708,35 +1758,35 @@ Register schemas with discriminated unions for polymorphic data:
 // Base notification
 const BaseNotificationSchema = z.object({
   id: z.string().uuid(),
-  createdAt: z.string().datetime()
+  createdAt: z.string().datetime(),
 });
 
 // Email notification
 const EmailNotificationSchema = BaseNotificationSchema.extend({
-  type: z.literal('email'),
+  type: z.literal("email"),
   to: z.string().email(),
   subject: z.string(),
-  body: z.string()
+  body: z.string(),
 });
 
-app.openapiSchema('EmailNotification', EmailNotificationSchema);
+app.openapiSchema("EmailNotification", EmailNotificationSchema);
 
 // SMS notification
 const SmsNotificationSchema = BaseNotificationSchema.extend({
-  type: z.literal('sms'),
+  type: z.literal("sms"),
   to: z.string().regex(/^\+?[1-9]\d{1,14}$/),
-  message: z.string().max(160)
+  message: z.string().max(160),
 });
 
-app.openapiSchema('SmsNotification', SmsNotificationSchema);
+app.openapiSchema("SmsNotification", SmsNotificationSchema);
 
 // Union of all notification types
-const NotificationSchema = z.discriminatedUnion('type', [
+const NotificationSchema = z.discriminatedUnion("type", [
   EmailNotificationSchema,
-  SmsNotificationSchema
+  SmsNotificationSchema,
 ]);
 
-app.openapiSchema('Notification', NotificationSchema);
+app.openapiSchema("Notification", NotificationSchema);
 ```
 
 #### Schema Organization Best Practices
@@ -1745,37 +1795,51 @@ app.openapiSchema('Notification', NotificationSchema);
 
 ```typescript
 // schemas/user.ts
-export const UserSchema = z.object({ /* ... */ });
-export const CreateUserSchema = z.object({ /* ... */ });
-export const UpdateUserSchema = z.object({ /* ... */ });
+export const UserSchema = z.object({
+  /* ... */
+});
+export const CreateUserSchema = z.object({
+  /* ... */
+});
+export const UpdateUserSchema = z.object({
+  /* ... */
+});
 
 // schemas/todo.ts
-export const TodoSchema = z.object({ /* ... */ });
-export const CreateTodoSchema = z.object({ /* ... */ });
-export const UpdateTodoSchema = z.object({ /* ... */ });
+export const TodoSchema = z.object({
+  /* ... */
+});
+export const CreateTodoSchema = z.object({
+  /* ... */
+});
+export const UpdateTodoSchema = z.object({
+  /* ... */
+});
 
 // schemas/index.ts
-import { UserSchema, CreateUserSchema, UpdateUserSchema } from './user';
-import { TodoSchema, CreateTodoSchema, UpdateTodoSchema } from './todo';
+import { UserSchema, CreateUserSchema, UpdateUserSchema } from "./user";
+import { TodoSchema, CreateTodoSchema, UpdateTodoSchema } from "./todo";
 
-export function registerSchemas(app: typeof import('@azure/functions').app) {
+export function registerSchemas(app: typeof import("@azure/functions").app) {
   // User schemas
-  app.openapiSchema('User', UserSchema);
-  app.openapiSchema('CreateUser', CreateUserSchema);
-  app.openapiSchema('UpdateUser', UpdateUserSchema);
-  
+  app.openapiSchema("User", UserSchema);
+  app.openapiSchema("CreateUser", CreateUserSchema);
+  app.openapiSchema("UpdateUser", UpdateUserSchema);
+
   // Todo schemas
-  app.openapiSchema('Todo', TodoSchema);
-  app.openapiSchema('CreateTodo', CreateTodoSchema);
-  app.openapiSchema('UpdateTodo', UpdateTodoSchema);
+  app.openapiSchema("Todo", TodoSchema);
+  app.openapiSchema("CreateTodo", CreateTodoSchema);
+  app.openapiSchema("UpdateTodo", UpdateTodoSchema);
 }
 
 // In index.ts
-import '@apvee/azure-functions-openapi';
-import { app } from '@azure/functions';
-import { registerSchemas } from './schemas';
+import "@apvee/azure-functions-openapi";
+import { app } from "@azure/functions";
+import { registerSchemas } from "./schemas";
 
-app.openapiSetup({ /* config */ });
+app.openapiSetup({
+  /* config */
+});
 registerSchemas(app);
 ```
 
@@ -1786,11 +1850,12 @@ registerSchemas(app);
 ✅ **Better Documentation** - Named types are easier to understand  
 ✅ **Consistency** - Same schema used for validation and documentation  
 ✅ **Type Reusability** - Share types across multiple endpoints  
-✅ **Easier Maintenance** - Update schema in one place  
+✅ **Easier Maintenance** - Update schema in one place
 
 #### When to Register Schemas
 
 **Register schemas when:**
+
 - Used in multiple endpoints
 - Complex nested structures
 - Part of your domain model
@@ -1798,6 +1863,7 @@ registerSchemas(app);
 - Common request/response patterns
 
 **Inline schemas when:**
+
 - Used only once
 - Very simple structures
 - Endpoint-specific parameters
@@ -1807,25 +1873,25 @@ registerSchemas(app);
 
 ```typescript
 // Register common schemas
-app.openapiSchema('Todo', TodoSchema);
-app.openapiSchema('Error', ErrorSchema);
+app.openapiSchema("Todo", TodoSchema);
+app.openapiSchema("Error", ErrorSchema);
 
-app.openapiPath('UpdateTodo', 'Update todo', {
+app.openapiPath("UpdateTodo", "Update todo", {
   typedHandler: async ({ params, body }) => {
     const todo = await updateTodo(params.id, body);
     return { jsonBody: todo };
   },
-  methods: ['PATCH'],
-  route: 'todos/{id}',
+  methods: ["PATCH"],
+  route: "todos/{id}",
   // Inline simple param schema
   params: z.object({ id: z.string().uuid() }),
   // Inline endpoint-specific body schema
   body: z.object({
     title: z.string().optional(),
-    completed: z.boolean().optional()
+    completed: z.boolean().optional(),
   }),
   // Reference registered schema
-  response: TodoSchema
+  response: TodoSchema,
 });
 ```
 
@@ -1838,12 +1904,14 @@ Webhooks are a new feature in OpenAPI 3.1.0 that allows you to document **callba
 #### Understanding Webhooks
 
 **Regular API Endpoint (Path):**
+
 ```
 Client → Your API
 Example: GET /api/orders/123
 ```
 
 **Webhook (Callback):**
+
 ```
 Your API → Client's URL
 Example: POST https://client.com/webhooks/order-completed
@@ -1854,33 +1922,33 @@ Example: POST https://client.com/webhooks/order-completed
 Document a simple webhook notification:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define the payload your API will send
 const OrderCompletedSchema = z.object({
-  orderId: z.string().uuid().describe('Order identifier'),
-  status: z.literal('completed').describe('Order status'),
-  completedAt: z.string().datetime().describe('Completion timestamp'),
-  totalAmount: z.number().describe('Total order amount')
+  orderId: z.string().uuid().describe("Order identifier"),
+  status: z.literal("completed").describe("Order status"),
+  completedAt: z.string().datetime().describe("Completion timestamp"),
+  totalAmount: z.number().describe("Total order amount"),
 });
 
 // Register webhook
-app.openapiWebhook('OrderCompleted', 'Notifies when an order is completed', {
+app.openapiWebhook("OrderCompleted", "Notifies when an order is completed", {
   typedHandler: async ({ body, context }) => {
     // This is the handler that receives the webhook at YOUR endpoint
     // (for testing or development purposes)
     context.log(`Webhook received: Order ${body.orderId} completed`);
     return { jsonBody: { received: true } };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   body: OrderCompletedSchema,
   responses: [
     {
       httpCode: 200,
-      description: 'Webhook received successfully',
-      schema: z.object({ received: z.boolean() })
-    }
-  ]
+      description: "Webhook received successfully",
+      schema: z.object({ received: z.boolean() }),
+    },
+  ],
 });
 ```
 
@@ -1891,35 +1959,35 @@ Document webhooks that require authentication:
 ```typescript
 // Register security scheme for webhook signatures
 const webhookSignature = app.openapiKeySecurity(
-  'X-Webhook-Signature',
-  'header',
-  'HMAC signature for webhook verification'
+  "X-Webhook-Signature",
+  "header",
+  "HMAC signature for webhook verification"
 );
 
-app.openapiWebhook('PaymentProcessed', 'Notifies when payment is processed', {
+app.openapiWebhook("PaymentProcessed", "Notifies when payment is processed", {
   typedHandler: async ({ body, headers, context }) => {
     // Verify webhook signature
-    const signature = headers['x-webhook-signature'];
+    const signature = headers["x-webhook-signature"];
     const isValid = verifyWebhookSignature(body, signature);
-    
+
     if (!isValid) {
-      return { status: 401, jsonBody: { error: 'Invalid signature' } };
+      return { status: 401, jsonBody: { error: "Invalid signature" } };
     }
-    
+
     context.log(`Payment processed: ${body.paymentId}`);
     return { jsonBody: { acknowledged: true } };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   body: z.object({
     paymentId: z.string().uuid(),
     amount: z.number(),
     currency: z.string().length(3),
-    status: z.enum(['success', 'failed', 'pending'])
+    status: z.enum(["success", "failed", "pending"]),
   }),
   headers: z.object({
-    'x-webhook-signature': z.string()
+    "x-webhook-signature": z.string(),
   }),
-  security: [webhookSignature]
+  security: [webhookSignature],
 });
 ```
 
@@ -1929,50 +1997,56 @@ Document different webhook events for various scenarios:
 
 ```typescript
 // User registration webhook
-app.openapiWebhook('UserRegistered', 'Notifies when a new user registers', {
+app.openapiWebhook("UserRegistered", "Notifies when a new user registers", {
   typedHandler: async ({ body, context }) => {
     context.log(`New user: ${body.userId}`);
     return { status: 200 };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   body: z.object({
     userId: z.string().uuid(),
     email: z.string().email(),
-    registeredAt: z.string().datetime()
+    registeredAt: z.string().datetime(),
   }),
-  tags: ['User Events']
+  tags: ["User Events"],
 });
 
 // User deletion webhook
-app.openapiWebhook('UserDeleted', 'Notifies when a user is deleted', {
+app.openapiWebhook("UserDeleted", "Notifies when a user is deleted", {
   typedHandler: async ({ body, context }) => {
     context.log(`User deleted: ${body.userId}`);
     return { status: 200 };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   body: z.object({
     userId: z.string().uuid(),
     deletedAt: z.string().datetime(),
-    reason: z.string().optional()
+    reason: z.string().optional(),
   }),
-  tags: ['User Events']
+  tags: ["User Events"],
 });
 
 // Subscription events
-app.openapiWebhook('SubscriptionChanged', 'Notifies when subscription status changes', {
-  typedHandler: async ({ body, context }) => {
-    context.log(`Subscription ${body.subscriptionId} changed to ${body.status}`);
-    return { status: 200 };
-  },
-  methods: ['POST'],
-  body: z.object({
-    subscriptionId: z.string().uuid(),
-    userId: z.string().uuid(),
-    status: z.enum(['active', 'cancelled', 'expired', 'paused']),
-    changedAt: z.string().datetime()
-  }),
-  tags: ['Subscription Events']
-});
+app.openapiWebhook(
+  "SubscriptionChanged",
+  "Notifies when subscription status changes",
+  {
+    typedHandler: async ({ body, context }) => {
+      context.log(
+        `Subscription ${body.subscriptionId} changed to ${body.status}`
+      );
+      return { status: 200 };
+    },
+    methods: ["POST"],
+    body: z.object({
+      subscriptionId: z.string().uuid(),
+      userId: z.string().uuid(),
+      status: z.enum(["active", "cancelled", "expired", "paused"]),
+      changedAt: z.string().datetime(),
+    }),
+    tags: ["Subscription Events"],
+  }
+);
 ```
 
 #### Webhook Retry Logic Documentation
@@ -1980,15 +2054,15 @@ app.openapiWebhook('SubscriptionChanged', 'Notifies when subscription status cha
 Document how your API handles webhook failures:
 
 ```typescript
-app.openapiWebhook('OrderShipped', 'Notifies when order is shipped', {
+app.openapiWebhook("OrderShipped", "Notifies when order is shipped", {
   typedHandler: async ({ body, headers, context }) => {
     // Document retry attempt in description
-    const attemptNumber = headers['x-webhook-attempt'];
+    const attemptNumber = headers["x-webhook-attempt"];
     context.log(`Webhook attempt ${attemptNumber} for order ${body.orderId}`);
-    
+
     return { status: 200 };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   description: `
 Webhook sent when an order is shipped.
 
@@ -2008,23 +2082,23 @@ Webhook sent when an order is shipped.
     trackingNumber: z.string(),
     carrier: z.string(),
     shippedAt: z.string().datetime(),
-    estimatedDelivery: z.string().datetime()
+    estimatedDelivery: z.string().datetime(),
   }),
   headers: z.object({
-    'x-webhook-attempt': z.coerce.number().int().min(1).max(5),
-    'x-webhook-id': z.string().uuid(),
-    'x-webhook-timestamp': z.string().datetime()
+    "x-webhook-attempt": z.coerce.number().int().min(1).max(5),
+    "x-webhook-id": z.string().uuid(),
+    "x-webhook-timestamp": z.string().datetime(),
   }),
   responses: [
     {
       httpCode: 200,
-      description: 'Webhook acknowledged successfully'
+      description: "Webhook acknowledged successfully",
     },
     {
       httpCode: 500,
-      description: 'Server error - webhook will be retried'
-    }
-  ]
+      description: "Server error - webhook will be retried",
+    },
+  ],
 });
 ```
 
@@ -2035,53 +2109,53 @@ Comprehensive webhook similar to Stripe's approach:
 ```typescript
 // Register webhook schemas
 const WebhookEventSchema = z.object({
-  id: z.string().uuid().describe('Unique event identifier'),
-  type: z.string().describe('Event type'),
-  created: z.number().int().describe('Unix timestamp'),
+  id: z.string().uuid().describe("Unique event identifier"),
+  type: z.string().describe("Event type"),
+  created: z.number().int().describe("Unix timestamp"),
   data: z.object({
-    object: z.any()
+    object: z.any(),
   }),
-  livemode: z.boolean().describe('Whether in production mode')
+  livemode: z.boolean().describe("Whether in production mode"),
 });
 
-app.openapiSchema('WebhookEvent', WebhookEventSchema);
+app.openapiSchema("WebhookEvent", WebhookEventSchema);
 
 // Webhook signature security
 const stripeSignature = app.openapiKeySecurity(
-  'Stripe-Signature',
-  'header',
-  'Webhook signature for verification (see Stripe documentation)'
+  "Stripe-Signature",
+  "header",
+  "Webhook signature for verification (see Stripe documentation)"
 );
 
-app.openapiWebhook('StripeWebhook', 'Generic Stripe-style webhook endpoint', {
+app.openapiWebhook("StripeWebhook", "Generic Stripe-style webhook endpoint", {
   typedHandler: async ({ body, headers, context }) => {
-    const signature = headers['stripe-signature'];
-    
+    const signature = headers["stripe-signature"];
+
     // Verify signature (pseudo-code)
     if (!verifyStripeSignature(body, signature, process.env.WEBHOOK_SECRET)) {
-      return { status: 400, jsonBody: { error: 'Invalid signature' } };
+      return { status: 400, jsonBody: { error: "Invalid signature" } };
     }
-    
+
     // Handle different event types
     context.log(`Event received: ${body.type}`);
-    
+
     switch (body.type) {
-      case 'payment_intent.succeeded':
+      case "payment_intent.succeeded":
         await handlePaymentSuccess(body.data.object);
         break;
-      case 'payment_intent.payment_failed':
+      case "payment_intent.payment_failed":
         await handlePaymentFailure(body.data.object);
         break;
-      case 'customer.subscription.created':
+      case "customer.subscription.created":
         await handleSubscriptionCreated(body.data.object);
         break;
       default:
         context.warn(`Unhandled event type: ${body.type}`);
     }
-    
+
     return { jsonBody: { received: true } };
   },
-  methods: ['POST'],
+  methods: ["POST"],
   description: `
 Webhook endpoint for receiving events from Stripe.
 
@@ -2104,22 +2178,22 @@ using your webhook secret to ensure the request came from Stripe.
   `,
   body: WebhookEventSchema,
   headers: z.object({
-    'stripe-signature': z.string().describe('HMAC signature of the payload')
+    "stripe-signature": z.string().describe("HMAC signature of the payload"),
   }),
   security: [stripeSignature],
   responses: [
     {
       httpCode: 200,
-      description: 'Event received and queued for processing',
-      schema: z.object({ received: z.boolean() })
+      description: "Event received and queued for processing",
+      schema: z.object({ received: z.boolean() }),
     },
     {
       httpCode: 400,
-      description: 'Invalid signature or malformed payload',
-      schema: z.object({ error: z.string() })
-    }
+      description: "Invalid signature or malformed payload",
+      schema: z.object({ error: z.string() }),
+    },
   ],
-  tags: ['Webhooks']
+  tags: ["Webhooks"],
 });
 ```
 
@@ -2127,20 +2201,21 @@ using your webhook secret to ensure the request came from Stripe.
 
 The `app.openapiWebhook()` method accepts the same options as `app.openapiPath()`:
 
-| Option | Description |
-|--------|-------------|
-| `handler` or `typedHandler` | Function to handle webhook (for testing) |
-| `methods` | HTTP methods (usually `['POST']`) |
-| `body` | Expected webhook payload schema |
-| `headers` | Expected headers (signatures, IDs, etc.) |
-| `security` | Security requirements (signatures, API keys) |
-| `responses` | Possible response codes |
-| `description` | Detailed webhook documentation |
-| `tags` | Tags for organization |
+| Option                      | Description                                  |
+| --------------------------- | -------------------------------------------- |
+| `handler` or `typedHandler` | Function to handle webhook (for testing)     |
+| `methods`                   | HTTP methods (usually `['POST']`)            |
+| `body`                      | Expected webhook payload schema              |
+| `headers`                   | Expected headers (signatures, IDs, etc.)     |
+| `security`                  | Security requirements (signatures, API keys) |
+| `responses`                 | Possible response codes                      |
+| `description`               | Detailed webhook documentation               |
+| `tags`                      | Tags for organization                        |
 
 #### Webhook vs Path Differences
 
 **Webhooks:**
+
 - Documented in `webhooks` section of OpenAPI spec
 - Represent outbound requests from your API
 - Typically POST requests
@@ -2148,6 +2223,7 @@ The `app.openapiWebhook()` method accepts the same options as `app.openapiPath()
 - Usually retry on failure
 
 **Paths:**
+
 - Documented in `paths` section of OpenAPI spec
 - Represent inbound requests to your API
 - Support all HTTP methods
@@ -2195,15 +2271,15 @@ Security in OpenAPI works through **security schemes** (how to authenticate) and
 
 ```typescript
 // 1. Define security scheme
-const apiKeySecurity = app.openapiKeySecurity('X-API-Key', 'header');
+const apiKeySecurity = app.openapiKeySecurity("X-API-Key", "header");
 
 // 2. Apply to endpoint
-app.openapiPath('SecureEndpoint', 'Protected endpoint', {
+app.openapiPath("SecureEndpoint", "Protected endpoint", {
   handler: secureHandler,
-  methods: ['GET'],
-  route: 'secure/data',
+  methods: ["GET"],
+  route: "secure/data",
   security: [apiKeySecurity], // Require API key
-  response: DataSchema
+  response: DataSchema,
 });
 
 // 3. OpenAPI docs automatically show this endpoint requires X-API-Key header
@@ -2212,55 +2288,55 @@ app.openapiPath('SecureEndpoint', 'Protected endpoint', {
 
 #### Available Security Methods
 
-| Method | Use Case | Azure Native |
-|--------|----------|--------------|
-| **Custom API Keys** | User-implemented authentication | ❌ No |
-| **Azure Function Keys** | Azure native key-based auth | ✅ Yes |
-| **Azure EasyAuth** | App Service Authentication | ✅ Yes |
-| **Azure AD Bearer** | Manual JWT validation | ✅ Yes |
-| **Azure AD Client Credentials** | Service-to-service auth | ✅ Yes |
+| Method                          | Use Case                        | Azure Native |
+| ------------------------------- | ------------------------------- | ------------ |
+| **Custom API Keys**             | User-implemented authentication | ❌ No        |
+| **Azure Function Keys**         | Azure native key-based auth     | ✅ Yes       |
+| **Azure EasyAuth**              | App Service Authentication      | ✅ Yes       |
+| **Azure AD Bearer**             | Manual JWT validation           | ✅ Yes       |
+| **Azure AD Client Credentials** | Service-to-service auth         | ✅ Yes       |
 
 #### Global vs Endpoint Security
 
 **Global Security** (applies to all endpoints):
 
 ```typescript
-const globalAuth = app.openapiAzureFunctionKey('function');
+const globalAuth = app.openapiAzureFunctionKey("function");
 
 app.openapiSetup({
-  info: { title: 'Secure API', version: '1.0.0' },
-  security: [globalAuth] // All endpoints require function key
+  info: { title: "Secure API", version: "1.0.0" },
+  security: [globalAuth], // All endpoints require function key
 });
 
 // Override for specific endpoint
-app.openapiPath('PublicEndpoint', 'No auth required', {
+app.openapiPath("PublicEndpoint", "No auth required", {
   handler: publicHandler,
-  methods: ['GET'],
-  route: 'public',
-  security: [] // Override: no auth required
+  methods: ["GET"],
+  route: "public",
+  security: [], // Override: no auth required
 });
 ```
 
 **Endpoint-Specific Security:**
 
 ```typescript
-const adminAuth = app.openapiAzureFunctionKey('admin');
-const userAuth = app.openapiAzureFunctionKey('function');
+const adminAuth = app.openapiAzureFunctionKey("admin");
+const userAuth = app.openapiAzureFunctionKey("function");
 
 // Admin-only endpoint
-app.openapiPath('DeleteUser', 'Delete user (admin only)', {
+app.openapiPath("DeleteUser", "Delete user (admin only)", {
   handler: deleteUserHandler,
-  methods: ['DELETE'],
-  route: 'users/{id}',
-  security: [adminAuth]
+  methods: ["DELETE"],
+  route: "users/{id}",
+  security: [adminAuth],
 });
 
 // User endpoint
-app.openapiPath('GetProfile', 'Get own profile', {
+app.openapiPath("GetProfile", "Get own profile", {
   handler: getProfileHandler,
-  methods: ['GET'],
-  route: 'profile',
-  security: [userAuth]
+  methods: ["GET"],
+  route: "profile",
+  security: [userAuth],
 });
 ```
 
@@ -2269,17 +2345,17 @@ app.openapiPath('GetProfile', 'Get own profile', {
 Allow multiple authentication methods (user can use any):
 
 ```typescript
-const apiKeyAuth = app.openapiKeySecurity('X-API-Key', 'header');
-const bearerAuth = app.openapiAzureADBearer('AzureAD');
+const apiKeyAuth = app.openapiKeySecurity("X-API-Key", "header");
+const bearerAuth = app.openapiAzureADBearer("AzureAD");
 
-app.openapiPath('FlexibleAuth', 'Accepts API key OR bearer token', {
+app.openapiPath("FlexibleAuth", "Accepts API key OR bearer token", {
   handler: flexAuthHandler,
-  methods: ['GET'],
-  route: 'flexible',
+  methods: ["GET"],
+  route: "flexible",
   security: [
-    apiKeyAuth,  // Option 1: API key
-    bearerAuth   // Option 2: Bearer token
-  ]
+    apiKeyAuth, // Option 1: API key
+    bearerAuth, // Option 2: Bearer token
+  ],
 });
 ```
 
@@ -2288,16 +2364,16 @@ app.openapiPath('FlexibleAuth', 'Accepts API key OR bearer token', {
 Require multiple authentication methods simultaneously:
 
 ```typescript
-const apiKeyAuth = app.openapiKeySecurity('X-API-Key', 'header');
-const clientCertAuth = app.openapiKeySecurity('X-Client-Cert', 'header');
+const apiKeyAuth = app.openapiKeySecurity("X-API-Key", "header");
+const clientCertAuth = app.openapiKeySecurity("X-Client-Cert", "header");
 
-app.openapiPath('HighSecurity', 'Requires both API key AND client cert', {
+app.openapiPath("HighSecurity", "Requires both API key AND client cert", {
   handler: highSecurityHandler,
-  methods: ['POST'],
-  route: 'high-security',
+  methods: ["POST"],
+  route: "high-security",
   security: [
-    { ...apiKeyAuth, ...clientCertAuth } // Both required
-  ]
+    { ...apiKeyAuth, ...clientCertAuth }, // Both required
+  ],
 });
 ```
 
@@ -2314,44 +2390,45 @@ Most common approach - API key in request header:
 ```typescript
 // Register security scheme
 const apiKeySecurity = app.openapiKeySecurity(
-  'X-API-Key',
-  'header',
-  'Custom API key for authentication'
+  "X-API-Key",
+  "header",
+  "Custom API key for authentication"
 );
 
 // Apply to endpoint
-app.openapiPath('GetSecureData', 'Get secure data', {
+app.openapiPath("GetSecureData", "Get secure data", {
   handler: async (request, context) => {
     // Extract and validate API key
-    const apiKey = request.headers.get('X-API-Key');
-    
+    const apiKey = request.headers.get("X-API-Key");
+
     if (!apiKey) {
-      return { status: 401, jsonBody: { error: 'API key required' } };
+      return { status: 401, jsonBody: { error: "API key required" } };
     }
-    
+
     // Validate against your database or cache
     const isValid = await validateApiKey(apiKey);
-    
+
     if (!isValid) {
-      return { status: 403, jsonBody: { error: 'Invalid API key' } };
+      return { status: 403, jsonBody: { error: "Invalid API key" } };
     }
-    
+
     // Key is valid, proceed with request
     const data = await getSecureData();
     return { jsonBody: data };
   },
-  methods: ['GET'],
-  route: 'secure/data',
+  methods: ["GET"],
+  route: "secure/data",
   security: [apiKeySecurity],
   responses: [
     { httpCode: 200, schema: DataSchema },
-    { httpCode: 401, schema: ErrorSchema, description: 'API key missing' },
-    { httpCode: 403, schema: ErrorSchema, description: 'Invalid API key' }
-  ]
+    { httpCode: 401, schema: ErrorSchema, description: "API key missing" },
+    { httpCode: 403, schema: ErrorSchema, description: "Invalid API key" },
+  ],
 });
 ```
 
 **Request example:**
+
 ```bash
 curl http://localhost:7071/api/secure/data \
   -H "X-API-Key: your-api-key-here"
@@ -2363,28 +2440,29 @@ Less secure but simpler for quick testing:
 
 ```typescript
 const apiKeySecurity = app.openapiKeySecurity(
-  'apiKey',
-  'query',
-  'API key passed as query parameter'
+  "apiKey",
+  "query",
+  "API key passed as query parameter"
 );
 
-app.openapiPath('GetData', 'Get data with query param auth', {
+app.openapiPath("GetData", "Get data with query param auth", {
   handler: async (request, context) => {
-    const apiKey = request.query.get('apiKey');
-    
+    const apiKey = request.query.get("apiKey");
+
     if (!apiKey || !(await validateApiKey(apiKey))) {
-      return { status: 401, jsonBody: { error: 'Invalid or missing API key' } };
+      return { status: 401, jsonBody: { error: "Invalid or missing API key" } };
     }
-    
+
     return { jsonBody: await getData() };
   },
-  methods: ['GET'],
-  route: 'data',
-  security: [apiKeySecurity]
+  methods: ["GET"],
+  route: "data",
+  security: [apiKeySecurity],
 });
 ```
 
 **Request example:**
+
 ```bash
 curl "http://localhost:7071/api/data?apiKey=your-api-key-here"
 ```
@@ -2395,28 +2473,29 @@ For browser-based applications:
 
 ```typescript
 const apiKeySecurity = app.openapiKeySecurity(
-  'session',
-  'cookie',
-  'Session cookie for authentication'
+  "session",
+  "cookie",
+  "Session cookie for authentication"
 );
 
-app.openapiPath('GetUserData', 'Get user data with session', {
+app.openapiPath("GetUserData", "Get user data with session", {
   handler: async (request, context) => {
     // Extract cookie (pseudo-code)
-    const sessionId = request.headers.get('cookie')
-      ?.split(';')
-      .find(c => c.trim().startsWith('session='))
-      ?.split('=')[1];
-    
+    const sessionId = request.headers
+      .get("cookie")
+      ?.split(";")
+      .find((c) => c.trim().startsWith("session="))
+      ?.split("=")[1];
+
     if (!sessionId || !(await validateSession(sessionId))) {
-      return { status: 401, jsonBody: { error: 'Invalid session' } };
+      return { status: 401, jsonBody: { error: "Invalid session" } };
     }
-    
+
     return { jsonBody: await getUserData(sessionId) };
   },
-  methods: ['GET'],
-  route: 'user/data',
-  security: [apiKeySecurity]
+  methods: ["GET"],
+  route: "user/data",
+  security: [apiKeySecurity],
 });
 ```
 
@@ -2425,43 +2504,43 @@ app.openapiPath('GetUserData', 'Get user data with session', {
 Combine typed handlers with header validation:
 
 ```typescript
-const apiKeySecurity = app.openapiKeySecurity('X-API-Key', 'header');
+const apiKeySecurity = app.openapiKeySecurity("X-API-Key", "header");
 
-app.openapiPath('CreateResource', 'Create new resource', {
+app.openapiPath("CreateResource", "Create new resource", {
   typedHandler: async ({ body, headers, context }) => {
     // Validate API key from headers
-    const apiKey = headers['x-api-key'];
-    
+    const apiKey = headers["x-api-key"];
+
     const keyInfo = await validateApiKey(apiKey);
     if (!keyInfo.valid) {
-      return { status: 403, jsonBody: { error: 'Invalid API key' } };
+      return { status: 403, jsonBody: { error: "Invalid API key" } };
     }
-    
+
     // Check rate limits for this key
     if (await isRateLimited(apiKey)) {
-      return { 
-        status: 429, 
-        jsonBody: { error: 'Rate limit exceeded' },
-        headers: { 'Retry-After': '60' }
+      return {
+        status: 429,
+        jsonBody: { error: "Rate limit exceeded" },
+        headers: { "Retry-After": "60" },
       };
     }
-    
+
     // Proceed with validated body
     const resource = await createResource(body, keyInfo.userId);
     return { status: 201, jsonBody: resource };
   },
-  methods: ['POST'],
-  route: 'resources',
+  methods: ["POST"],
+  route: "resources",
   headers: z.object({
-    'x-api-key': z.string().min(32).describe('API key (min 32 characters)')
+    "x-api-key": z.string().min(32).describe("API key (min 32 characters)"),
   }),
   body: CreateResourceSchema,
   security: [apiKeySecurity],
   responses: [
-    { httpCode: 201, schema: ResourceSchema, description: 'Resource created' },
-    { httpCode: 403, schema: ErrorSchema, description: 'Invalid API key' },
-    { httpCode: 429, schema: ErrorSchema, description: 'Rate limit exceeded' }
-  ]
+    { httpCode: 201, schema: ResourceSchema, description: "Resource created" },
+    { httpCode: 403, schema: ErrorSchema, description: "Invalid API key" },
+    { httpCode: 429, schema: ErrorSchema, description: "Rate limit exceeded" },
+  ],
 });
 ```
 
@@ -2470,7 +2549,7 @@ app.openapiPath('CreateResource', 'Create new resource', {
 **Validation example with database:**
 
 ```typescript
-import { createHash } from 'crypto';
+import { createHash } from "crypto";
 
 async function validateApiKey(apiKey: string): Promise<{
   valid: boolean;
@@ -2478,29 +2557,29 @@ async function validateApiKey(apiKey: string): Promise<{
   permissions?: string[];
 }> {
   // Hash the API key
-  const keyHash = createHash('sha256').update(apiKey).digest('hex');
-  
+  const keyHash = createHash("sha256").update(apiKey).digest("hex");
+
   // Look up in database
   const keyRecord = await db.apiKeys.findOne({
     keyHash,
     active: true,
-    expiresAt: { $gt: new Date() }
+    expiresAt: { $gt: new Date() },
   });
-  
+
   if (!keyRecord) {
     return { valid: false };
   }
-  
+
   // Update last used timestamp
   await db.apiKeys.updateOne(
     { _id: keyRecord._id },
     { $set: { lastUsedAt: new Date() } }
   );
-  
+
   return {
     valid: true,
     userId: keyRecord.userId,
-    permissions: keyRecord.permissions
+    permissions: keyRecord.permissions,
   };
 }
 ```
@@ -2508,21 +2587,21 @@ async function validateApiKey(apiKey: string): Promise<{
 **Rate limiting example:**
 
 ```typescript
-import { Redis } from 'ioredis';
+import { Redis } from "ioredis";
 
 const redis = new Redis(process.env.REDIS_URL);
 
 async function isRateLimited(apiKey: string): Promise<boolean> {
   const key = `ratelimit:${apiKey}`;
   const limit = 100; // requests per minute
-  
+
   const current = await redis.incr(key);
-  
+
   if (current === 1) {
     // First request in this minute
     await redis.expire(key, 60);
   }
-  
+
   return current > limit;
 }
 ```
@@ -2534,47 +2613,48 @@ Different keys for different operations:
 ```typescript
 // Read-only API key
 const readKeySecurity = app.openapiKeySecurity(
-  'X-Read-API-Key',
-  'header',
-  'Read-only API key'
+  "X-Read-API-Key",
+  "header",
+  "Read-only API key"
 );
 
 // Write API key (more privileged)
 const writeKeySecurity = app.openapiKeySecurity(
-  'X-Write-API-Key',
-  'header',
-  'Write API key (required for modifications)'
+  "X-Write-API-Key",
+  "header",
+  "Write API key (required for modifications)"
 );
 
 // Read endpoint
-app.openapiPath('GetData', 'Get data (read key)', {
+app.openapiPath("GetData", "Get data (read key)", {
   handler: getDataHandler,
-  methods: ['GET'],
-  route: 'data',
-  security: [readKeySecurity]
+  methods: ["GET"],
+  route: "data",
+  security: [readKeySecurity],
 });
 
 // Write endpoint
-app.openapiPath('UpdateData', 'Update data (write key required)', {
+app.openapiPath("UpdateData", "Update data (write key required)", {
   handler: updateDataHandler,
-  methods: ['PUT'],
-  route: 'data/{id}',
-  security: [writeKeySecurity]
+  methods: ["PUT"],
+  route: "data/{id}",
+  security: [writeKeySecurity],
 });
 ```
 
 #### Custom API Key vs Azure Function Key
 
-| Feature | Custom API Key | Azure Function Key |
-|---------|---------------|-------------------|
+| Feature            | Custom API Key           | Azure Function Key       |
+| ------------------ | ------------------------ | ------------------------ |
 | **Implementation** | You implement validation | Azure handles validation |
-| **Storage** | Your database/cache | Azure manages |
-| **Rotation** | You manage | Azure portal/CLI |
-| **Rate Limiting** | You implement | Azure handles |
-| **Scoping** | Fully customizable | Function/Admin levels |
-| **Use Case** | Customer-facing APIs | Azure-internal auth |
+| **Storage**        | Your database/cache      | Azure manages            |
+| **Rotation**       | You manage               | Azure portal/CLI         |
+| **Rate Limiting**  | You implement            | Azure handles            |
+| **Scoping**        | Fully customizable       | Function/Admin levels    |
+| **Use Case**       | Customer-facing APIs     | Azure-internal auth      |
 
 **When to use Custom API Keys:**
+
 - ✅ Customer-facing APIs
 - ✅ Need custom permissions/scopes
 - ✅ Need usage tracking/billing
@@ -2582,6 +2662,7 @@ app.openapiPath('UpdateData', 'Update data (write key required)', {
 - ✅ Multi-tenant applications
 
 **When to use Azure Function Keys:**
+
 - ✅ Internal APIs
 - ✅ Simple authentication
 - ✅ Azure-native deployment
@@ -2597,11 +2678,11 @@ Azure Function Keys are the native authentication mechanism built into Azure Fun
 
 Azure Functions supports three authorization levels:
 
-| Auth Level | Description | Who Can Access |
-|------------|-------------|----------------|
-| `anonymous` | No authentication required | Anyone |
-| `function` | Function-specific key or host key | Anyone with a valid function/host key |
-| `admin` | Admin/master key only | Only admin users |
+| Auth Level  | Description                       | Who Can Access                        |
+| ----------- | --------------------------------- | ------------------------------------- |
+| `anonymous` | No authentication required        | Anyone                                |
+| `function`  | Function-specific key or host key | Anyone with a valid function/host key |
+| `admin`     | Admin/master key only             | Only admin users                      |
 
 #### Simple Function Key Security
 
@@ -2609,19 +2690,19 @@ Basic setup with function-level authentication:
 
 ```typescript
 // Register function key security
-const functionKeySecurity = app.openapiAzureFunctionKey('function');
+const functionKeySecurity = app.openapiAzureFunctionKey("function");
 
-app.openapiPath('GetData', 'Get data (function key required)', {
+app.openapiPath("GetData", "Get data (function key required)", {
   handler: async (request, context) => {
     // Azure has already validated the key!
     // If we reach here, the key was valid
     const data = await getData();
     return { jsonBody: data };
   },
-  methods: ['GET'],
-  route: 'data',
-  authLevel: 'function', // Important: must match security scheme
-  security: [functionKeySecurity]
+  methods: ["GET"],
+  route: "data",
+  authLevel: "function", // Important: must match security scheme
+  security: [functionKeySecurity],
 });
 ```
 
@@ -2641,22 +2722,22 @@ curl http://localhost:7071/api/data \
 Restrict to master/admin keys only:
 
 ```typescript
-const adminKeySecurity = app.openapiAzureFunctionKey('admin');
+const adminKeySecurity = app.openapiAzureFunctionKey("admin");
 
-app.openapiPath('DeleteAllData', 'Delete all data (admin only)', {
+app.openapiPath("DeleteAllData", "Delete all data (admin only)", {
   handler: async (request, context) => {
-    context.warn('Admin operation: Deleting all data');
+    context.warn("Admin operation: Deleting all data");
     await deleteAllData();
     return { status: 204 };
   },
-  methods: ['DELETE'],
-  route: 'data/all',
-  authLevel: 'admin', // Requires master key
+  methods: ["DELETE"],
+  route: "data/all",
+  authLevel: "admin", // Requires master key
   security: [adminKeySecurity],
   responses: [
-    { httpCode: 204, description: 'All data deleted' },
-    { httpCode: 401, description: 'Unauthorized - admin key required' }
-  ]
+    { httpCode: 204, description: "All data deleted" },
+    { httpCode: 401, description: "Unauthorized - admin key required" },
+  ],
 });
 ```
 
@@ -2666,19 +2747,20 @@ Full configuration with all options:
 
 ```typescript
 const customFunctionKey = app.openapiAzureFunctionKey({
-  name: 'FunctionAuth',
-  authLevel: 'function',
-  description: 'Azure Function key authentication. Provide key via ?code=xxx or x-functions-key header',
-  allowQueryParameter: true,  // Default: true
-  allowHeader: true            // Default: true
+  name: "FunctionAuth",
+  authLevel: "function",
+  description:
+    "Azure Function key authentication. Provide key via ?code=xxx or x-functions-key header",
+  allowQueryParameter: true, // Default: true
+  allowHeader: true, // Default: true
 });
 
-app.openapiPath('SecureEndpoint', 'Secured endpoint', {
+app.openapiPath("SecureEndpoint", "Secured endpoint", {
   handler: secureHandler,
-  methods: ['POST'],
-  route: 'secure/action',
-  authLevel: 'function',
-  security: [customFunctionKey]
+  methods: ["POST"],
+  route: "secure/action",
+  authLevel: "function",
+  security: [customFunctionKey],
 });
 ```
 
@@ -2687,28 +2769,28 @@ app.openapiPath('SecureEndpoint', 'Secured endpoint', {
 Use the `extractFunctionKey()` utility to get the key from requests:
 
 ```typescript
-import { extractFunctionKey } from '@apvee/azure-functions-openapi';
+import { extractFunctionKey } from "@apvee/azure-functions-openapi";
 
-const functionKeySecurity = app.openapiAzureFunctionKey('function');
+const functionKeySecurity = app.openapiAzureFunctionKey("function");
 
-app.openapiPath('TrackUsage', 'Track API usage', {
+app.openapiPath("TrackUsage", "Track API usage", {
   handler: async (request, context) => {
     // Extract the key that was used
     const functionKey = extractFunctionKey(request);
-    
+
     // Log usage for this key
     if (functionKey) {
       await trackKeyUsage(functionKey);
       context.log(`Request made with key: ${functionKey.substring(0, 8)}...`);
     }
-    
+
     const data = await getData();
     return { jsonBody: data };
   },
-  methods: ['GET'],
-  route: 'usage/data',
-  authLevel: 'function',
-  security: [functionKeySecurity]
+  methods: ["GET"],
+  route: "usage/data",
+  authLevel: "function",
+  security: [functionKeySecurity],
 });
 ```
 
@@ -2717,34 +2799,34 @@ app.openapiPath('TrackUsage', 'Track API usage', {
 Different levels for different operations:
 
 ```typescript
-const functionKey = app.openapiAzureFunctionKey('function');
-const adminKey = app.openapiAzureFunctionKey('admin');
+const functionKey = app.openapiAzureFunctionKey("function");
+const adminKey = app.openapiAzureFunctionKey("admin");
 
 // Public read (no auth)
-app.openapiPath('ListPublicTodos', 'List public todos', {
+app.openapiPath("ListPublicTodos", "List public todos", {
   handler: listPublicTodosHandler,
-  methods: ['GET'],
-  route: 'public/todos',
-  authLevel: 'anonymous',
-  security: [] // No security
+  methods: ["GET"],
+  route: "public/todos",
+  authLevel: "anonymous",
+  security: [], // No security
 });
 
 // Authenticated read (function key)
-app.openapiPath('ListMyTodos', 'List my todos', {
+app.openapiPath("ListMyTodos", "List my todos", {
   handler: listMyTodosHandler,
-  methods: ['GET'],
-  route: 'my/todos',
-  authLevel: 'function',
-  security: [functionKey]
+  methods: ["GET"],
+  route: "my/todos",
+  authLevel: "function",
+  security: [functionKey],
 });
 
 // Admin write (admin key)
-app.openapiPath('DeleteAllTodos', 'Delete all todos', {
+app.openapiPath("DeleteAllTodos", "Delete all todos", {
   handler: deleteAllTodosHandler,
-  methods: ['DELETE'],
-  route: 'todos/all',
-  authLevel: 'admin',
-  security: [adminKey]
+  methods: ["DELETE"],
+  route: "todos/all",
+  authLevel: "admin",
+  security: [adminKey],
 });
 ```
 
@@ -2770,6 +2852,7 @@ Keys are stored in `local.settings.json`:
 Local development typically uses a default key or no key validation.
 
 **Azure Portal:**
+
 1. Navigate to your Function App
 2. Go to "Functions" → Select your function
 3. Click "Function Keys"
@@ -2817,12 +2900,12 @@ az functionapp function keys set \
 // Track usage per client
 async function trackKeyUsage(functionKey: string): Promise<void> {
   const keyInfo = await getKeyInfo(functionKey);
-  
+
   await db.usage.create({
     keyId: keyInfo.keyId,
     clientName: keyInfo.clientName,
     timestamp: new Date(),
-    endpoint: request.url
+    endpoint: request.url,
   });
 }
 ```
@@ -2831,34 +2914,35 @@ async function trackKeyUsage(functionKey: string): Promise<void> {
 
 ```typescript
 // ❌ Bad: Hardcoded keys
-const API_KEY = 'my-secret-key-123';
+const API_KEY = "my-secret-key-123";
 
 // ✅ Good: Environment variables
 const API_KEY = process.env.FUNCTION_KEY;
 
 // ✅ Better: Azure Key Vault
-import { SecretClient } from '@azure/keyvault-secrets';
+import { SecretClient } from "@azure/keyvault-secrets";
 
 const keyVaultClient = new SecretClient(
   process.env.KEY_VAULT_URL,
   new DefaultAzureCredential()
 );
 
-const functionKey = await keyVaultClient.getSecret('function-key');
+const functionKey = await keyVaultClient.getSecret("function-key");
 ```
 
 #### Function Keys vs EasyAuth
 
-| Feature | Function Keys | EasyAuth |
-|---------|--------------|----------|
-| **Setup Complexity** | Simple (built-in) | Requires App Service Auth |
-| **User Identity** | No (just key validation) | Yes (full user info) |
-| **Auth Providers** | N/A | AAD, Google, Facebook, etc. |
-| **Key Management** | Azure manages | Azure manages |
-| **Use Case** | Service-to-service | User authentication |
-| **authLevel** | `function` or `admin` | `anonymous` (auth is external) |
+| Feature              | Function Keys            | EasyAuth                       |
+| -------------------- | ------------------------ | ------------------------------ |
+| **Setup Complexity** | Simple (built-in)        | Requires App Service Auth      |
+| **User Identity**    | No (just key validation) | Yes (full user info)           |
+| **Auth Providers**   | N/A                      | AAD, Google, Facebook, etc.    |
+| **Key Management**   | Azure manages            | Azure manages                  |
+| **Use Case**         | Service-to-service       | User authentication            |
+| **authLevel**        | `function` or `admin`    | `anonymous` (auth is external) |
 
 **When to use Function Keys:**
+
 - ✅ Internal APIs
 - ✅ Service-to-service communication
 - ✅ Simple authentication needs
@@ -2866,6 +2950,7 @@ const functionKey = await keyVaultClient.getSecret('function-key');
 - ✅ Quick setup
 
 **When to use EasyAuth:**
+
 - ✅ User-facing APIs
 - ✅ Need user identity/profile
 - ✅ Multiple auth providers
@@ -2881,6 +2966,7 @@ Azure EasyAuth (App Service Authentication) is a built-in authentication feature
 #### What is EasyAuth?
 
 EasyAuth is an Azure feature that:
+
 - Runs **outside** your function code (in the Azure platform)
 - Validates authentication tokens automatically
 - Injects user identity into request headers
@@ -2892,36 +2978,36 @@ EasyAuth is an Azure feature that:
 Basic configuration with Azure AD:
 
 ```typescript
-import { parseEasyAuthPrincipal } from '@apvee/azure-functions-openapi';
+import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
 // Register EasyAuth security
 const easyAuth = app.openapiEasyAuth();
 
-app.openapiPath('GetUserProfile', 'Get current user profile', {
+app.openapiPath("GetUserProfile", "Get current user profile", {
   handler: async (request, context) => {
     // Parse user identity from EasyAuth headers
     const user = parseEasyAuthPrincipal(request);
-    
+
     if (!user) {
       return {
         status: 401,
-        jsonBody: { error: 'Not authenticated' }
+        jsonBody: { error: "Not authenticated" },
       };
     }
-    
+
     return {
       jsonBody: {
         userId: user.userId,
         username: user.username,
-        email: user.claims.find(c => c.typ === 'emails')?.val,
-        provider: user.identityProvider
-      }
+        email: user.claims.find((c) => c.typ === "emails")?.val,
+        provider: user.identityProvider,
+      },
     };
   },
-  methods: ['GET'],
-  route: 'me',
-  authLevel: 'anonymous', // EasyAuth handles authentication
-  security: [easyAuth]
+  methods: ["GET"],
+  route: "me",
+  authLevel: "anonymous", // EasyAuth handles authentication
+  security: [easyAuth],
 });
 ```
 
@@ -2962,50 +3048,50 @@ az functionapp auth microsoft update \
 The `parseEasyAuthPrincipal()` utility extracts user identity:
 
 ```typescript
-import { parseEasyAuthPrincipal } from '@apvee/azure-functions-openapi';
+import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
 const easyAuth = app.openapiEasyAuth();
 
-app.openapiPath('CreateTodo', 'Create a todo', {
+app.openapiPath("CreateTodo", "Create a todo", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    
+
     if (!user) {
-      return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      return { status: 401, jsonBody: { error: "Unauthorized" } };
     }
-    
+
     const body = await request.json();
-    
+
     const todo = await db.todos.create({
       title: body.title,
-      ownerId: user.userId,        // From EasyAuth
-      ownerEmail: user.username,   // From EasyAuth
-      createdAt: new Date()
+      ownerId: user.userId, // From EasyAuth
+      ownerEmail: user.username, // From EasyAuth
+      createdAt: new Date(),
     });
-    
+
     context.log(`Todo created by ${user.username}`);
-    
+
     return {
       status: 201,
-      jsonBody: todo
+      jsonBody: todo,
     };
   },
-  methods: ['POST'],
-  route: 'todos',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "todos",
+  authLevel: "anonymous",
   security: [easyAuth],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             title: z.string(),
-            description: z.string().optional()
-          })
-        }
-      }
-    }
-  }
+            description: z.string().optional(),
+          }),
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -3015,12 +3101,13 @@ The parsed principal contains:
 
 ```typescript
 interface EasyAuthPrincipal {
-  userId: string;              // Unique user ID
-  username: string;            // User email or name
-  identityProvider: string;    // e.g., "aad", "google", "facebook"
-  claims: Array<{              // All identity claims
-    typ: string;               // Claim type
-    val: string;               // Claim value
+  userId: string; // Unique user ID
+  username: string; // User email or name
+  identityProvider: string; // e.g., "aad", "google", "facebook"
+  claims: Array<{
+    // All identity claims
+    typ: string; // Claim type
+    val: string; // Claim value
   }>;
 }
 ```
@@ -3031,18 +3118,20 @@ interface EasyAuthPrincipal {
 const user = parseEasyAuthPrincipal(request);
 
 // Get specific claims
-const email = user.claims.find(c => c.typ === 'emails')?.val;
-const name = user.claims.find(c => c.typ === 'name')?.val;
-const roles = user.claims.filter(c => c.typ === 'roles').map(c => c.val);
-const tenantId = user.claims.find(c => c.typ === 'http://schemas.microsoft.com/identity/claims/tenantid')?.val;
+const email = user.claims.find((c) => c.typ === "emails")?.val;
+const name = user.claims.find((c) => c.typ === "name")?.val;
+const roles = user.claims.filter((c) => c.typ === "roles").map((c) => c.val);
+const tenantId = user.claims.find(
+  (c) => c.typ === "http://schemas.microsoft.com/identity/claims/tenantid"
+)?.val;
 
-context.log('User details:', {
+context.log("User details:", {
   userId: user.userId,
   email,
   name,
   roles,
   tenantId,
-  provider: user.identityProvider
+  provider: user.identityProvider,
 });
 ```
 
@@ -3052,32 +3141,33 @@ Full EasyAuth configuration with all options:
 
 ```typescript
 const customEasyAuth = app.openapiEasyAuth({
-  name: 'AzureEasyAuth',
-  description: 'Azure App Service Authentication. Users must be authenticated via Azure AD, Google, Facebook, or other configured providers.',
-  headerName: 'X-MS-CLIENT-PRINCIPAL' // Default header
+  name: "AzureEasyAuth",
+  description:
+    "Azure App Service Authentication. Users must be authenticated via Azure AD, Google, Facebook, or other configured providers.",
+  headerName: "X-MS-CLIENT-PRINCIPAL", // Default header
 });
 
-app.openapiPath('ProtectedResource', 'Access protected resource', {
+app.openapiPath("ProtectedResource", "Access protected resource", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    
+
     // EasyAuth guarantees this is present (if configured correctly)
     if (!user) {
-      context.error('EasyAuth principal missing - check Azure configuration');
-      return { status: 401, jsonBody: { error: 'Authentication required' } };
+      context.error("EasyAuth principal missing - check Azure configuration");
+      return { status: 401, jsonBody: { error: "Authentication required" } };
     }
-    
+
     return {
       jsonBody: {
-        message: 'Welcome!',
-        user: user.username
-      }
+        message: "Welcome!",
+        user: user.username,
+      },
     };
   },
-  methods: ['GET'],
-  route: 'protected',
-  authLevel: 'anonymous',
-  security: [customEasyAuth]
+  methods: ["GET"],
+  route: "protected",
+  authLevel: "anonymous",
+  security: [customEasyAuth],
 });
 ```
 
@@ -3086,48 +3176,46 @@ app.openapiPath('ProtectedResource', 'Access protected resource', {
 Check user roles from claims:
 
 ```typescript
-import { parseEasyAuthPrincipal } from '@apvee/azure-functions-openapi';
+import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
 function hasRole(user: EasyAuthPrincipal, role: string): boolean {
-  return user.claims.some(
-    c => c.typ === 'roles' && c.val === role
-  );
+  return user.claims.some((c) => c.typ === "roles" && c.val === role);
 }
 
 const easyAuth = app.openapiEasyAuth();
 
-app.openapiPath('AdminOnly', 'Admin-only operation', {
+app.openapiPath("AdminOnly", "Admin-only operation", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    
+
     if (!user) {
-      return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      return { status: 401, jsonBody: { error: "Unauthorized" } };
     }
-    
+
     // Check for admin role
-    if (!hasRole(user, 'Admin')) {
+    if (!hasRole(user, "Admin")) {
       return {
         status: 403,
-        jsonBody: { error: 'Forbidden: Admin role required' }
+        jsonBody: { error: "Forbidden: Admin role required" },
       };
     }
-    
+
     // Admin operation
     await performAdminAction();
-    
+
     return {
-      jsonBody: { success: true }
+      jsonBody: { success: true },
     };
   },
-  methods: ['POST'],
-  route: 'admin/action',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "admin/action",
+  authLevel: "anonymous",
   security: [easyAuth],
   responses: [
-    { httpCode: 200, description: 'Success' },
-    { httpCode: 401, description: 'Not authenticated' },
-    { httpCode: 403, description: 'Insufficient permissions' }
-  ]
+    { httpCode: 200, description: "Success" },
+    { httpCode: 401, description: "Not authenticated" },
+    { httpCode: 403, description: "Insufficient permissions" },
+  ],
 });
 ```
 
@@ -3137,42 +3225,43 @@ EasyAuth can support multiple identity providers simultaneously:
 
 ```typescript
 const easyAuth = app.openapiEasyAuth({
-  description: 'Authenticate with Azure AD, Google, Facebook, GitHub, or Twitter'
+  description:
+    "Authenticate with Azure AD, Google, Facebook, GitHub, or Twitter",
 });
 
-app.openapiPath('GetProfile', 'Get user profile', {
+app.openapiPath("GetProfile", "Get user profile", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    
+
     if (!user) {
-      return { status: 401, jsonBody: { error: 'Not authenticated' } };
+      return { status: 401, jsonBody: { error: "Not authenticated" } };
     }
-    
+
     // Handle different providers
     let profileData;
     switch (user.identityProvider) {
-      case 'aad':
+      case "aad":
         profileData = await getAzureADProfile(user);
         break;
-      case 'google':
+      case "google":
         profileData = await getGoogleProfile(user);
         break;
-      case 'facebook':
+      case "facebook":
         profileData = await getFacebookProfile(user);
         break;
       default:
         profileData = {
           id: user.userId,
-          name: user.username
+          name: user.username,
         };
     }
-    
+
     return { jsonBody: profileData };
   },
-  methods: ['GET'],
-  route: 'profile',
-  authLevel: 'anonymous',
-  security: [easyAuth]
+  methods: ["GET"],
+  route: "profile",
+  authLevel: "anonymous",
+  security: [easyAuth],
 });
 ```
 
@@ -3181,49 +3270,51 @@ app.openapiPath('GetProfile', 'Get user profile', {
 EasyAuth doesn't work in local development by default. You can mock it:
 
 ```typescript
-import { InvocationContext, HttpRequest } from '@azure/functions';
+import { InvocationContext, HttpRequest } from "@azure/functions";
 
 function mockEasyAuthPrincipal(request: HttpRequest): void {
   // Only in development
-  if (process.env.AZURE_FUNCTIONS_ENVIRONMENT !== 'Production') {
+  if (process.env.AZURE_FUNCTIONS_ENVIRONMENT !== "Production") {
     const mockPrincipal = {
-      userId: 'dev-user-123',
-      username: 'dev@example.com',
-      identityProvider: 'aad',
+      userId: "dev-user-123",
+      username: "dev@example.com",
+      identityProvider: "aad",
       claims: [
-        { typ: 'name', val: 'Dev User' },
-        { typ: 'emails', val: 'dev@example.com' },
-        { typ: 'roles', val: 'Admin' }
-      ]
+        { typ: "name", val: "Dev User" },
+        { typ: "emails", val: "dev@example.com" },
+        { typ: "roles", val: "Admin" },
+      ],
     };
-    
+
     // Inject mock principal
-    const encoded = Buffer.from(JSON.stringify(mockPrincipal)).toString('base64');
-    request.headers.set('X-MS-CLIENT-PRINCIPAL', encoded);
+    const encoded = Buffer.from(JSON.stringify(mockPrincipal)).toString(
+      "base64"
+    );
+    request.headers.set("X-MS-CLIENT-PRINCIPAL", encoded);
   }
 }
 
 // Use in handlers
-app.openapiPath('TestEasyAuth', 'Test EasyAuth', {
+app.openapiPath("TestEasyAuth", "Test EasyAuth", {
   handler: async (request, context) => {
     mockEasyAuthPrincipal(request); // Only in dev
-    
+
     const user = parseEasyAuthPrincipal(request);
     return { jsonBody: { user } };
   },
-  methods: ['GET'],
-  route: 'test/easyauth',
-  authLevel: 'anonymous',
-  security: [easyAuth]
+  methods: ["GET"],
+  route: "test/easyauth",
+  authLevel: "anonymous",
+  security: [easyAuth],
 });
 ```
 
 #### Complete CRUD Example with EasyAuth
 
 ```typescript
-import { app } from '@azure/functions';
-import { z } from 'zod';
-import { parseEasyAuthPrincipal } from '@apvee/azure-functions-openapi';
+import { app } from "@azure/functions";
+import { z } from "zod";
+import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
 const easyAuth = app.openapiEasyAuth();
 
@@ -3231,102 +3322,103 @@ const TodoSchema = z.object({
   id: z.string(),
   title: z.string(),
   completed: z.boolean(),
-  ownerId: z.string()
+  ownerId: z.string(),
 });
 
 // Create todo (user-specific)
-app.openapiPath('CreateTodo', 'Create a new todo', {
+app.openapiPath("CreateTodo", "Create a new todo", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    if (!user) return { status: 401, jsonBody: { error: 'Unauthorized' } };
-    
+    if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
+
     const body = await request.json();
     const todo = await db.todos.create({
       ...body,
-      ownerId: user.userId
+      ownerId: user.userId,
     });
-    
+
     return { status: 201, jsonBody: todo };
   },
-  methods: ['POST'],
-  route: 'todos',
-  authLevel: 'anonymous',
-  security: [easyAuth]
+  methods: ["POST"],
+  route: "todos",
+  authLevel: "anonymous",
+  security: [easyAuth],
 });
 
 // List user's todos
-app.openapiPath('ListMyTodos', 'List my todos', {
+app.openapiPath("ListMyTodos", "List my todos", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    if (!user) return { status: 401, jsonBody: { error: 'Unauthorized' } };
-    
+    if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
+
     const todos = await db.todos.findMany({
-      where: { ownerId: user.userId }
+      where: { ownerId: user.userId },
     });
-    
+
     return { jsonBody: todos };
   },
-  methods: ['GET'],
-  route: 'todos',
-  authLevel: 'anonymous',
-  security: [easyAuth]
+  methods: ["GET"],
+  route: "todos",
+  authLevel: "anonymous",
+  security: [easyAuth],
 });
 
 // Update todo (ownership check)
-app.openapiPath('UpdateTodo', 'Update a todo', {
+app.openapiPath("UpdateTodo", "Update a todo", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    if (!user) return { status: 401, jsonBody: { error: 'Unauthorized' } };
-    
+    if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
+
     const { id } = request.params;
     const todo = await db.todos.findUnique({ where: { id } });
-    
+
     // Ownership check
     if (todo.ownerId !== user.userId) {
-      return { status: 403, jsonBody: { error: 'Forbidden' } };
+      return { status: 403, jsonBody: { error: "Forbidden" } };
     }
-    
+
     const body = await request.json();
     const updated = await db.todos.update({
       where: { id },
-      data: body
+      data: body,
     });
-    
+
     return { jsonBody: updated };
   },
-  methods: ['PATCH'],
-  route: 'todos/{id}',
-  authLevel: 'anonymous',
-  security: [easyAuth]
+  methods: ["PATCH"],
+  route: "todos/{id}",
+  authLevel: "anonymous",
+  security: [easyAuth],
 });
 
 // Delete todo (ownership check)
-app.openapiPath('DeleteTodo', 'Delete a todo', {
+app.openapiPath("DeleteTodo", "Delete a todo", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    if (!user) return { status: 401, jsonBody: { error: 'Unauthorized' } };
-    
+    if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
+
     const { id } = request.params;
     const todo = await db.todos.findUnique({ where: { id } });
-    
+
     // Ownership check
     if (todo.ownerId !== user.userId) {
-      return { status: 403, jsonBody: { error: 'Forbidden' } };
+      return { status: 403, jsonBody: { error: "Forbidden" } };
     }
-    
+
     await db.todos.delete({ where: { id } });
     return { status: 204 };
   },
-  methods: ['DELETE'],
-  route: 'todos/{id}',
-  authLevel: 'anonymous',
-  security: [easyAuth]
+  methods: ["DELETE"],
+  route: "todos/{id}",
+  authLevel: "anonymous",
+  security: [easyAuth],
 });
 ```
 
 #### EasyAuth Best Practices
 
 **✅ DO:**
+
 - Always check if `parseEasyAuthPrincipal()` returns a user
 - Use `authLevel: 'anonymous'` (EasyAuth handles auth)
 - Implement ownership checks for user-specific resources
@@ -3334,6 +3426,7 @@ app.openapiPath('DeleteTodo', 'Delete a todo', {
 - Configure EasyAuth to return 401 for APIs (not redirect)
 
 **❌ DON'T:**
+
 - Don't use `authLevel: 'function'` with EasyAuth
 - Don't trust client-provided user IDs (use EasyAuth principal)
 - Don't expose admin operations without role checks
@@ -3341,13 +3434,13 @@ app.openapiPath('DeleteTodo', 'Delete a todo', {
 
 #### Comparison: EasyAuth vs Other Auth Methods
 
-| Feature | EasyAuth | Function Keys | Bearer Token | Client Credentials |
-|---------|----------|--------------|--------------|-------------------|
-| **User Identity** | ✅ Yes | ❌ No | ✅ Yes | ✅ Yes (service) |
-| **Setup Location** | Azure Portal | Built-in | Manual | Manual |
-| **Code Required** | Minimal | None | Validation logic | Validation logic |
-| **Social Login** | ✅ Yes | ❌ No | ❌ No | ❌ No |
-| **Best For** | User-facing apps | Service APIs | Custom auth | Service-to-service |
+| Feature            | EasyAuth         | Function Keys | Bearer Token     | Client Credentials |
+| ------------------ | ---------------- | ------------- | ---------------- | ------------------ |
+| **User Identity**  | ✅ Yes           | ❌ No         | ✅ Yes           | ✅ Yes (service)   |
+| **Setup Location** | Azure Portal     | Built-in      | Manual           | Manual             |
+| **Code Required**  | Minimal          | None          | Validation logic | Validation logic   |
+| **Social Login**   | ✅ Yes           | ❌ No         | ❌ No            | ❌ No              |
+| **Best For**       | User-facing apps | Service APIs  | Custom auth      | Service-to-service |
 
 ---
 
@@ -3358,6 +3451,7 @@ Azure AD Bearer Token authentication allows you to manually validate JWT tokens 
 #### When to Use Bearer Token Auth
 
 **Use Bearer Token when:**
+
 - ✅ You need custom token validation logic
 - ✅ You want to validate specific claims or scopes
 - ✅ You're building a SPA or mobile app with MSAL
@@ -3365,6 +3459,7 @@ Azure AD Bearer Token authentication allows you to manually validate JWT tokens 
 - ✅ EasyAuth isn't available or suitable
 
 **Use EasyAuth instead when:**
+
 - ❌ You want Azure to handle all validation
 - ❌ You need multiple social providers
 - ❌ You want zero-code authentication
@@ -3374,39 +3469,39 @@ Azure AD Bearer Token authentication allows you to manually validate JWT tokens 
 Basic configuration with Azure AD:
 
 ```typescript
-import { app } from '@azure/functions';
+import { app } from "@azure/functions";
 
 // Register Bearer token security
 const bearerAuth = app.openapiBearerToken({
-  issuer: 'https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0',
-  audience: 'api://YOUR_API_CLIENT_ID'
+  issuer: "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
+  audience: "api://YOUR_API_CLIENT_ID",
 });
 
-app.openapiPath('GetUserData', 'Get user data', {
+app.openapiPath("GetUserData", "Get user data", {
   handler: async (request, context) => {
     // Extract token from Authorization header
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
     if (!token) {
-      return { status: 401, jsonBody: { error: 'Missing token' } };
+      return { status: 401, jsonBody: { error: "Missing token" } };
     }
-    
+
     // Validate token (see validation example below)
     const user = await validateToken(token);
-    
+
     if (!user) {
-      return { status: 401, jsonBody: { error: 'Invalid token' } };
+      return { status: 401, jsonBody: { error: "Invalid token" } };
     }
-    
+
     // User is authenticated
     const data = await getUserData(user.oid);
     return { jsonBody: data };
   },
-  methods: ['GET'],
-  route: 'user/data',
-  authLevel: 'anonymous',
-  security: [bearerAuth]
+  methods: ["GET"],
+  route: "user/data",
+  authLevel: "anonymous",
+  security: [bearerAuth],
 });
 ```
 
@@ -3422,36 +3517,33 @@ curl http://localhost:7071/api/user/data \
 Use `@azure/msal-node` to validate tokens:
 
 ```typescript
-import { CryptoProvider } from '@azure/msal-node';
+import { CryptoProvider } from "@azure/msal-node";
 
 interface TokenClaims {
-  oid: string;          // User object ID
-  sub: string;          // Subject
-  name: string;         // User name
-  email?: string;       // Email (if available)
-  roles?: string[];     // App roles
-  scp?: string;         // Scopes (space-separated)
+  oid: string; // User object ID
+  sub: string; // Subject
+  name: string; // User name
+  email?: string; // Email (if available)
+  roles?: string[]; // App roles
+  scp?: string; // Scopes (space-separated)
 }
 
 async function validateToken(token: string): Promise<TokenClaims | null> {
   try {
     const cryptoProvider = new CryptoProvider();
-    
+
     // Verify token signature and claims
-    const decodedToken = await cryptoProvider.verifySignature(
-      token,
-      {
-        issuer: process.env.AAD_ISSUER,
-        audience: process.env.AAD_AUDIENCE,
-        // Additional validation options
-        validateLifetime: true,
-        clockTolerance: 300 // 5 minutes tolerance
-      }
-    );
-    
+    const decodedToken = await cryptoProvider.verifySignature(token, {
+      issuer: process.env.AAD_ISSUER,
+      audience: process.env.AAD_AUDIENCE,
+      // Additional validation options
+      validateLifetime: true,
+      clockTolerance: 300, // 5 minutes tolerance
+    });
+
     return decodedToken as TokenClaims;
   } catch (error) {
-    console.error('Token validation failed:', error);
+    console.error("Token validation failed:", error);
     return null;
   }
 }
@@ -3462,14 +3554,14 @@ async function validateToken(token: string): Promise<TokenClaims | null> {
 Using `jsonwebtoken` and `jwks-rsa` for validation:
 
 ```typescript
-import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+import jwt from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 // Create JWKS client to fetch public keys
 const client = jwksClient({
   jwksUri: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/discovery/v2.0/keys`,
   cache: true,
-  cacheMaxAge: 86400000 // 24 hours
+  cacheMaxAge: 86400000, // 24 hours
 });
 
 // Get signing key
@@ -3493,7 +3585,7 @@ async function validateBearerToken(token: string): Promise<TokenClaims> {
       {
         issuer: process.env.AAD_ISSUER,
         audience: process.env.AAD_AUDIENCE,
-        algorithms: ['RS256']
+        algorithms: ["RS256"],
       },
       (err, decoded) => {
         if (err) {
@@ -3509,45 +3601,45 @@ async function validateBearerToken(token: string): Promise<TokenClaims> {
 // Use in handler
 const bearerAuth = app.openapiBearerToken({
   issuer: process.env.AAD_ISSUER,
-  audience: process.env.AAD_AUDIENCE
+  audience: process.env.AAD_AUDIENCE,
 });
 
-app.openapiPath('ProtectedEndpoint', 'Protected endpoint', {
+app.openapiPath("ProtectedEndpoint", "Protected endpoint", {
   handler: async (request, context) => {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
     if (!token) {
-      return { status: 401, jsonBody: { error: 'No token provided' } };
+      return { status: 401, jsonBody: { error: "No token provided" } };
     }
-    
+
     try {
       const claims = await validateBearerToken(token);
-      
-      context.log('Authenticated user:', {
+
+      context.log("Authenticated user:", {
         userId: claims.oid,
         name: claims.name,
-        email: claims.email
+        email: claims.email,
       });
-      
+
       return {
         jsonBody: {
-          message: 'Success',
-          user: claims.name
-        }
+          message: "Success",
+          user: claims.name,
+        },
       };
     } catch (error) {
-      context.error('Token validation failed:', error);
+      context.error("Token validation failed:", error);
       return {
         status: 401,
-        jsonBody: { error: 'Invalid or expired token' }
+        jsonBody: { error: "Invalid or expired token" },
       };
     }
   },
-  methods: ['GET'],
-  route: 'protected',
-  authLevel: 'anonymous',
-  security: [bearerAuth]
+  methods: ["GET"],
+  route: "protected",
+  authLevel: "anonymous",
+  security: [bearerAuth],
 });
 ```
 
@@ -3557,50 +3649,52 @@ Validate specific scopes from the token:
 
 ```typescript
 function hasScope(claims: TokenClaims, requiredScope: string): boolean {
-  const scopes = claims.scp?.split(' ') || [];
+  const scopes = claims.scp?.split(" ") || [];
   return scopes.includes(requiredScope);
 }
 
 const bearerAuth = app.openapiBearerToken({
   issuer: process.env.AAD_ISSUER,
   audience: process.env.AAD_AUDIENCE,
-  scopes: ['api.read', 'api.write'] // Document required scopes
+  scopes: ["api.read", "api.write"], // Document required scopes
 });
 
-app.openapiPath('WriteData', 'Write data (requires api.write scope)', {
+app.openapiPath("WriteData", "Write data (requires api.write scope)", {
   handler: async (request, context) => {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return { status: 401, jsonBody: { error: 'No token' } };
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) return { status: 401, jsonBody: { error: "No token" } };
+
     try {
       const claims = await validateBearerToken(token);
-      
+
       // Check for required scope
-      if (!hasScope(claims, 'api.write')) {
+      if (!hasScope(claims, "api.write")) {
         return {
           status: 403,
-          jsonBody: { error: 'Insufficient permissions: api.write scope required' }
+          jsonBody: {
+            error: "Insufficient permissions: api.write scope required",
+          },
         };
       }
-      
+
       // Proceed with write operation
       const body = await request.json();
       await writeData(claims.oid, body);
-      
+
       return { jsonBody: { success: true } };
     } catch (error) {
-      return { status: 401, jsonBody: { error: 'Invalid token' } };
+      return { status: 401, jsonBody: { error: "Invalid token" } };
     }
   },
-  methods: ['POST'],
-  route: 'data',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "data",
+  authLevel: "anonymous",
   security: [bearerAuth],
   responses: [
-    { httpCode: 200, description: 'Data written successfully' },
-    { httpCode: 401, description: 'Invalid or missing token' },
-    { httpCode: 403, description: 'Insufficient permissions' }
-  ]
+    { httpCode: 200, description: "Data written successfully" },
+    { httpCode: 401, description: "Invalid or missing token" },
+    { httpCode: 403, description: "Insufficient permissions" },
+  ],
 });
 ```
 
@@ -3616,39 +3710,41 @@ function hasRole(claims: TokenClaims, requiredRole: string): boolean {
 const bearerAuth = app.openapiBearerToken({
   issuer: process.env.AAD_ISSUER,
   audience: process.env.AAD_AUDIENCE,
-  description: 'Azure AD Bearer token with Admin role required'
+  description: "Azure AD Bearer token with Admin role required",
 });
 
-app.openapiPath('AdminOperation', 'Admin operation', {
+app.openapiPath("AdminOperation", "Admin operation", {
   handler: async (request, context) => {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return { status: 401, jsonBody: { error: 'No token' } };
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) return { status: 401, jsonBody: { error: "No token" } };
+
     try {
       const claims = await validateBearerToken(token);
-      
+
       // Check for admin role
-      if (!hasRole(claims, 'Admin')) {
-        context.warn(`Access denied for user ${claims.oid}: missing Admin role`);
+      if (!hasRole(claims, "Admin")) {
+        context.warn(
+          `Access denied for user ${claims.oid}: missing Admin role`
+        );
         return {
           status: 403,
-          jsonBody: { error: 'Admin role required' }
+          jsonBody: { error: "Admin role required" },
         };
       }
-      
+
       // Admin operation
       await performAdminOperation();
-      
+
       context.log(`Admin operation performed by ${claims.name}`);
       return { jsonBody: { success: true } };
     } catch (error) {
-      return { status: 401, jsonBody: { error: 'Invalid token' } };
+      return { status: 401, jsonBody: { error: "Invalid token" } };
     }
   },
-  methods: ['POST'],
-  route: 'admin/operation',
-  authLevel: 'anonymous',
-  security: [bearerAuth]
+  methods: ["POST"],
+  route: "admin/operation",
+  authLevel: "anonymous",
+  security: [bearerAuth],
 });
 ```
 
@@ -3658,12 +3754,13 @@ Full Bearer token configuration:
 
 ```typescript
 const advancedBearerAuth = app.openapiBearerToken({
-  name: 'AzureADBearer',
-  issuer: 'https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0',
-  audience: 'api://YOUR_API_CLIENT_ID',
-  scopes: ['api.read', 'api.write', 'api.admin'],
-  description: 'Azure AD Bearer token. Obtain from Microsoft Identity Platform.',
-  bearerFormat: 'JWT' // Optional: specify token format
+  name: "AzureADBearer",
+  issuer: "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
+  audience: "api://YOUR_API_CLIENT_ID",
+  scopes: ["api.read", "api.write", "api.admin"],
+  description:
+    "Azure AD Bearer token. Obtain from Microsoft Identity Platform.",
+  bearerFormat: "JWT", // Optional: specify token format
 });
 ```
 
@@ -3684,7 +3781,7 @@ AAD_AUDIENCE=api://${AAD_CLIENT_ID}
 const bearerAuth = app.openapiBearerToken({
   issuer: process.env.AAD_ISSUER!,
   audience: process.env.AAD_AUDIENCE!,
-  scopes: process.env.AAD_SCOPES?.split(',') || []
+  scopes: process.env.AAD_SCOPES?.split(",") || [],
 });
 ```
 
@@ -3694,14 +3791,14 @@ How clients obtain and use tokens:
 
 ```typescript
 // Frontend: Acquire token with MSAL.js
-import { PublicClientApplication } from '@azure/msal-browser';
+import { PublicClientApplication } from "@azure/msal-browser";
 
 const msalConfig = {
   auth: {
-    clientId: 'YOUR_SPA_CLIENT_ID',
-    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID',
-    redirectUri: window.location.origin
-  }
+    clientId: "YOUR_SPA_CLIENT_ID",
+    authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
+    redirectUri: window.location.origin,
+  },
 };
 
 const msalInstance = new PublicClientApplication(msalConfig);
@@ -3711,26 +3808,29 @@ async function callProtectedAPI() {
   try {
     // Interactive login
     const loginResponse = await msalInstance.loginPopup({
-      scopes: ['api://YOUR_API_CLIENT_ID/api.read']
+      scopes: ["api://YOUR_API_CLIENT_ID/api.read"],
     });
-    
+
     // Get access token
     const tokenResponse = await msalInstance.acquireTokenSilent({
-      scopes: ['api://YOUR_API_CLIENT_ID/api.read'],
-      account: loginResponse.account
+      scopes: ["api://YOUR_API_CLIENT_ID/api.read"],
+      account: loginResponse.account,
     });
-    
+
     // Call API with token
-    const response = await fetch('https://your-function-app.azurewebsites.net/api/user/data', {
-      headers: {
-        'Authorization': `Bearer ${tokenResponse.accessToken}`
+    const response = await fetch(
+      "https://your-function-app.azurewebsites.net/api/user/data",
+      {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+        },
       }
-    });
-    
+    );
+
     const data = await response.json();
-    console.log('API response:', data);
+    console.log("API response:", data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 }
 ```
@@ -3794,6 +3894,7 @@ az ad app permission add \
 #### Testing with Postman
 
 **1. Get access token:**
+
 - Create a new request
 - Go to **Authorization** tab
 - Select **OAuth 2.0**
@@ -3814,6 +3915,7 @@ Authorization: Bearer {{access_token}}
 #### Best Practices
 
 **✅ DO:**
+
 - Always validate token signature using JWKS
 - Check issuer and audience claims
 - Validate token expiration (`exp` claim)
@@ -3823,6 +3925,7 @@ Authorization: Bearer {{access_token}}
 - Use environment variables for configuration
 
 **❌ DON'T:**
+
 - Don't decode tokens without validation
 - Don't trust client-provided claims
 - Don't hardcode tenant IDs or client IDs
@@ -3832,13 +3935,13 @@ Authorization: Bearer {{access_token}}
 
 #### Comparison: Bearer Token vs Other Methods
 
-| Feature | Bearer Token | EasyAuth | Function Keys | Client Credentials |
-|---------|--------------|----------|--------------|-------------------|
-| **User Identity** | ✅ Yes | ✅ Yes | ❌ No | ✅ Yes (service) |
-| **Code Required** | Validation logic | Minimal | None | Validation logic |
-| **Validation Control** | Full control | Azure handles | Azure handles | Full control |
-| **Scopes/Roles** | ✅ Yes | ✅ Yes | ❌ No | ✅ Yes |
-| **Use Case** | User auth with control | User auth (simple) | Service APIs | Service-to-service |
+| Feature                | Bearer Token           | EasyAuth           | Function Keys | Client Credentials |
+| ---------------------- | ---------------------- | ------------------ | ------------- | ------------------ |
+| **User Identity**      | ✅ Yes                 | ✅ Yes             | ❌ No         | ✅ Yes (service)   |
+| **Code Required**      | Validation logic       | Minimal            | None          | Validation logic   |
+| **Validation Control** | Full control           | Azure handles      | Azure handles | Full control       |
+| **Scopes/Roles**       | ✅ Yes                 | ✅ Yes             | ❌ No         | ✅ Yes             |
+| **Use Case**           | User auth with control | User auth (simple) | Service APIs  | Service-to-service |
 
 ---
 
@@ -3849,6 +3952,7 @@ Azure AD Client Credentials flow is designed for service-to-service authenticati
 #### When to Use Client Credentials
 
 **Use Client Credentials when:**
+
 - ✅ Service-to-service communication (no user)
 - ✅ Background jobs calling APIs
 - ✅ Microservices authentication
@@ -3856,6 +3960,7 @@ Azure AD Client Credentials flow is designed for service-to-service authenticati
 - ✅ Server-to-server scenarios
 
 **Use Bearer Token instead when:**
+
 - ❌ User identity is required
 - ❌ Delegated permissions needed
 - ❌ User interaction is involved
@@ -3865,42 +3970,42 @@ Azure AD Client Credentials flow is designed for service-to-service authenticati
 Basic configuration for service authentication:
 
 ```typescript
-import { app } from '@azure/functions';
+import { app } from "@azure/functions";
 
 // Register Client Credentials security
 const clientCredsAuth = app.openapiClientCredentials({
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
-    'api://YOUR_API_CLIENT_ID/.default': 'Full API access'
-  }
+    "api://YOUR_API_CLIENT_ID/.default": "Full API access",
+  },
 });
 
-app.openapiPath('ProcessData', 'Process data (service authentication)', {
+app.openapiPath("ProcessData", "Process data (service authentication)", {
   handler: async (request, context) => {
     // Extract token
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+
     if (!token) {
-      return { status: 401, jsonBody: { error: 'No token provided' } };
+      return { status: 401, jsonBody: { error: "No token provided" } };
     }
-    
+
     // Validate service token
     const servicePrincipal = await validateServiceToken(token);
-    
+
     if (!servicePrincipal) {
-      return { status: 401, jsonBody: { error: 'Invalid service token' } };
+      return { status: 401, jsonBody: { error: "Invalid service token" } };
     }
-    
-    context.log('Service authenticated:', servicePrincipal.appId);
-    
+
+    context.log("Service authenticated:", servicePrincipal.appId);
+
     // Process data
     const result = await processData();
     return { jsonBody: result };
   },
-  methods: ['POST'],
-  route: 'data/process',
-  authLevel: 'anonymous',
-  security: [clientCredsAuth]
+  methods: ["POST"],
+  route: "data/process",
+  authLevel: "anonymous",
+  security: [clientCredsAuth],
 });
 ```
 
@@ -3909,27 +4014,30 @@ app.openapiPath('ProcessData', 'Process data (service authentication)', {
 Validate service principal tokens:
 
 ```typescript
-import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+import jwt from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 interface ServicePrincipalClaims {
-  oid: string;          // Service principal object ID
-  tid: string;          // Tenant ID
-  appid: string;        // Application (client) ID
-  roles?: string[];     // App roles assigned
-  azp?: string;         // Authorized party
-  iss: string;          // Issuer
-  aud: string;          // Audience
+  oid: string; // Service principal object ID
+  tid: string; // Tenant ID
+  appid: string; // Application (client) ID
+  roles?: string[]; // App roles assigned
+  azp?: string; // Authorized party
+  iss: string; // Issuer
+  aud: string; // Audience
 }
 
 // Create JWKS client
 const jwksClientInstance = jwksClient({
   jwksUri: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/discovery/v2.0/keys`,
   cache: true,
-  cacheMaxAge: 86400000
+  cacheMaxAge: 86400000,
 });
 
-function getSigningKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
+function getSigningKey(
+  header: jwt.JwtHeader,
+  callback: jwt.SigningKeyCallback
+) {
   jwksClientInstance.getSigningKey(header.kid, (err, key) => {
     if (err) {
       callback(err);
@@ -3939,7 +4047,9 @@ function getSigningKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) 
   });
 }
 
-async function validateServiceToken(token: string): Promise<ServicePrincipalClaims | null> {
+async function validateServiceToken(
+  token: string
+): Promise<ServicePrincipalClaims | null> {
   return new Promise((resolve) => {
     jwt.verify(
       token,
@@ -3947,11 +4057,11 @@ async function validateServiceToken(token: string): Promise<ServicePrincipalClai
       {
         issuer: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/v2.0`,
         audience: `api://${process.env.AAD_CLIENT_ID}`,
-        algorithms: ['RS256']
+        algorithms: ["RS256"],
       },
       (err, decoded) => {
         if (err) {
-          console.error('Service token validation failed:', err.message);
+          console.error("Service token validation failed:", err.message);
           resolve(null);
         } else {
           resolve(decoded as ServicePrincipalClaims);
@@ -3967,51 +4077,56 @@ async function validateServiceToken(token: string): Promise<ServicePrincipalClai
 Check app roles assigned to service principals:
 
 ```typescript
-function hasAppRole(claims: ServicePrincipalClaims, requiredRole: string): boolean {
+function hasAppRole(
+  claims: ServicePrincipalClaims,
+  requiredRole: string
+): boolean {
   return claims.roles?.includes(requiredRole) || false;
 }
 
 const clientCredsAuth = app.openapiClientCredentials({
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
-    'api://YOUR_API_CLIENT_ID/.default': 'API access with roles'
-  }
+    "api://YOUR_API_CLIENT_ID/.default": "API access with roles",
+  },
 });
 
-app.openapiPath('AdminService', 'Admin service operation', {
+app.openapiPath("AdminService", "Admin service operation", {
   handler: async (request, context) => {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return { status: 401, jsonBody: { error: 'No token' } };
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) return { status: 401, jsonBody: { error: "No token" } };
+
     const servicePrincipal = await validateServiceToken(token);
     if (!servicePrincipal) {
-      return { status: 401, jsonBody: { error: 'Invalid token' } };
+      return { status: 401, jsonBody: { error: "Invalid token" } };
     }
-    
+
     // Check for required app role
-    if (!hasAppRole(servicePrincipal, 'DataProcessor')) {
-      context.warn(`Service ${servicePrincipal.appid} lacks DataProcessor role`);
+    if (!hasAppRole(servicePrincipal, "DataProcessor")) {
+      context.warn(
+        `Service ${servicePrincipal.appid} lacks DataProcessor role`
+      );
       return {
         status: 403,
-        jsonBody: { error: 'DataProcessor role required' }
+        jsonBody: { error: "DataProcessor role required" },
       };
     }
-    
+
     // Perform admin operation
     context.log(`Admin operation by service: ${servicePrincipal.appid}`);
     await performAdminOperation();
-    
+
     return { jsonBody: { success: true } };
   },
-  methods: ['POST'],
-  route: 'admin/service',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "admin/service",
+  authLevel: "anonymous",
   security: [clientCredsAuth],
   responses: [
-    { httpCode: 200, description: 'Operation successful' },
-    { httpCode: 401, description: 'Invalid or missing token' },
-    { httpCode: 403, description: 'Insufficient permissions' }
-  ]
+    { httpCode: 200, description: "Operation successful" },
+    { httpCode: 401, description: "Invalid or missing token" },
+    { httpCode: 403, description: "Insufficient permissions" },
+  ],
 });
 ```
 
@@ -4021,24 +4136,25 @@ Full configuration with multiple scopes:
 
 ```typescript
 const advancedClientCreds = app.openapiClientCredentials({
-  name: 'ServicePrincipal',
+  name: "ServicePrincipal",
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   refreshUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
-    'api://YOUR_API_CLIENT_ID/.default': 'Full API access',
-    'api://YOUR_API_CLIENT_ID/Data.Read': 'Read data',
-    'api://YOUR_API_CLIENT_ID/Data.Write': 'Write data',
-    'api://YOUR_API_CLIENT_ID/Data.Admin': 'Administrative access'
+    "api://YOUR_API_CLIENT_ID/.default": "Full API access",
+    "api://YOUR_API_CLIENT_ID/Data.Read": "Read data",
+    "api://YOUR_API_CLIENT_ID/Data.Write": "Write data",
+    "api://YOUR_API_CLIENT_ID/Data.Admin": "Administrative access",
   },
-  description: 'Azure AD Client Credentials flow for service-to-service authentication. Requires service principal with assigned app roles.'
+  description:
+    "Azure AD Client Credentials flow for service-to-service authentication. Requires service principal with assigned app roles.",
 });
 
-app.openapiPath('ServiceEndpoint', 'Service-only endpoint', {
+app.openapiPath("ServiceEndpoint", "Service-only endpoint", {
   handler: serviceHandler,
-  methods: ['POST'],
-  route: 'service/operation',
-  authLevel: 'anonymous',
-  security: [advancedClientCreds]
+  methods: ["POST"],
+  route: "service/operation",
+  authLevel: "anonymous",
+  security: [advancedClientCreds],
 });
 ```
 
@@ -4048,14 +4164,14 @@ How services acquire access tokens:
 
 ```typescript
 // Backend service acquiring token
-import { ConfidentialClientApplication } from '@azure/msal-node';
+import { ConfidentialClientApplication } from "@azure/msal-node";
 
 const msalConfig = {
   auth: {
     clientId: process.env.CLIENT_APP_ID!,
     authority: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}`,
-    clientSecret: process.env.CLIENT_APP_SECRET!
-  }
+    clientSecret: process.env.CLIENT_APP_SECRET!,
+  },
 };
 
 const cca = new ConfidentialClientApplication(msalConfig);
@@ -4064,28 +4180,30 @@ async function callProtectedAPI() {
   try {
     // Acquire token using client credentials
     const tokenResponse = await cca.acquireTokenByClientCredential({
-      scopes: [`api://${process.env.API_CLIENT_ID}/.default`]
+      scopes: [`api://${process.env.API_CLIENT_ID}/.default`],
     });
-    
+
     if (!tokenResponse?.accessToken) {
-      throw new Error('Failed to acquire token');
+      throw new Error("Failed to acquire token");
     }
-    
+
     // Call API with token
-    const response = await fetch('https://your-api.azurewebsites.net/api/data/process', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${tokenResponse.accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ data: 'some data' })
-    });
-    
+    const response = await fetch(
+      "https://your-api.azurewebsites.net/api/data/process",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data: "some data" }),
+      }
+    );
+
     const result = await response.json();
-    console.log('API response:', result);
-    
+    console.log("API response:", result);
   } catch (error) {
-    console.error('Error calling API:', error);
+    console.error("Error calling API:", error);
   }
 }
 
@@ -4098,8 +4216,8 @@ await callProtectedAPI();
 Simplified approach with `@azure/identity`:
 
 ```typescript
-import { ClientSecretCredential } from '@azure/identity';
-import fetch from 'node-fetch';
+import { ClientSecretCredential } from "@azure/identity";
+import fetch from "node-fetch";
 
 // Create credential
 const credential = new ClientSecretCredential(
@@ -4114,20 +4232,23 @@ async function callAPIWithIdentity() {
     const tokenResponse = await credential.getToken(
       `api://${process.env.API_CLIENT_ID}/.default`
     );
-    
+
     // Call API
-    const response = await fetch('https://your-api.azurewebsites.net/api/service/operation', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${tokenResponse.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ action: 'process' })
-    });
-    
+    const response = await fetch(
+      "https://your-api.azurewebsites.net/api/service/operation",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokenResponse.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "process" }),
+      }
+    );
+
     return await response.json();
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
     throw error;
   }
 }
@@ -4138,13 +4259,15 @@ async function callAPIWithIdentity() {
 Use Managed Identity for Azure-hosted services:
 
 ```typescript
-import { ManagedIdentityCredential } from '@azure/identity';
+import { ManagedIdentityCredential } from "@azure/identity";
 
 // For system-assigned managed identity
 const credential = new ManagedIdentityCredential();
 
 // For user-assigned managed identity
-const credential = new ManagedIdentityCredential(process.env.USER_ASSIGNED_CLIENT_ID);
+const credential = new ManagedIdentityCredential(
+  process.env.USER_ASSIGNED_CLIENT_ID
+);
 
 async function callAPIFromAzureService() {
   try {
@@ -4152,18 +4275,21 @@ async function callAPIFromAzureService() {
     const tokenResponse = await credential.getToken(
       `api://${process.env.API_CLIENT_ID}/.default`
     );
-    
+
     // Call API
-    const response = await fetch('https://your-api.azurewebsites.net/api/service/operation', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${tokenResponse.token}`
+    const response = await fetch(
+      "https://your-api.azurewebsites.net/api/service/operation",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokenResponse.token}`,
+        },
       }
-    });
-    
+    );
+
     return await response.json();
   } catch (error) {
-    console.error('Managed Identity error:', error);
+    console.error("Managed Identity error:", error);
     throw error;
   }
 }
@@ -4247,98 +4373,105 @@ az ad app permission admin-consent --id $CLIENT_APP_ID
 API with multiple service endpoints:
 
 ```typescript
-import { app } from '@azure/functions';
-import { z } from 'zod';
+import { app } from "@azure/functions";
+import { z } from "zod";
 
 const clientCredsAuth = app.openapiClientCredentials({
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
-    'api://my-api/.default': 'API access'
-  }
+    "api://my-api/.default": "API access",
+  },
 });
 
 // Data processor service endpoint
-app.openapiPath('ProcessDataService', 'Process data batch', {
+app.openapiPath("ProcessDataService", "Process data batch", {
   handler: async (request, context) => {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return { status: 401, jsonBody: { error: 'No token' } };
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) return { status: 401, jsonBody: { error: "No token" } };
+
     const sp = await validateServiceToken(token);
-    if (!sp || !hasAppRole(sp, 'DataProcessor')) {
-      return { status: 403, jsonBody: { error: 'DataProcessor role required' } };
+    if (!sp || !hasAppRole(sp, "DataProcessor")) {
+      return {
+        status: 403,
+        jsonBody: { error: "DataProcessor role required" },
+      };
     }
-    
+
     const body = await request.json();
     const result = await processBatch(body.items);
-    
+
     context.log(`Processed ${result.count} items for service ${sp.appid}`);
     return { jsonBody: result };
   },
-  methods: ['POST'],
-  route: 'batch/process',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "batch/process",
+  authLevel: "anonymous",
   security: [clientCredsAuth],
   request: {
     body: {
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
-            items: z.array(z.string())
-          })
-        }
-      }
-    }
-  }
+            items: z.array(z.string()),
+          }),
+        },
+      },
+    },
+  },
 });
 
 // Analytics service endpoint
-app.openapiPath('GetAnalyticsService', 'Get analytics data', {
+app.openapiPath("GetAnalyticsService", "Get analytics data", {
   handler: async (request, context) => {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return { status: 401, jsonBody: { error: 'No token' } };
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) return { status: 401, jsonBody: { error: "No token" } };
+
     const sp = await validateServiceToken(token);
-    if (!sp || !hasAppRole(sp, 'AnalyticsReader')) {
-      return { status: 403, jsonBody: { error: 'AnalyticsReader role required' } };
+    if (!sp || !hasAppRole(sp, "AnalyticsReader")) {
+      return {
+        status: 403,
+        jsonBody: { error: "AnalyticsReader role required" },
+      };
     }
-    
+
     const analytics = await getAnalytics();
-    
+
     context.log(`Analytics requested by service ${sp.appid}`);
     return { jsonBody: analytics };
   },
-  methods: ['GET'],
-  route: 'analytics',
-  authLevel: 'anonymous',
-  security: [clientCredsAuth]
+  methods: ["GET"],
+  route: "analytics",
+  authLevel: "anonymous",
+  security: [clientCredsAuth],
 });
 
 // Admin service endpoint
-app.openapiPath('ResetDataService', 'Reset all data', {
+app.openapiPath("ResetDataService", "Reset all data", {
   handler: async (request, context) => {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return { status: 401, jsonBody: { error: 'No token' } };
-    
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    if (!token) return { status: 401, jsonBody: { error: "No token" } };
+
     const sp = await validateServiceToken(token);
-    if (!sp || !hasAppRole(sp, 'AdminService')) {
-      return { status: 403, jsonBody: { error: 'AdminService role required' } };
+    if (!sp || !hasAppRole(sp, "AdminService")) {
+      return { status: 403, jsonBody: { error: "AdminService role required" } };
     }
-    
+
     await resetAllData();
-    
+
     context.warn(`All data reset by admin service ${sp.appid}`);
     return { status: 204 };
   },
-  methods: ['DELETE'],
-  route: 'data/reset',
-  authLevel: 'anonymous',
-  security: [clientCredsAuth]
+  methods: ["DELETE"],
+  route: "data/reset",
+  authLevel: "anonymous",
+  security: [clientCredsAuth],
 });
 ```
 
 #### Best Practices
 
 **✅ DO:**
+
 - Use Managed Identity when calling from Azure services
 - Validate token signature with JWKS
 - Check `appid` and `roles` claims
@@ -4349,6 +4482,7 @@ app.openapiPath('ResetDataService', 'Reset all data', {
 - Implement retry logic for token acquisition
 
 **❌ DON'T:**
+
 - Don't hardcode client secrets in code
 - Don't use user delegation (that's Bearer Token flow)
 - Don't skip token validation
@@ -4372,27 +4506,27 @@ app.openapiPath('ResetDataService', 'Reset all data', {
 
 ```typescript
 // Use Key Vault for secrets in production
-import { SecretClient } from '@azure/keyvault-secrets';
-import { DefaultAzureCredential } from '@azure/identity';
+import { SecretClient } from "@azure/keyvault-secrets";
+import { DefaultAzureCredential } from "@azure/identity";
 
 const keyVaultClient = new SecretClient(
   process.env.KEY_VAULT_URL!,
   new DefaultAzureCredential()
 );
 
-const clientSecret = await keyVaultClient.getSecret('client-app-secret');
+const clientSecret = await keyVaultClient.getSecret("client-app-secret");
 ```
 
 #### Comparison: Client Credentials vs Other Methods
 
-| Feature | Client Credentials | Bearer Token | EasyAuth | Function Keys |
-|---------|-------------------|--------------|----------|--------------|
-| **User Identity** | ❌ No (service) | ✅ Yes | ✅ Yes | ❌ No |
-| **Use Case** | Service-to-service | User auth | User auth | Simple auth |
-| **Token Type** | Service principal | User token | User token | Function key |
-| **Permissions** | App roles | Scopes/roles | Claims | N/A |
-| **Setup Complexity** | Medium | Medium | Low | Very low |
-| **Managed Identity** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| Feature              | Client Credentials | Bearer Token | EasyAuth   | Function Keys |
+| -------------------- | ------------------ | ------------ | ---------- | ------------- |
+| **User Identity**    | ❌ No (service)    | ✅ Yes       | ✅ Yes     | ❌ No         |
+| **Use Case**         | Service-to-service | User auth    | User auth  | Simple auth   |
+| **Token Type**       | Service principal  | User token   | User token | Function key  |
+| **Permissions**      | App roles          | Scopes/roles | Claims     | N/A           |
+| **Setup Complexity** | Medium             | Medium       | Low        | Very low      |
+| **Managed Identity** | ✅ Yes             | ❌ No        | ❌ No      | ❌ No         |
 
 ---
 
@@ -4405,49 +4539,49 @@ The library provides comprehensive request validation using Zod schemas. This en
 Validate request body with Zod schema:
 
 ```typescript
-import { app } from '@azure/functions';
-import { z } from 'zod';
+import { app } from "@azure/functions";
+import { z } from "zod";
 
 const CreateUserSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
-  age: z.number().int().min(18).max(120)
+  age: z.number().int().min(18).max(120),
 });
 
-app.openapiPath('CreateUser', 'Create a new user', {
+app.openapiPath("CreateUser", "Create a new user", {
   handler: async (request, context) => {
     const body = await request.json();
-    
+
     // Validate with Zod
     const validation = CreateUserSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return {
         status: 400,
         jsonBody: {
-          error: 'Validation failed',
-          details: validation.error.issues
-        }
+          error: "Validation failed",
+          details: validation.error.issues,
+        },
       };
     }
-    
+
     // Validated data with correct types
     const user = await createUser(validation.data);
     return { status: 201, jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "users",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: CreateUserSchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: CreateUserSchema,
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -4456,51 +4590,51 @@ app.openapiPath('CreateUser', 'Create a new user', {
 Use built-in `parseBody()` utility for automatic validation:
 
 ```typescript
-import { parseBody, ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseBody, ValidationError } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const TodoSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  completed: z.boolean().default(false)
+  completed: z.boolean().default(false),
 });
 
-app.openapiPath('CreateTodo', 'Create a todo', {
+app.openapiPath("CreateTodo", "Create a todo", {
   handler: async (request, context) => {
     try {
       // parseBody automatically validates and returns typed data
       const todo = await parseBody(request, TodoSchema);
-      
+
       // todo is now typed: { title: string; description?: string; completed: boolean }
       const created = await db.todos.create(todo);
-      
+
       return { status: 201, jsonBody: created };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
           jsonBody: {
-            error: 'Invalid request body',
-            details: error.issues
-          }
+            error: "Invalid request body",
+            details: error.issues,
+          },
         };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'todos',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "todos",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: TodoSchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -4509,52 +4643,64 @@ app.openapiPath('CreateTodo', 'Create a todo', {
 Validate query parameters:
 
 ```typescript
-import { parseQueryParams } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseQueryParams } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const SearchQuerySchema = z.object({
   q: z.string().min(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   offset: z.coerce.number().int().min(0).default(0),
-  sortBy: z.enum(['name', 'date', 'popularity']).default('date')
+  sortBy: z.enum(["name", "date", "popularity"]).default("date"),
 });
 
-app.openapiPath('SearchUsers', 'Search users', {
+app.openapiPath("SearchUsers", "Search users", {
   handler: async (request, context) => {
     try {
       // Parse and validate query parameters
       const query = parseQueryParams(request, SearchQuerySchema);
-      
+
       // query is typed: { q: string; limit: number; offset: number; sortBy: 'name' | 'date' | 'popularity' }
       const results = await searchUsers({
         searchTerm: query.q,
         limit: query.limit,
         offset: query.offset,
-        sortBy: query.sortBy
+        sortBy: query.sortBy,
       });
-      
+
       return { jsonBody: results };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Invalid query parameters', details: error.issues }
+          jsonBody: {
+            error: "Invalid query parameters",
+            details: error.issues,
+          },
         };
       }
       throw error;
     }
   },
-  methods: ['GET'],
-  route: 'users/search',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "users/search",
+  authLevel: "anonymous",
   request: {
     query: z.object({
-      q: z.string().describe('Search query'),
-      limit: z.number().int().min(1).max(100).optional().describe('Results per page'),
-      offset: z.number().int().min(0).optional().describe('Pagination offset'),
-      sortBy: z.enum(['name', 'date', 'popularity']).optional().describe('Sort field')
-    })
-  }
+      q: z.string().describe("Search query"),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe("Results per page"),
+      offset: z.number().int().min(0).optional().describe("Pagination offset"),
+      sortBy: z
+        .enum(["name", "date", "popularity"])
+        .optional()
+        .describe("Sort field"),
+    }),
+  },
 });
 ```
 
@@ -4563,43 +4709,48 @@ app.openapiPath('SearchUsers', 'Search users', {
 Validate route parameters:
 
 ```typescript
-import { parseRouteParams } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseRouteParams } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const RouteParamsSchema = z.object({
   id: z.string().uuid(),
-  action: z.enum(['approve', 'reject', 'pending'])
+  action: z.enum(["approve", "reject", "pending"]),
 });
 
-app.openapiPath('UpdateStatus', 'Update item status', {
+app.openapiPath("UpdateStatus", "Update item status", {
   handler: async (request, context) => {
     try {
       // Parse and validate route parameters
       const params = parseRouteParams(request, RouteParamsSchema);
-      
+
       // params is typed: { id: string; action: 'approve' | 'reject' | 'pending' }
       const updated = await updateItemStatus(params.id, params.action);
-      
+
       return { jsonBody: updated };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Invalid route parameters', details: error.issues }
+          jsonBody: {
+            error: "Invalid route parameters",
+            details: error.issues,
+          },
         };
       }
       throw error;
     }
   },
-  methods: ['PUT'],
-  route: 'items/{id}/{action}',
-  authLevel: 'anonymous',
+  methods: ["PUT"],
+  route: "items/{id}/{action}",
+  authLevel: "anonymous",
   request: {
     params: z.object({
-      id: z.string().uuid().describe('Item ID'),
-      action: z.enum(['approve', 'reject', 'pending']).describe('Action to perform')
-    })
-  }
+      id: z.string().uuid().describe("Item ID"),
+      action: z
+        .enum(["approve", "reject", "pending"])
+        .describe("Action to perform"),
+    }),
+  },
 });
 ```
 
@@ -4608,53 +4759,58 @@ app.openapiPath('UpdateStatus', 'Update item status', {
 Validate custom headers:
 
 ```typescript
-import { parseHeaders } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseHeaders } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const HeadersSchema = z.object({
-  'x-api-version': z.enum(['1.0', '2.0']),
-  'x-client-id': z.string().min(1),
-  'x-request-id': z.string().uuid().optional()
+  "x-api-version": z.enum(["1.0", "2.0"]),
+  "x-client-id": z.string().min(1),
+  "x-request-id": z.string().uuid().optional(),
 });
 
-app.openapiPath('VersionedEndpoint', 'Versioned API endpoint', {
+app.openapiPath("VersionedEndpoint", "Versioned API endpoint", {
   handler: async (request, context) => {
     try {
       // Parse and validate headers
       const headers = parseHeaders(request, HeadersSchema);
-      
+
       // headers is typed: { 'x-api-version': '1.0' | '2.0'; 'x-client-id': string; 'x-request-id'?: string }
-      const version = headers['x-api-version'];
-      const clientId = headers['x-client-id'];
-      
+      const version = headers["x-api-version"];
+      const clientId = headers["x-client-id"];
+
       context.log(`Request from client ${clientId} using API v${version}`);
-      
+
       // Handle based on version
-      const result = version === '2.0' 
-        ? await handleV2Request(request)
-        : await handleV1Request(request);
-      
+      const result =
+        version === "2.0"
+          ? await handleV2Request(request)
+          : await handleV1Request(request);
+
       return { jsonBody: result };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Invalid headers', details: error.issues }
+          jsonBody: { error: "Invalid headers", details: error.issues },
         };
       }
       throw error;
     }
   },
-  methods: ['GET'],
-  route: 'versioned/data',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "versioned/data",
+  authLevel: "anonymous",
   request: {
     headers: z.object({
-      'x-api-version': z.enum(['1.0', '2.0']).describe('API version'),
-      'x-client-id': z.string().describe('Client identifier'),
-      'x-request-id': z.string().uuid().optional().describe('Request tracking ID')
-    })
-  }
+      "x-api-version": z.enum(["1.0", "2.0"]).describe("API version"),
+      "x-client-id": z.string().describe("Client identifier"),
+      "x-request-id": z
+        .string()
+        .uuid()
+        .optional()
+        .describe("Request tracking ID"),
+    }),
+  },
 });
 ```
 
@@ -4663,18 +4819,18 @@ app.openapiPath('VersionedEndpoint', 'Versioned API endpoint', {
 Validate complex nested structures:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const AddressSchema = z.object({
   street: z.string().min(1),
   city: z.string().min(1),
   state: z.string().length(2),
-  zipCode: z.string().regex(/^\d{5}(-\d{4})?$/)
+  zipCode: z.string().regex(/^\d{5}(-\d{4})?$/),
 });
 
 const PhoneSchema = z.object({
-  type: z.enum(['mobile', 'home', 'work']),
-  number: z.string().regex(/^\+?1?\d{10,14}$/)
+  type: z.enum(["mobile", "home", "work"]),
+  number: z.string().regex(/^\+?1?\d{10,14}$/),
 });
 
 const CompanySchema = z.object({
@@ -4685,17 +4841,19 @@ const CompanySchema = z.object({
   contactPhones: z.array(PhoneSchema).min(1).max(5),
   website: z.string().url().optional(),
   founded: z.coerce.date(),
-  tags: z.array(z.string()).max(10).default([])
+  tags: z.array(z.string()).max(10).default([]),
 });
 
-app.openapiPath('CreateCompany', 'Create a company', {
+app.openapiPath("CreateCompany", "Create a company", {
   handler: async (request, context) => {
     try {
       const company = await parseBody(request, CompanySchema);
-      
+
       // Fully typed nested structure
-      context.log(`Creating company: ${company.name} in ${company.address.city}, ${company.address.state}`);
-      
+      context.log(
+        `Creating company: ${company.name} in ${company.address.city}, ${company.address.state}`
+      );
+
       const created = await db.companies.create(company);
       return { status: 201, jsonBody: created };
     } catch (error) {
@@ -4703,27 +4861,27 @@ app.openapiPath('CreateCompany', 'Create a company', {
         return {
           status: 400,
           jsonBody: {
-            error: 'Validation failed',
-            details: error.issues
-          }
+            error: "Validation failed",
+            details: error.issues,
+          },
         };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'companies',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "companies",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: CompanySchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: CompanySchema,
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -4732,67 +4890,73 @@ app.openapiPath('CreateCompany', 'Create a company', {
 Validate based on conditions:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
-const PaymentSchema = z.discriminatedUnion('method', [
+const PaymentSchema = z.discriminatedUnion("method", [
   z.object({
-    method: z.literal('credit_card'),
+    method: z.literal("credit_card"),
     cardNumber: z.string().regex(/^\d{16}$/),
     expiryMonth: z.number().int().min(1).max(12),
     expiryYear: z.number().int().min(2024),
-    cvv: z.string().regex(/^\d{3,4}$/)
+    cvv: z.string().regex(/^\d{3,4}$/),
   }),
   z.object({
-    method: z.literal('paypal'),
-    email: z.string().email()
+    method: z.literal("paypal"),
+    email: z.string().email(),
   }),
   z.object({
-    method: z.literal('bank_transfer'),
+    method: z.literal("bank_transfer"),
     accountNumber: z.string().min(8),
-    routingNumber: z.string().length(9)
-  })
+    routingNumber: z.string().length(9),
+  }),
 ]);
 
-app.openapiPath('ProcessPayment', 'Process payment', {
+app.openapiPath("ProcessPayment", "Process payment", {
   handler: async (request, context) => {
     try {
       const payment = await parseBody(request, PaymentSchema);
-      
+
       // TypeScript knows the shape based on method
       let result;
       switch (payment.method) {
-        case 'credit_card':
+        case "credit_card":
           result = await processCreditCard(payment.cardNumber, payment.cvv);
           break;
-        case 'paypal':
+        case "paypal":
           result = await processPayPal(payment.email);
           break;
-        case 'bank_transfer':
-          result = await processBankTransfer(payment.accountNumber, payment.routingNumber);
+        case "bank_transfer":
+          result = await processBankTransfer(
+            payment.accountNumber,
+            payment.routingNumber
+          );
           break;
       }
-      
+
       return { jsonBody: result };
     } catch (error) {
       if (error instanceof ValidationError) {
-        return { status: 400, jsonBody: { error: 'Invalid payment data', details: error.issues } };
+        return {
+          status: 400,
+          jsonBody: { error: "Invalid payment data", details: error.issues },
+        };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'payments',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "payments",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: PaymentSchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: PaymentSchema,
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -4801,81 +4965,95 @@ app.openapiPath('ProcessPayment', 'Process payment', {
 Add custom validation with refinements:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
-const PasswordSchema = z.string()
-  .min(8, 'Password must be at least 8 characters')
+const PasswordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
   .max(100)
-  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-  .regex(/[0-9]/, 'Password must contain at least one number')
-  .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character');
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(
+    /[^a-zA-Z0-9]/,
+    "Password must contain at least one special character"
+  );
 
-const RegisterSchema = z.object({
-  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/),
-  email: z.string().email(),
-  password: PasswordSchema,
-  confirmPassword: z.string()
-}).refine(
-  (data) => data.password === data.confirmPassword,
-  {
+const RegisterSchema = z
+  .object({
+    username: z
+      .string()
+      .min(3)
+      .max(50)
+      .regex(/^[a-zA-Z0-9_]+$/),
+    email: z.string().email(),
+    password: PasswordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ['confirmPassword']
-  }
-);
+    path: ["confirmPassword"],
+  });
 
-const UpdateUserSchema = z.object({
-  username: z.string().min(3).max(50).optional(),
-  email: z.string().email().optional(),
-  age: z.number().int().min(13).optional()
-}).refine(
-  (data) => Object.keys(data).length > 0,
-  {
-    message: 'At least one field must be provided'
-  }
-);
+const UpdateUserSchema = z
+  .object({
+    username: z.string().min(3).max(50).optional(),
+    email: z.string().email().optional(),
+    age: z.number().int().min(13).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
 
-app.openapiPath('Register', 'Register new user', {
+app.openapiPath("Register", "Register new user", {
   handler: async (request, context) => {
     try {
       const data = await parseBody(request, RegisterSchema);
-      
+
       // Check if username exists
-      const existing = await db.users.findUnique({ where: { username: data.username } });
+      const existing = await db.users.findUnique({
+        where: { username: data.username },
+      });
       if (existing) {
         return {
           status: 409,
-          jsonBody: { error: 'Username already taken' }
+          jsonBody: { error: "Username already taken" },
         };
       }
-      
+
       const user = await createUser({
         username: data.username,
         email: data.email,
-        passwordHash: await hashPassword(data.password)
+        passwordHash: await hashPassword(data.password),
       });
-      
-      return { status: 201, jsonBody: { id: user.id, username: user.username } };
+
+      return {
+        status: 201,
+        jsonBody: { id: user.id, username: user.username },
+      };
     } catch (error) {
       if (error instanceof ValidationError) {
-        return { status: 400, jsonBody: { error: 'Validation failed', details: error.issues } };
+        return {
+          status: 400,
+          jsonBody: { error: "Validation failed", details: error.issues },
+        };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'register',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "register",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: RegisterSchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: RegisterSchema,
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -4884,58 +5062,62 @@ app.openapiPath('Register', 'Register new user', {
 Validate arrays with constraints:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const BulkCreateSchema = z.object({
-  items: z.array(
-    z.object({
-      name: z.string().min(1),
-      quantity: z.number().int().min(1),
-      price: z.number().positive()
-    })
-  )
-    .min(1, 'At least one item is required')
-    .max(100, 'Maximum 100 items per request')
+  items: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        quantity: z.number().int().min(1),
+        price: z.number().positive(),
+      })
+    )
+    .min(1, "At least one item is required")
+    .max(100, "Maximum 100 items per request"),
 });
 
-app.openapiPath('BulkCreateItems', 'Create multiple items', {
+app.openapiPath("BulkCreateItems", "Create multiple items", {
   handler: async (request, context) => {
     try {
       const data = await parseBody(request, BulkCreateSchema);
-      
+
       // Process items in batch
       const created = await db.items.createMany({
-        data: data.items
+        data: data.items,
       });
-      
+
       context.log(`Created ${created.count} items`);
       return {
         status: 201,
         jsonBody: {
           message: `Successfully created ${created.count} items`,
-          count: created.count
-        }
+          count: created.count,
+        },
       };
     } catch (error) {
       if (error instanceof ValidationError) {
-        return { status: 400, jsonBody: { error: 'Validation failed', details: error.issues } };
+        return {
+          status: 400,
+          jsonBody: { error: "Validation failed", details: error.issues },
+        };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'items/bulk',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "items/bulk",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: BulkCreateSchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: BulkCreateSchema,
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -4944,66 +5126,76 @@ app.openapiPath('BulkCreateItems', 'Create multiple items', {
 Validate file uploads:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const FileUploadSchema = z.object({
   fileName: z.string().min(1).max(255),
-  fileSize: z.number().int().min(1).max(10 * 1024 * 1024), // Max 10MB
-  mimeType: z.enum(['image/jpeg', 'image/png', 'image/gif', 'application/pdf']),
-  content: z.string().base64() // Base64-encoded file content
+  fileSize: z
+    .number()
+    .int()
+    .min(1)
+    .max(10 * 1024 * 1024), // Max 10MB
+  mimeType: z.enum(["image/jpeg", "image/png", "image/gif", "application/pdf"]),
+  content: z.string().base64(), // Base64-encoded file content
 });
 
-app.openapiPath('UploadFile', 'Upload a file', {
+app.openapiPath("UploadFile", "Upload a file", {
   handler: async (request, context) => {
     try {
       const upload = await parseBody(request, FileUploadSchema);
-      
+
       // Decode base64 content
-      const buffer = Buffer.from(upload.content, 'base64');
-      
+      const buffer = Buffer.from(upload.content, "base64");
+
       // Upload to storage
       const fileUrl = await uploadToStorage({
         fileName: upload.fileName,
         content: buffer,
-        mimeType: upload.mimeType
+        mimeType: upload.mimeType,
       });
-      
-      context.log(`Uploaded file: ${upload.fileName} (${upload.fileSize} bytes)`);
-      
+
+      context.log(
+        `Uploaded file: ${upload.fileName} (${upload.fileSize} bytes)`
+      );
+
       return {
         status: 201,
         jsonBody: {
           url: fileUrl,
           fileName: upload.fileName,
-          size: upload.fileSize
-        }
+          size: upload.fileSize,
+        },
       };
     } catch (error) {
       if (error instanceof ValidationError) {
-        return { status: 400, jsonBody: { error: 'Invalid file upload', details: error.issues } };
+        return {
+          status: 400,
+          jsonBody: { error: "Invalid file upload", details: error.issues },
+        };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'files',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "files",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: FileUploadSchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: FileUploadSchema,
+        },
+      },
+    },
+  },
 });
 ```
 
 #### Validation Best Practices
 
 **✅ DO:**
+
 - Use specific validation rules (min, max, regex)
 - Provide descriptive error messages
 - Use `.safeParse()` or utility functions for error handling
@@ -5014,6 +5206,7 @@ app.openapiPath('UploadFile', 'Upload a file', {
 - Log validation failures for monitoring
 
 **❌ DON'T:**
+
 - Don't trust client data without validation
 - Don't expose sensitive validation logic details in production
 - Don't validate more than necessary (performance)
@@ -5027,8 +5220,8 @@ app.openapiPath('UploadFile', 'Upload a file', {
 Consistent error handling pattern:
 
 ```typescript
-import { ValidationError } from '@apvee/azure-functions-openapi';
-import { InvocationContext, HttpRequest } from '@azure/functions';
+import { ValidationError } from "@apvee/azure-functions-openapi";
+import { InvocationContext, HttpRequest } from "@azure/functions";
 
 async function handleValidatedRequest<T>(
   request: HttpRequest,
@@ -5042,22 +5235,23 @@ async function handleValidatedRequest<T>(
     return { jsonBody: result };
   } catch (error) {
     if (error instanceof ValidationError) {
-      context.warn('Validation failed:', error.issues);
+      context.warn("Validation failed:", error.issues);
       return {
         status: 400,
         jsonBody: {
-          error: 'Validation failed',
-          details: process.env.NODE_ENV === 'development' ? error.issues : undefined
-        }
+          error: "Validation failed",
+          details:
+            process.env.NODE_ENV === "development" ? error.issues : undefined,
+        },
       };
     }
-    context.error('Unexpected error:', error);
+    context.error("Unexpected error:", error);
     throw error;
   }
 }
 
 // Usage
-app.openapiPath('CreateTodo', 'Create todo', {
+app.openapiPath("CreateTodo", "Create todo", {
   handler: async (request, context) => {
     return handleValidatedRequest(
       request,
@@ -5068,9 +5262,9 @@ app.openapiPath('CreateTodo', 'Create todo', {
       }
     );
   },
-  methods: ['POST'],
-  route: 'todos',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "todos",
+  authLevel: "anonymous",
 });
 ```
 
@@ -5085,62 +5279,62 @@ Configure detailed response documentation including multiple status codes, conte
 Document multiple response status codes:
 
 ```typescript
-import { app } from '@azure/functions';
-import { z } from 'zod';
+import { app } from "@azure/functions";
+import { z } from "zod";
 
 const TodoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
-  completed: z.boolean()
+  completed: z.boolean(),
 });
 
 const ErrorSchema = z.object({
   error: z.string(),
-  message: z.string().optional()
+  message: z.string().optional(),
 });
 
-app.openapiPath('GetTodo', 'Get a todo by ID', {
+app.openapiPath("GetTodo", "Get a todo by ID", {
   handler: async (request, context) => {
     const { id } = request.params;
     const todo = await db.todos.findUnique({ where: { id } });
-    
+
     if (!todo) {
       return {
         status: 404,
-        jsonBody: { error: 'Not found', message: `Todo ${id} not found` }
+        jsonBody: { error: "Not found", message: `Todo ${id} not found` },
       };
     }
-    
+
     return { jsonBody: todo };
   },
-  methods: ['GET'],
-  route: 'todos/{id}',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "todos/{id}",
+  authLevel: "anonymous",
   request: {
     params: z.object({
-      id: z.string().uuid().describe('Todo ID')
-    })
+      id: z.string().uuid().describe("Todo ID"),
+    }),
   },
   responses: [
     {
       httpCode: 200,
-      description: 'Todo found',
+      description: "Todo found",
       content: {
-        'application/json': {
-          schema: TodoSchema
-        }
-      }
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
     },
     {
       httpCode: 404,
-      description: 'Todo not found',
+      description: "Todo not found",
       content: {
-        'application/json': {
-          schema: ErrorSchema
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  ],
 });
 ```
 
@@ -5149,27 +5343,27 @@ app.openapiPath('GetTodo', 'Get a todo by ID', {
 Support different response formats:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const UserSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string().email()
+  email: z.string().email(),
 });
 
-app.openapiPath('GetUser', 'Get user in different formats', {
+app.openapiPath("GetUser", "Get user in different formats", {
   handler: async (request, context) => {
     const { id } = request.params;
     const user = await db.users.findUnique({ where: { id } });
-    
+
     if (!user) {
-      return { status: 404, jsonBody: { error: 'User not found' } };
+      return { status: 404, jsonBody: { error: "User not found" } };
     }
-    
+
     // Check Accept header for content negotiation
-    const acceptHeader = request.headers.get('accept') || 'application/json';
-    
-    if (acceptHeader.includes('application/xml')) {
+    const acceptHeader = request.headers.get("accept") || "application/json";
+
+    if (acceptHeader.includes("application/xml")) {
       // Return XML
       const xml = `<?xml version="1.0"?>
         <user>
@@ -5179,53 +5373,53 @@ app.openapiPath('GetUser', 'Get user in different formats', {
         </user>`;
       return {
         status: 200,
-        headers: { 'Content-Type': 'application/xml' },
-        body: xml
+        headers: { "Content-Type": "application/xml" },
+        body: xml,
       };
     }
-    
-    if (acceptHeader.includes('text/csv')) {
+
+    if (acceptHeader.includes("text/csv")) {
       // Return CSV
       const csv = `id,name,email\n${user.id},${user.name},${user.email}`;
       return {
         status: 200,
-        headers: { 'Content-Type': 'text/csv' },
-        body: csv
+        headers: { "Content-Type": "text/csv" },
+        body: csv,
       };
     }
-    
+
     // Default: JSON
     return { jsonBody: user };
   },
-  methods: ['GET'],
-  route: 'users/{id}',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "users/{id}",
+  authLevel: "anonymous",
   request: {
     params: z.object({
-      id: z.string().uuid()
-    })
+      id: z.string().uuid(),
+    }),
   },
   responses: [
     {
       httpCode: 200,
-      description: 'User data in JSON format',
+      description: "User data in JSON format",
       content: {
-        'application/json': {
-          schema: UserSchema
+        "application/json": {
+          schema: UserSchema,
         },
-        'application/xml': {
-          schema: z.string().describe('User data in XML format')
+        "application/xml": {
+          schema: z.string().describe("User data in XML format"),
         },
-        'text/csv': {
-          schema: z.string().describe('User data in CSV format')
-        }
-      }
+        "text/csv": {
+          schema: z.string().describe("User data in CSV format"),
+        },
+      },
     },
     {
       httpCode: 404,
-      description: 'User not found'
-    }
-  ]
+      description: "User not found",
+    },
+  ],
 });
 ```
 
@@ -5234,55 +5428,55 @@ app.openapiPath('GetUser', 'Get user in different formats', {
 Document custom response headers:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
-app.openapiPath('CreateResource', 'Create a new resource', {
+app.openapiPath("CreateResource", "Create a new resource", {
   handler: async (request, context) => {
     const body = await request.json();
     const resource = await db.resources.create(body);
-    
+
     return {
       status: 201,
       headers: {
-        'Location': `/api/resources/${resource.id}`,
-        'X-Resource-ID': resource.id,
-        'X-Request-ID': context.invocationId
+        Location: `/api/resources/${resource.id}`,
+        "X-Resource-ID": resource.id,
+        "X-Request-ID": context.invocationId,
       },
-      jsonBody: resource
+      jsonBody: resource,
     };
   },
-  methods: ['POST'],
-  route: 'resources',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "resources",
+  authLevel: "anonymous",
   responses: [
     {
       httpCode: 201,
-      description: 'Resource created successfully',
+      description: "Resource created successfully",
       headers: {
-        'Location': {
-          description: 'URL of the created resource',
-          schema: z.string().url()
+        Location: {
+          description: "URL of the created resource",
+          schema: z.string().url(),
         },
-        'X-Resource-ID': {
-          description: 'ID of the created resource',
-          schema: z.string().uuid()
+        "X-Resource-ID": {
+          description: "ID of the created resource",
+          schema: z.string().uuid(),
         },
-        'X-Request-ID': {
-          description: 'Request tracking ID',
-          schema: z.string()
-        }
+        "X-Request-ID": {
+          description: "Request tracking ID",
+          schema: z.string(),
+        },
       },
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             id: z.string().uuid(),
             name: z.string(),
-            createdAt: z.string().datetime()
-          })
-        }
-      }
-    }
-  ]
+            createdAt: z.string().datetime(),
+          }),
+        },
+      },
+    },
+  ],
 });
 ```
 
@@ -5291,74 +5485,74 @@ app.openapiPath('CreateResource', 'Create a new resource', {
 Provide example responses for documentation:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const ProductSchema = z.object({
   id: z.string(),
   name: z.string(),
   price: z.number(),
-  inStock: z.boolean()
+  inStock: z.boolean(),
 });
 
-app.openapiPath('GetProduct', 'Get product details', {
+app.openapiPath("GetProduct", "Get product details", {
   handler: async (request, context) => {
     const { id } = request.params;
     const product = await db.products.findUnique({ where: { id } });
-    
+
     if (!product) {
-      return { status: 404, jsonBody: { error: 'Product not found' } };
+      return { status: 404, jsonBody: { error: "Product not found" } };
     }
-    
+
     return { jsonBody: product };
   },
-  methods: ['GET'],
-  route: 'products/{id}',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "products/{id}",
+  authLevel: "anonymous",
   responses: [
     {
       httpCode: 200,
-      description: 'Product found',
+      description: "Product found",
       content: {
-        'application/json': {
+        "application/json": {
           schema: ProductSchema,
           examples: {
             laptop: {
-              summary: 'Example laptop product',
+              summary: "Example laptop product",
               value: {
-                id: '123e4567-e89b-12d3-a456-426614174000',
-                name: 'Gaming Laptop',
+                id: "123e4567-e89b-12d3-a456-426614174000",
+                name: "Gaming Laptop",
                 price: 1299.99,
-                inStock: true
-              }
+                inStock: true,
+              },
             },
             phone: {
-              summary: 'Example phone product',
+              summary: "Example phone product",
               value: {
-                id: '123e4567-e89b-12d3-a456-426614174001',
-                name: 'Smartphone Pro',
+                id: "123e4567-e89b-12d3-a456-426614174001",
+                name: "Smartphone Pro",
                 price: 899.99,
-                inStock: false
-              }
-            }
-          }
-        }
-      }
+                inStock: false,
+              },
+            },
+          },
+        },
+      },
     },
     {
       httpCode: 404,
-      description: 'Product not found',
+      description: "Product not found",
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
-            error: z.string()
+            error: z.string(),
           }),
           example: {
-            error: 'Product not found'
-          }
-        }
-      }
-    }
-  ]
+            error: "Product not found",
+          },
+        },
+      },
+    },
+  ],
 });
 ```
 
@@ -5367,7 +5561,7 @@ app.openapiPath('GetProduct', 'Get product details', {
 Comprehensive response documentation:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const TodoSchema = z.object({
   id: z.string().uuid(),
@@ -5375,241 +5569,241 @@ const TodoSchema = z.object({
   description: z.string().optional(),
   completed: z.boolean(),
   createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime()
+  updatedAt: z.string().datetime(),
 });
 
 const ErrorSchema = z.object({
   error: z.string(),
   message: z.string().optional(),
-  details: z.array(z.any()).optional()
+  details: z.array(z.any()).optional(),
 });
 
 // CREATE
-app.openapiPath('CreateTodo', 'Create a new todo', {
+app.openapiPath("CreateTodo", "Create a new todo", {
   handler: async (request, context) => {
     const body = await request.json();
     const todo = await db.todos.create(body);
-    
+
     return {
       status: 201,
-      headers: { 'Location': `/api/todos/${todo.id}` },
-      jsonBody: todo
+      headers: { Location: `/api/todos/${todo.id}` },
+      jsonBody: todo,
     };
   },
-  methods: ['POST'],
-  route: 'todos',
-  authLevel: 'anonymous',
+  methods: ["POST"],
+  route: "todos",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             title: z.string().min(1),
             description: z.string().optional(),
-            completed: z.boolean().default(false)
-          })
-        }
-      }
-    }
+            completed: z.boolean().default(false),
+          }),
+        },
+      },
+    },
   },
   responses: [
     {
       httpCode: 201,
-      description: 'Todo created successfully',
+      description: "Todo created successfully",
       headers: {
-        'Location': {
-          description: 'URL of the created todo',
-          schema: z.string()
-        }
+        Location: {
+          description: "URL of the created todo",
+          schema: z.string(),
+        },
       },
       content: {
-        'application/json': {
-          schema: TodoSchema
-        }
-      }
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
     },
     {
       httpCode: 400,
-      description: 'Invalid request body',
+      description: "Invalid request body",
       content: {
-        'application/json': {
-          schema: ErrorSchema
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  ],
 });
 
 // READ (single)
-app.openapiPath('GetTodo', 'Get a specific todo', {
+app.openapiPath("GetTodo", "Get a specific todo", {
   handler: async (request, context) => {
     const { id } = request.params;
     const todo = await db.todos.findUnique({ where: { id } });
-    
+
     if (!todo) {
-      return { status: 404, jsonBody: { error: 'Todo not found' } };
+      return { status: 404, jsonBody: { error: "Todo not found" } };
     }
-    
+
     return { jsonBody: todo };
   },
-  methods: ['GET'],
-  route: 'todos/{id}',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "todos/{id}",
+  authLevel: "anonymous",
   responses: [
     {
       httpCode: 200,
-      description: 'Todo found',
+      description: "Todo found",
       content: {
-        'application/json': {
-          schema: TodoSchema
-        }
-      }
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
     },
     {
       httpCode: 404,
-      description: 'Todo not found',
+      description: "Todo not found",
       content: {
-        'application/json': {
-          schema: ErrorSchema
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  ],
 });
 
 // READ (list)
-app.openapiPath('ListTodos', 'List all todos', {
+app.openapiPath("ListTodos", "List all todos", {
   handler: async (request, context) => {
     const todos = await db.todos.findMany();
-    
+
     return {
       jsonBody: todos,
       headers: {
-        'X-Total-Count': todos.length.toString()
-      }
+        "X-Total-Count": todos.length.toString(),
+      },
     };
   },
-  methods: ['GET'],
-  route: 'todos',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "todos",
+  authLevel: "anonymous",
   responses: [
     {
       httpCode: 200,
-      description: 'List of todos',
+      description: "List of todos",
       headers: {
-        'X-Total-Count': {
-          description: 'Total number of todos',
-          schema: z.string()
-        }
+        "X-Total-Count": {
+          description: "Total number of todos",
+          schema: z.string(),
+        },
       },
       content: {
-        'application/json': {
-          schema: z.array(TodoSchema)
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: z.array(TodoSchema),
+        },
+      },
+    },
+  ],
 });
 
 // UPDATE
-app.openapiPath('UpdateTodo', 'Update a todo', {
+app.openapiPath("UpdateTodo", "Update a todo", {
   handler: async (request, context) => {
     const { id } = request.params;
     const body = await request.json();
-    
+
     const existing = await db.todos.findUnique({ where: { id } });
     if (!existing) {
-      return { status: 404, jsonBody: { error: 'Todo not found' } };
+      return { status: 404, jsonBody: { error: "Todo not found" } };
     }
-    
+
     const updated = await db.todos.update({
       where: { id },
-      data: body
+      data: body,
     });
-    
+
     return { jsonBody: updated };
   },
-  methods: ['PATCH'],
-  route: 'todos/{id}',
-  authLevel: 'anonymous',
+  methods: ["PATCH"],
+  route: "todos/{id}",
+  authLevel: "anonymous",
   request: {
     body: {
       required: true,
       content: {
-        'application/json': {
+        "application/json": {
           schema: z.object({
             title: z.string().optional(),
             description: z.string().optional(),
-            completed: z.boolean().optional()
-          })
-        }
-      }
-    }
+            completed: z.boolean().optional(),
+          }),
+        },
+      },
+    },
   },
   responses: [
     {
       httpCode: 200,
-      description: 'Todo updated successfully',
+      description: "Todo updated successfully",
       content: {
-        'application/json': {
-          schema: TodoSchema
-        }
-      }
+        "application/json": {
+          schema: TodoSchema,
+        },
+      },
     },
     {
       httpCode: 404,
-      description: 'Todo not found',
+      description: "Todo not found",
       content: {
-        'application/json': {
-          schema: ErrorSchema
-        }
-      }
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
     },
     {
       httpCode: 400,
-      description: 'Invalid request body',
+      description: "Invalid request body",
       content: {
-        'application/json': {
-          schema: ErrorSchema
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  ],
 });
 
 // DELETE
-app.openapiPath('DeleteTodo', 'Delete a todo', {
+app.openapiPath("DeleteTodo", "Delete a todo", {
   handler: async (request, context) => {
     const { id } = request.params;
-    
+
     const existing = await db.todos.findUnique({ where: { id } });
     if (!existing) {
-      return { status: 404, jsonBody: { error: 'Todo not found' } };
+      return { status: 404, jsonBody: { error: "Todo not found" } };
     }
-    
+
     await db.todos.delete({ where: { id } });
-    
+
     return { status: 204 };
   },
-  methods: ['DELETE'],
-  route: 'todos/{id}',
-  authLevel: 'anonymous',
+  methods: ["DELETE"],
+  route: "todos/{id}",
+  authLevel: "anonymous",
   responses: [
     {
       httpCode: 204,
-      description: 'Todo deleted successfully'
+      description: "Todo deleted successfully",
     },
     {
       httpCode: 404,
-      description: 'Todo not found',
+      description: "Todo not found",
       content: {
-        'application/json': {
-          schema: ErrorSchema
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  ],
 });
 ```
 
@@ -5618,7 +5812,7 @@ app.openapiPath('DeleteTodo', 'Delete a todo', {
 Document paginated responses:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const PaginatedResponseSchema = z.object({
   data: z.array(z.any()),
@@ -5628,34 +5822,34 @@ const PaginatedResponseSchema = z.object({
     totalPages: z.number(),
     totalItems: z.number(),
     hasNext: z.boolean(),
-    hasPrevious: z.boolean()
+    hasPrevious: z.boolean(),
   }),
   links: z.object({
     self: z.string().url(),
     first: z.string().url(),
     last: z.string().url(),
     next: z.string().url().optional(),
-    previous: z.string().url().optional()
-  })
+    previous: z.string().url().optional(),
+  }),
 });
 
-app.openapiPath('ListPaginatedUsers', 'List users with pagination', {
+app.openapiPath("ListPaginatedUsers", "List users with pagination", {
   handler: async (request, context) => {
     const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '10');
-    
+    const page = parseInt(url.searchParams.get("page") || "1");
+    const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
+
     const totalItems = await db.users.count();
     const totalPages = Math.ceil(totalItems / pageSize);
     const skip = (page - 1) * pageSize;
-    
+
     const users = await db.users.findMany({
       skip,
-      take: pageSize
+      take: pageSize,
     });
-    
+
     const baseUrl = `${url.protocol}//${url.host}${url.pathname}`;
-    
+
     return {
       jsonBody: {
         data: users,
@@ -5665,42 +5859,48 @@ app.openapiPath('ListPaginatedUsers', 'List users with pagination', {
           totalPages,
           totalItems,
           hasNext: page < totalPages,
-          hasPrevious: page > 1
+          hasPrevious: page > 1,
         },
         links: {
           self: `${baseUrl}?page=${page}&pageSize=${pageSize}`,
           first: `${baseUrl}?page=1&pageSize=${pageSize}`,
           last: `${baseUrl}?page=${totalPages}&pageSize=${pageSize}`,
           ...(page < totalPages && {
-            next: `${baseUrl}?page=${page + 1}&pageSize=${pageSize}`
+            next: `${baseUrl}?page=${page + 1}&pageSize=${pageSize}`,
           }),
           ...(page > 1 && {
-            previous: `${baseUrl}?page=${page - 1}&pageSize=${pageSize}`
-          })
-        }
-      }
+            previous: `${baseUrl}?page=${page - 1}&pageSize=${pageSize}`,
+          }),
+        },
+      },
     };
   },
-  methods: ['GET'],
-  route: 'users',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "users",
+  authLevel: "anonymous",
   request: {
     query: z.object({
-      page: z.number().int().min(1).default(1).describe('Page number'),
-      pageSize: z.number().int().min(1).max(100).default(10).describe('Items per page')
-    })
+      page: z.number().int().min(1).default(1).describe("Page number"),
+      pageSize: z
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .default(10)
+        .describe("Items per page"),
+    }),
   },
   responses: [
     {
       httpCode: 200,
-      description: 'Paginated list of users',
+      description: "Paginated list of users",
       content: {
-        'application/json': {
-          schema: PaginatedResponseSchema
-        }
-      }
-    }
-  ]
+        "application/json": {
+          schema: PaginatedResponseSchema,
+        },
+      },
+    },
+  ],
 });
 ```
 
@@ -5709,87 +5909,88 @@ app.openapiPath('ListPaginatedUsers', 'List users with pagination', {
 Document file downloads:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
-app.openapiPath('DownloadReport', 'Download report file', {
+app.openapiPath("DownloadReport", "Download report file", {
   handler: async (request, context) => {
     const { reportId } = request.params;
-    const format = request.query.get('format') || 'pdf';
-    
+    const format = request.query.get("format") || "pdf";
+
     const report = await generateReport(reportId, format);
-    
+
     if (!report) {
-      return { status: 404, jsonBody: { error: 'Report not found' } };
+      return { status: 404, jsonBody: { error: "Report not found" } };
     }
-    
+
     const contentTypes = {
-      pdf: 'application/pdf',
-      csv: 'text/csv',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      pdf: "application/pdf",
+      csv: "text/csv",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     };
-    
+
     return {
       status: 200,
       headers: {
-        'Content-Type': contentTypes[format],
-        'Content-Disposition': `attachment; filename="report-${reportId}.${format}"`,
-        'Content-Length': report.length.toString()
+        "Content-Type": contentTypes[format],
+        "Content-Disposition": `attachment; filename="report-${reportId}.${format}"`,
+        "Content-Length": report.length.toString(),
       },
-      body: report
+      body: report,
     };
   },
-  methods: ['GET'],
-  route: 'reports/{reportId}/download',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "reports/{reportId}/download",
+  authLevel: "anonymous",
   request: {
     params: z.object({
-      reportId: z.string().uuid()
+      reportId: z.string().uuid(),
     }),
     query: z.object({
-      format: z.enum(['pdf', 'csv', 'xlsx']).default('pdf')
-    })
+      format: z.enum(["pdf", "csv", "xlsx"]).default("pdf"),
+    }),
   },
   responses: [
     {
       httpCode: 200,
-      description: 'Report file',
+      description: "Report file",
       headers: {
-        'Content-Type': {
-          description: 'MIME type of the file',
-          schema: z.string()
+        "Content-Type": {
+          description: "MIME type of the file",
+          schema: z.string(),
         },
-        'Content-Disposition': {
-          description: 'File download attachment',
-          schema: z.string()
+        "Content-Disposition": {
+          description: "File download attachment",
+          schema: z.string(),
         },
-        'Content-Length': {
-          description: 'Size of the file in bytes',
-          schema: z.string()
-        }
+        "Content-Length": {
+          description: "Size of the file in bytes",
+          schema: z.string(),
+        },
       },
       content: {
-        'application/pdf': {
-          schema: z.string().describe('PDF report file')
+        "application/pdf": {
+          schema: z.string().describe("PDF report file"),
         },
-        'text/csv': {
-          schema: z.string().describe('CSV report file')
+        "text/csv": {
+          schema: z.string().describe("CSV report file"),
         },
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-          schema: z.string().describe('Excel report file')
-        }
-      }
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+          schema: z.string().describe("Excel report file"),
+        },
+      },
     },
     {
       httpCode: 404,
-      description: 'Report not found'
-    }
-  ]
+      description: "Report not found",
+    },
+  ],
 });
 ```
 
 #### Response Best Practices
 
 **✅ DO:**
+
 - Document all possible HTTP status codes
 - Provide clear descriptions for each response
 - Include response schemas for documentation
@@ -5801,6 +6002,7 @@ app.openapiPath('DownloadReport', 'Download report file', {
 - Set proper Content-Type headers
 
 **❌ DON'T:**
+
 - Don't return 200 for everything
 - Don't expose sensitive data in error messages
 - Don't forget to document error responses
@@ -5815,13 +6017,13 @@ app.openapiPath('DownloadReport', 'Download report file', {
 Create reusable response helpers:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Standard success response
 function successResponse<T>(data: T, statusCode: number = 200) {
   return {
     status: statusCode,
-    jsonBody: data
+    jsonBody: data,
   };
 }
 
@@ -5832,8 +6034,8 @@ function errorResponse(error: string, statusCode: number = 400, details?: any) {
     jsonBody: {
       error,
       details,
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   };
 }
 
@@ -5846,8 +6048,8 @@ function notFoundResponse(resource: string, id: string) {
 function createdResponse<T>(data: T, location: string) {
   return {
     status: 201,
-    headers: { 'Location': location },
-    jsonBody: data
+    headers: { Location: location },
+    jsonBody: data,
   };
 }
 
@@ -5857,20 +6059,20 @@ function noContentResponse() {
 }
 
 // Usage
-app.openapiPath('GetItem', 'Get an item', {
+app.openapiPath("GetItem", "Get an item", {
   handler: async (request, context) => {
     const { id } = request.params;
     const item = await db.items.findUnique({ where: { id } });
-    
+
     if (!item) {
-      return notFoundResponse('Item', id);
+      return notFoundResponse("Item", id);
     }
-    
+
     return successResponse(item);
   },
-  methods: ['GET'],
-  route: 'items/{id}',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "items/{id}",
+  authLevel: "anonymous",
 });
 ```
 
@@ -5885,50 +6087,51 @@ The library provides several utility functions to simplify common tasks like par
 Parse and validate request body with Zod schema:
 
 ```typescript
-import { parseBody, ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseBody, ValidationError } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const CreateUserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-  age: z.number().int().min(18)
+  age: z.number().int().min(18),
 });
 
-app.openapiPath('CreateUser', 'Create a user', {
+app.openapiPath("CreateUser", "Create a user", {
   handler: async (request, context) => {
     try {
       // Parse and validate body
       const user = await parseBody(request, CreateUserSchema);
-      
+
       // user is fully typed: { name: string; email: string; age: number }
       const created = await db.users.create(user);
-      
+
       return { status: 201, jsonBody: created };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
           jsonBody: {
-            error: 'Validation failed',
-            issues: error.issues
-          }
+            error: "Validation failed",
+            issues: error.issues,
+          },
         };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'users',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "users",
+  authLevel: "anonymous",
 });
 ```
 
 **Signature:**
+
 ```typescript
 async function parseBody<T>(
   request: HttpRequest,
   schema: z.ZodSchema<T>
-): Promise<T>
+): Promise<T>;
 ```
 
 **Throws:** `ValidationError` if validation fails
@@ -5938,53 +6141,54 @@ async function parseBody<T>(
 Parse and validate query parameters:
 
 ```typescript
-import { parseQueryParams, ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import {
+  parseQueryParams,
+  ValidationError,
+} from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const SearchSchema = z.object({
   q: z.string().min(1),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
-  sortBy: z.enum(['name', 'date', 'price']).default('name')
+  sortBy: z.enum(["name", "date", "price"]).default("name"),
 });
 
-app.openapiPath('Search', 'Search products', {
+app.openapiPath("Search", "Search products", {
   handler: async (request, context) => {
     try {
       // Parse and validate query parameters
       const params = parseQueryParams(request, SearchSchema);
-      
+
       // params is typed: { q: string; page: number; limit: number; sortBy: 'name' | 'date' | 'price' }
       const results = await searchProducts({
         query: params.q,
         page: params.page,
         limit: params.limit,
-        sortBy: params.sortBy
+        sortBy: params.sortBy,
       });
-      
+
       return { jsonBody: results };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Invalid query parameters', issues: error.issues }
+          jsonBody: { error: "Invalid query parameters", issues: error.issues },
         };
       }
       throw error;
     }
   },
-  methods: ['GET'],
-  route: 'search',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "search",
+  authLevel: "anonymous",
 });
 ```
 
 **Signature:**
+
 ```typescript
-function parseQueryParams<T>(
-  request: HttpRequest,
-  schema: z.ZodSchema<T>
-): T
+function parseQueryParams<T>(request: HttpRequest, schema: z.ZodSchema<T>): T;
 ```
 
 **Note:** Use `z.coerce.number()` for numeric query parameters (they come as strings)
@@ -5996,51 +6200,52 @@ function parseQueryParams<T>(
 Parse and validate route parameters:
 
 ```typescript
-import { parseRouteParams, ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import {
+  parseRouteParams,
+  ValidationError,
+} from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const RouteSchema = z.object({
   userId: z.string().uuid(),
   postId: z.string().uuid(),
-  action: z.enum(['approve', 'reject'])
+  action: z.enum(["approve", "reject"]),
 });
 
-app.openapiPath('PostAction', 'Perform action on post', {
+app.openapiPath("PostAction", "Perform action on post", {
   handler: async (request, context) => {
     try {
       // Parse and validate route parameters
       const params = parseRouteParams(request, RouteSchema);
-      
+
       // params is typed: { userId: string; postId: string; action: 'approve' | 'reject' }
       const result = await performPostAction(
         params.userId,
         params.postId,
         params.action
       );
-      
+
       return { jsonBody: result };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Invalid route parameters', issues: error.issues }
+          jsonBody: { error: "Invalid route parameters", issues: error.issues },
         };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'users/{userId}/posts/{postId}/{action}',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "users/{userId}/posts/{postId}/{action}",
+  authLevel: "anonymous",
 });
 ```
 
 **Signature:**
+
 ```typescript
-function parseRouteParams<T>(
-  request: HttpRequest,
-  schema: z.ZodSchema<T>
-): T
+function parseRouteParams<T>(request: HttpRequest, schema: z.ZodSchema<T>): T;
 ```
 
 **Throws:** `ValidationError` if validation fails
@@ -6050,52 +6255,53 @@ function parseRouteParams<T>(
 Parse and validate request headers:
 
 ```typescript
-import { parseHeaders, ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseHeaders, ValidationError } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const HeadersSchema = z.object({
-  'x-api-version': z.enum(['1.0', '2.0']),
-  'x-client-id': z.string().min(1),
-  'x-request-id': z.string().uuid().optional(),
-  'accept-language': z.string().default('en')
+  "x-api-version": z.enum(["1.0", "2.0"]),
+  "x-client-id": z.string().min(1),
+  "x-request-id": z.string().uuid().optional(),
+  "accept-language": z.string().default("en"),
 });
 
-app.openapiPath('VersionedAPI', 'Versioned API endpoint', {
+app.openapiPath("VersionedAPI", "Versioned API endpoint", {
   handler: async (request, context) => {
     try {
       // Parse and validate headers
       const headers = parseHeaders(request, HeadersSchema);
-      
+
       // headers is typed: { 'x-api-version': '1.0' | '2.0'; 'x-client-id': string; ... }
-      context.log(`Request from client ${headers['x-client-id']} using API v${headers['x-api-version']}`);
-      
-      const result = headers['x-api-version'] === '2.0'
-        ? await handleV2(request)
-        : await handleV1(request);
-      
+      context.log(
+        `Request from client ${headers["x-client-id"]} using API v${headers["x-api-version"]}`
+      );
+
+      const result =
+        headers["x-api-version"] === "2.0"
+          ? await handleV2(request)
+          : await handleV1(request);
+
       return { jsonBody: result };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Invalid headers', issues: error.issues }
+          jsonBody: { error: "Invalid headers", issues: error.issues },
         };
       }
       throw error;
     }
   },
-  methods: ['GET'],
-  route: 'versioned/data',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "versioned/data",
+  authLevel: "anonymous",
 });
 ```
 
 **Signature:**
+
 ```typescript
-function parseHeaders<T>(
-  request: HttpRequest,
-  schema: z.ZodSchema<T>
-): T
+function parseHeaders<T>(request: HttpRequest, schema: z.ZodSchema<T>): T;
 ```
 
 **Note:** Header names are case-insensitive
@@ -6107,44 +6313,43 @@ function parseHeaders<T>(
 Extract user identity from EasyAuth headers:
 
 ```typescript
-import { parseEasyAuthPrincipal } from '@apvee/azure-functions-openapi';
+import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
-app.openapiPath('GetProfile', 'Get user profile', {
+app.openapiPath("GetProfile", "Get user profile", {
   handler: async (request, context) => {
     // Parse EasyAuth principal
     const user = parseEasyAuthPrincipal(request);
-    
+
     if (!user) {
       return {
         status: 401,
-        jsonBody: { error: 'Not authenticated' }
+        jsonBody: { error: "Not authenticated" },
       };
     }
-    
+
     // user contains: { userId, username, identityProvider, claims }
     const profile = await db.users.findUnique({
-      where: { id: user.userId }
+      where: { id: user.userId },
     });
-    
+
     return {
       jsonBody: {
         ...profile,
         provider: user.identityProvider,
-        email: user.claims.find(c => c.typ === 'emails')?.val
-      }
+        email: user.claims.find((c) => c.typ === "emails")?.val,
+      },
     };
   },
-  methods: ['GET'],
-  route: 'me',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "me",
+  authLevel: "anonymous",
 });
 ```
 
 **Signature:**
+
 ```typescript
-function parseEasyAuthPrincipal(
-  request: HttpRequest
-): EasyAuthPrincipal | null
+function parseEasyAuthPrincipal(request: HttpRequest): EasyAuthPrincipal | null;
 
 interface EasyAuthPrincipal {
   userId: string;
@@ -6161,39 +6366,41 @@ interface EasyAuthPrincipal {
 Extract Azure Function key from request:
 
 ```typescript
-import { extractFunctionKey } from '@apvee/azure-functions-openapi';
+import { extractFunctionKey } from "@apvee/azure-functions-openapi";
 
-app.openapiPath('TrackUsage', 'Track API usage', {
+app.openapiPath("TrackUsage", "Track API usage", {
   handler: async (request, context) => {
     // Extract function key (from query or header)
     const functionKey = extractFunctionKey(request);
-    
+
     if (functionKey) {
       // Log usage for this key
       await db.apiUsage.create({
-        key: functionKey.substring(0, 8) + '...', // Partial key for logging
+        key: functionKey.substring(0, 8) + "...", // Partial key for logging
         endpoint: request.url,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
-      
+
       context.log(`Request made with key: ${functionKey.substring(0, 8)}...`);
     }
-    
+
     const data = await getData();
     return { jsonBody: data };
   },
-  methods: ['GET'],
-  route: 'data',
-  authLevel: 'function'
+  methods: ["GET"],
+  route: "data",
+  authLevel: "function",
 });
 ```
 
 **Signature:**
+
 ```typescript
-function extractFunctionKey(request: HttpRequest): string | null
+function extractFunctionKey(request: HttpRequest): string | null;
 ```
 
 **Looks for key in:**
+
 1. Query parameter: `?code=xxx`
 2. Header: `x-functions-key: xxx`
 
@@ -6204,70 +6411,74 @@ function extractFunctionKey(request: HttpRequest): string | null
 Create a typed handler with automatic parameter extraction:
 
 ```typescript
-import { createTypedHandler } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { createTypedHandler } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const ParamsSchema = z.object({
-  id: z.string().uuid()
+  id: z.string().uuid(),
 });
 
 const QuerySchema = z.object({
-  include: z.enum(['comments', 'likes', 'all']).optional()
+  include: z.enum(["comments", "likes", "all"]).optional(),
 });
 
 const BodySchema = z.object({
   title: z.string(),
-  content: z.string()
+  content: z.string(),
 });
 
 // Create typed handler
-const updatePostHandler = createTypedHandler({
-  params: ParamsSchema,
-  query: QuerySchema,
-  body: BodySchema
-}, async (data, request, context) => {
-  // data is fully typed: { params: {...}, query: {...}, body: {...} }
-  const { id } = data.params;
-  const { include } = data.query;
-  const { title, content } = data.body;
-  
-  const post = await db.posts.update({
-    where: { id },
-    data: { title, content }
-  });
-  
-  // Include additional data based on query
-  if (include === 'comments' || include === 'all') {
-    post.comments = await db.comments.findMany({ where: { postId: id } });
-  }
-  if (include === 'likes' || include === 'all') {
-    post.likesCount = await db.likes.count({ where: { postId: id } });
-  }
-  
-  return { jsonBody: post };
-});
+const updatePostHandler = createTypedHandler(
+  {
+    params: ParamsSchema,
+    query: QuerySchema,
+    body: BodySchema,
+  },
+  async (data, request, context) => {
+    // data is fully typed: { params: {...}, query: {...}, body: {...} }
+    const { id } = data.params;
+    const { include } = data.query;
+    const { title, content } = data.body;
 
-app.openapiPath('UpdatePost', 'Update a post', {
+    const post = await db.posts.update({
+      where: { id },
+      data: { title, content },
+    });
+
+    // Include additional data based on query
+    if (include === "comments" || include === "all") {
+      post.comments = await db.comments.findMany({ where: { postId: id } });
+    }
+    if (include === "likes" || include === "all") {
+      post.likesCount = await db.likes.count({ where: { postId: id } });
+    }
+
+    return { jsonBody: post };
+  }
+);
+
+app.openapiPath("UpdatePost", "Update a post", {
   handler: updatePostHandler,
-  methods: ['PUT'],
-  route: 'posts/{id}',
-  authLevel: 'anonymous',
+  methods: ["PUT"],
+  route: "posts/{id}",
+  authLevel: "anonymous",
   request: {
     params: ParamsSchema,
     query: QuerySchema,
     body: {
       required: true,
       content: {
-        'application/json': {
-          schema: BodySchema
-        }
-      }
-    }
-  }
+        "application/json": {
+          schema: BodySchema,
+        },
+      },
+    },
+  },
 });
 ```
 
 **Signature:**
+
 ```typescript
 function createTypedHandler<
   TParams = undefined,
@@ -6291,10 +6502,14 @@ function createTypedHandler<
     request: HttpRequest,
     context: InvocationContext
   ) => Promise<HttpResponseInit>
-): (request: HttpRequest, context: InvocationContext) => Promise<HttpResponseInit>
+): (
+  request: HttpRequest,
+  context: InvocationContext
+) => Promise<HttpResponseInit>;
 ```
 
 **Benefits:**
+
 - ✅ Single validation point
 - ✅ Full TypeScript type inference
 - ✅ Automatic error handling
@@ -6306,8 +6521,8 @@ function createTypedHandler<
 Custom error class for validation failures:
 
 ```typescript
-import { ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { ValidationError } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 // ValidationError is thrown by parse functions
 try {
@@ -6315,15 +6530,15 @@ try {
 } catch (error) {
   if (error instanceof ValidationError) {
     // Access validation issues
-    console.log('Validation failed:', error.issues);
-    
+    console.log("Validation failed:", error.issues);
+
     return {
       status: 400,
       jsonBody: {
-        error: 'Validation failed',
+        error: "Validation failed",
         issues: error.issues,
-        message: error.message
-      }
+        message: error.message,
+      },
     };
   }
   throw error;
@@ -6331,19 +6546,18 @@ try {
 ```
 
 **Class Definition:**
+
 ```typescript
 class ValidationError extends Error {
-  constructor(
-    message: string,
-    public issues: z.ZodIssue[]
-  ) {
+  constructor(message: string, public issues: z.ZodIssue[]) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 ```
 
 **Properties:**
+
 - `message`: Error message
 - `issues`: Array of Zod validation issues
 
@@ -6360,12 +6574,12 @@ import {
   parseEasyAuthPrincipal,
   extractFunctionKey,
   createTypedHandler,
-  ValidationError
-} from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+  ValidationError,
+} from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 // Example 1: Manual validation
-app.openapiPath('CreateOrder', 'Create an order', {
+app.openapiPath("CreateOrder", "Create an order", {
   handler: async (request, context) => {
     try {
       // Parse all request parts
@@ -6373,33 +6587,33 @@ app.openapiPath('CreateOrder', 'Create an order', {
       const query = parseQueryParams(request, QuerySchema);
       const headers = parseHeaders(request, HeadersSchema);
       const user = parseEasyAuthPrincipal(request);
-      
+
       if (!user) {
-        return { status: 401, jsonBody: { error: 'Unauthorized' } };
+        return { status: 401, jsonBody: { error: "Unauthorized" } };
       }
-      
+
       // Create order
       const order = await db.orders.create({
         ...body,
         userId: user.userId,
-        language: headers['accept-language'],
-        async: query.async
+        language: headers["accept-language"],
+        async: query.async,
       });
-      
+
       return { status: 201, jsonBody: order };
     } catch (error) {
       if (error instanceof ValidationError) {
         return {
           status: 400,
-          jsonBody: { error: 'Validation failed', issues: error.issues }
+          jsonBody: { error: "Validation failed", issues: error.issues },
         };
       }
       throw error;
     }
   },
-  methods: ['POST'],
-  route: 'orders',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "orders",
+  authLevel: "anonymous",
 });
 
 // Example 2: Using typed handler
@@ -6407,31 +6621,31 @@ const createOrderHandler = createTypedHandler(
   {
     body: OrderSchema,
     query: QuerySchema,
-    headers: HeadersSchema
+    headers: HeadersSchema,
   },
   async (data, request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    
+
     if (!user) {
-      return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      return { status: 401, jsonBody: { error: "Unauthorized" } };
     }
-    
+
     const order = await db.orders.create({
       ...data.body,
       userId: user.userId,
-      language: data.headers['accept-language'],
-      async: data.query.async
+      language: data.headers["accept-language"],
+      async: data.query.async,
     });
-    
+
     return { status: 201, jsonBody: order };
   }
 );
 
-app.openapiPath('CreateOrderTyped', 'Create an order (typed)', {
+app.openapiPath("CreateOrderTyped", "Create an order (typed)", {
   handler: createOrderHandler,
-  methods: ['POST'],
-  route: 'orders',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "orders",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6440,36 +6654,44 @@ app.openapiPath('CreateOrderTyped', 'Create an order (typed)', {
 Reusable error handling:
 
 ```typescript
-import { ValidationError } from '@apvee/azure-functions-openapi';
-import { InvocationContext, HttpRequest, HttpResponseInit } from '@azure/functions';
+import { ValidationError } from "@apvee/azure-functions-openapi";
+import {
+  InvocationContext,
+  HttpRequest,
+  HttpResponseInit,
+} from "@azure/functions";
 
 // Global error handler
-function handleError(error: unknown, context: InvocationContext): HttpResponseInit {
+function handleError(
+  error: unknown,
+  context: InvocationContext
+): HttpResponseInit {
   if (error instanceof ValidationError) {
-    context.warn('Validation error:', error.issues);
+    context.warn("Validation error:", error.issues);
     return {
       status: 400,
       jsonBody: {
-        error: 'Validation failed',
-        details: error.issues
-      }
+        error: "Validation failed",
+        details: error.issues,
+      },
     };
   }
-  
+
   // Log unexpected errors
-  context.error('Unexpected error:', error);
-  
+  context.error("Unexpected error:", error);
+
   return {
     status: 500,
     jsonBody: {
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? String(error) : undefined
-    }
+      error: "Internal server error",
+      message:
+        process.env.NODE_ENV === "development" ? String(error) : undefined,
+    },
   };
 }
 
 // Usage
-app.openapiPath('Example', 'Example endpoint', {
+app.openapiPath("Example", "Example endpoint", {
   handler: async (request, context) => {
     try {
       const body = await parseBody(request, schema);
@@ -6479,15 +6701,16 @@ app.openapiPath('Example', 'Example endpoint', {
       return handleError(error, context);
     }
   },
-  methods: ['POST'],
-  route: 'example',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "example",
+  authLevel: "anonymous",
 });
 ```
 
 #### Utility Best Practices
 
 **✅ DO:**
+
 - Use `parseBody()` for all request body validation
 - Use `z.coerce.number()` for numeric query parameters
 - Catch `ValidationError` explicitly
@@ -6498,6 +6721,7 @@ app.openapiPath('Example', 'Example endpoint', {
 - Extract function keys for usage tracking
 
 **❌ DON'T:**
+
 - Don't manually parse JSON without validation
 - Don't ignore ValidationError
 - Don't expose detailed errors in production
@@ -6511,32 +6735,32 @@ app.openapiPath('Example', 'Example endpoint', {
 All utilities provide full type inference:
 
 ```typescript
-import { parseBody } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseBody } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const UserSchema = z.object({
   name: z.string(),
   email: z.string().email(),
-  age: z.number().int()
+  age: z.number().int(),
 });
 
-app.openapiPath('CreateUser', 'Create user', {
+app.openapiPath("CreateUser", "Create user", {
   handler: async (request, context) => {
     const user = await parseBody(request, UserSchema);
-    
+
     // TypeScript knows:
     // user.name is string
     // user.email is string
     // user.age is number
-    
+
     // TypeScript will error on invalid properties:
     // user.invalidProperty // ❌ Type error
-    
+
     return { jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "users",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6551,42 +6775,42 @@ Comprehensive error handling patterns for robust API development.
 Handle common errors:
 
 ```typescript
-import { ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { ValidationError } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
-app.openapiPath('GetUser', 'Get user by ID', {
+app.openapiPath("GetUser", "Get user by ID", {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
-      
+
       const user = await db.users.findUnique({ where: { id } });
-      
+
       if (!user) {
         return {
           status: 404,
           jsonBody: {
-            error: 'Not Found',
-            message: `User ${id} not found`
-          }
+            error: "Not Found",
+            message: `User ${id} not found`,
+          },
         };
       }
-      
+
       return { jsonBody: user };
     } catch (error) {
-      context.error('Error fetching user:', error);
-      
+      context.error("Error fetching user:", error);
+
       return {
         status: 500,
         jsonBody: {
-          error: 'Internal Server Error',
-          message: 'An unexpected error occurred'
-        }
+          error: "Internal Server Error",
+          message: "An unexpected error occurred",
+        },
       };
     }
   },
-  methods: ['GET'],
-  route: 'users/{id}',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "users/{id}",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6595,50 +6819,50 @@ app.openapiPath('GetUser', 'Get user by ID', {
 Handle Zod validation errors:
 
 ```typescript
-import { parseBody, ValidationError } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { parseBody, ValidationError } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const UserSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-  age: z.number().int().min(18)
+  age: z.number().int().min(18),
 });
 
-app.openapiPath('CreateUser', 'Create a user', {
+app.openapiPath("CreateUser", "Create a user", {
   handler: async (request, context) => {
     try {
       const userData = await parseBody(request, UserSchema);
       const user = await db.users.create(userData);
-      
+
       return { status: 201, jsonBody: user };
     } catch (error) {
       if (error instanceof ValidationError) {
-        context.warn('Validation failed:', error.issues);
-        
+        context.warn("Validation failed:", error.issues);
+
         return {
           status: 400,
           jsonBody: {
-            error: 'Bad Request',
-            message: 'Invalid request data',
-            details: error.issues.map(issue => ({
-              field: issue.path.join('.'),
+            error: "Bad Request",
+            message: "Invalid request data",
+            details: error.issues.map((issue) => ({
+              field: issue.path.join("."),
               message: issue.message,
-              code: issue.code
-            }))
-          }
+              code: issue.code,
+            })),
+          },
         };
       }
-      
-      context.error('Unexpected error:', error);
+
+      context.error("Unexpected error:", error);
       return {
         status: 500,
-        jsonBody: { error: 'Internal Server Error' }
+        jsonBody: { error: "Internal Server Error" },
       };
     }
   },
-  methods: ['POST'],
-  route: 'users',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "users",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6647,138 +6871,142 @@ app.openapiPath('CreateUser', 'Create a user', {
 Define custom error types:
 
 ```typescript
-import { HttpResponseInit } from '@azure/functions';
+import { HttpResponseInit } from "@azure/functions";
 
 // Custom error classes
 class NotFoundError extends Error {
   constructor(resource: string, id: string) {
     super(`${resource} with id ${id} not found`);
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
   }
 }
 
 class UnauthorizedError extends Error {
-  constructor(message: string = 'Unauthorized') {
+  constructor(message: string = "Unauthorized") {
     super(message);
-    this.name = 'UnauthorizedError';
+    this.name = "UnauthorizedError";
   }
 }
 
 class ForbiddenError extends Error {
-  constructor(message: string = 'Forbidden') {
+  constructor(message: string = "Forbidden") {
     super(message);
-    this.name = 'ForbiddenError';
+    this.name = "ForbiddenError";
   }
 }
 
 class ConflictError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ConflictError';
+    this.name = "ConflictError";
   }
 }
 
 class BadRequestError extends Error {
   constructor(message: string, public details?: any) {
     super(message);
-    this.name = 'BadRequestError';
+    this.name = "BadRequestError";
   }
 }
 
 // Error response mapper
-function toErrorResponse(error: unknown, context: InvocationContext): HttpResponseInit {
+function toErrorResponse(
+  error: unknown,
+  context: InvocationContext
+): HttpResponseInit {
   if (error instanceof NotFoundError) {
     return {
       status: 404,
-      jsonBody: { error: 'Not Found', message: error.message }
+      jsonBody: { error: "Not Found", message: error.message },
     };
   }
-  
+
   if (error instanceof UnauthorizedError) {
     return {
       status: 401,
-      jsonBody: { error: 'Unauthorized', message: error.message }
+      jsonBody: { error: "Unauthorized", message: error.message },
     };
   }
-  
+
   if (error instanceof ForbiddenError) {
     return {
       status: 403,
-      jsonBody: { error: 'Forbidden', message: error.message }
+      jsonBody: { error: "Forbidden", message: error.message },
     };
   }
-  
+
   if (error instanceof ConflictError) {
     return {
       status: 409,
-      jsonBody: { error: 'Conflict', message: error.message }
+      jsonBody: { error: "Conflict", message: error.message },
     };
   }
-  
+
   if (error instanceof BadRequestError) {
     return {
       status: 400,
       jsonBody: {
-        error: 'Bad Request',
+        error: "Bad Request",
         message: error.message,
-        details: error.details
-      }
+        details: error.details,
+      },
     };
   }
-  
+
   if (error instanceof ValidationError) {
     return {
       status: 400,
       jsonBody: {
-        error: 'Validation Failed',
+        error: "Validation Failed",
         message: error.message,
-        issues: error.issues
-      }
+        issues: error.issues,
+      },
     };
   }
-  
+
   // Unknown error
-  context.error('Unexpected error:', error);
+  context.error("Unexpected error:", error);
   return {
     status: 500,
     jsonBody: {
-      error: 'Internal Server Error',
-      message: process.env.NODE_ENV === 'development' 
-        ? String(error) 
-        : 'An unexpected error occurred'
-    }
+      error: "Internal Server Error",
+      message:
+        process.env.NODE_ENV === "development"
+          ? String(error)
+          : "An unexpected error occurred",
+    },
   };
 }
 
 // Usage
-app.openapiPath('GetPost', 'Get a post', {
+app.openapiPath("GetPost", "Get a post", {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
       const user = parseEasyAuthPrincipal(request);
-      
+
       if (!user) {
-        throw new UnauthorizedError('Authentication required');
+        throw new UnauthorizedError("Authentication required");
       }
-      
+
       const post = await db.posts.findUnique({ where: { id } });
-      
+
       if (!post) {
-        throw new NotFoundError('Post', id);
+        throw new NotFoundError("Post", id);
       }
-      
+
       if (post.ownerId !== user.userId && !post.isPublic) {
-        throw new ForbiddenError('You do not have access to this post');
+        throw new ForbiddenError("You do not have access to this post");
       }
-      
+
       return { jsonBody: post };
     } catch (error) {
       return toErrorResponse(error, context);
     }
   },
-  methods: ['GET'],
-  route: 'posts/{id}',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "posts/{id}",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6787,12 +7015,19 @@ app.openapiPath('GetPost', 'Get a post', {
 Create a centralized error handler:
 
 ```typescript
-import { InvocationContext, HttpRequest, HttpResponseInit } from '@azure/functions';
-import { ValidationError } from '@apvee/azure-functions-openapi';
+import {
+  InvocationContext,
+  HttpRequest,
+  HttpResponseInit,
+} from "@azure/functions";
+import { ValidationError } from "@apvee/azure-functions-openapi";
 
 // Global error handler
 export async function withErrorHandler(
-  handler: (request: HttpRequest, context: InvocationContext) => Promise<HttpResponseInit>,
+  handler: (
+    request: HttpRequest,
+    context: InvocationContext
+  ) => Promise<HttpResponseInit>,
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
@@ -6803,104 +7038,108 @@ export async function withErrorHandler(
   }
 }
 
-function handleError(error: unknown, context: InvocationContext): HttpResponseInit {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
+function handleError(
+  error: unknown,
+  context: InvocationContext
+): HttpResponseInit {
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   // Validation errors
   if (error instanceof ValidationError) {
-    context.warn('Validation error:', error.issues);
+    context.warn("Validation error:", error.issues);
     return {
       status: 400,
       jsonBody: {
-        error: 'Validation Failed',
-        message: 'The request data is invalid',
-        details: isDevelopment ? error.issues : undefined
-      }
+        error: "Validation Failed",
+        message: "The request data is invalid",
+        details: isDevelopment ? error.issues : undefined,
+      },
     };
   }
-  
+
   // Custom application errors
   if (error instanceof NotFoundError) {
     return {
       status: 404,
-      jsonBody: { error: 'Not Found', message: error.message }
+      jsonBody: { error: "Not Found", message: error.message },
     };
   }
-  
+
   if (error instanceof UnauthorizedError) {
     return {
       status: 401,
-      jsonBody: { error: 'Unauthorized', message: error.message }
+      jsonBody: { error: "Unauthorized", message: error.message },
     };
   }
-  
+
   if (error instanceof ForbiddenError) {
     return {
       status: 403,
-      jsonBody: { error: 'Forbidden', message: error.message }
+      jsonBody: { error: "Forbidden", message: error.message },
     };
   }
-  
+
   // Database errors
-  if (error?.constructor?.name === 'PrismaClientKnownRequestError') {
+  if (error?.constructor?.name === "PrismaClientKnownRequestError") {
     const prismaError = error as any;
-    
-    if (prismaError.code === 'P2002') {
+
+    if (prismaError.code === "P2002") {
       return {
         status: 409,
         jsonBody: {
-          error: 'Conflict',
-          message: 'A record with this value already exists'
-        }
+          error: "Conflict",
+          message: "A record with this value already exists",
+        },
       };
     }
-    
-    if (prismaError.code === 'P2025') {
+
+    if (prismaError.code === "P2025") {
       return {
         status: 404,
-        jsonBody: { error: 'Not Found', message: 'Record not found' }
+        jsonBody: { error: "Not Found", message: "Record not found" },
       };
     }
   }
-  
+
   // Network errors
-  if (error?.constructor?.name === 'FetchError') {
-    context.error('Network error:', error);
+  if (error?.constructor?.name === "FetchError") {
+    context.error("Network error:", error);
     return {
       status: 502,
       jsonBody: {
-        error: 'Bad Gateway',
-        message: 'Failed to connect to external service'
-      }
+        error: "Bad Gateway",
+        message: "Failed to connect to external service",
+      },
     };
   }
-  
+
   // Unknown errors
-  context.error('Unhandled error:', error);
+  context.error("Unhandled error:", error);
   return {
     status: 500,
     jsonBody: {
-      error: 'Internal Server Error',
-      message: isDevelopment ? String(error) : 'An unexpected error occurred',
-      stack: isDevelopment && error instanceof Error ? error.stack : undefined
-    }
+      error: "Internal Server Error",
+      message: isDevelopment ? String(error) : "An unexpected error occurred",
+      stack: isDevelopment && error instanceof Error ? error.stack : undefined,
+    },
   };
 }
 
 // Usage
-app.openapiPath('CreateTodo', 'Create a todo', {
-  handler: (request, context) => withErrorHandler(
-    async (request, context) => {
-      const body = await parseBody(request, TodoSchema);
-      const todo = await db.todos.create(body);
-      return { status: 201, jsonBody: todo };
-    },
-    request,
-    context
-  ),
-  methods: ['POST'],
-  route: 'todos',
-  authLevel: 'anonymous'
+app.openapiPath("CreateTodo", "Create a todo", {
+  handler: (request, context) =>
+    withErrorHandler(
+      async (request, context) => {
+        const body = await parseBody(request, TodoSchema);
+        const todo = await db.todos.create(body);
+        return { status: 201, jsonBody: todo };
+      },
+      request,
+      context
+    ),
+  methods: ["POST"],
+  route: "todos",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6909,56 +7148,56 @@ app.openapiPath('CreateTodo', 'Create a todo', {
 Handle async operations safely:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
-app.openapiPath('ProcessData', 'Process data asynchronously', {
+app.openapiPath("ProcessData", "Process data asynchronously", {
   handler: async (request, context) => {
     try {
       const body = await parseBody(request, DataSchema);
-      
+
       // Multiple async operations
       const [user, config, data] = await Promise.all([
         db.users.findUnique({ where: { id: body.userId } }),
         fetchConfiguration(),
-        fetchExternalData(body.externalId)
+        fetchExternalData(body.externalId),
       ]);
-      
+
       if (!user) {
-        throw new NotFoundError('User', body.userId);
+        throw new NotFoundError("User", body.userId);
       }
-      
+
       if (!data) {
-        throw new BadRequestError('External data not found', {
-          externalId: body.externalId
+        throw new BadRequestError("External data not found", {
+          externalId: body.externalId,
         });
       }
-      
+
       // Process with timeout
       const result = await Promise.race([
         processData(user, config, data),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Processing timeout')), 30000)
-        )
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Processing timeout")), 30000)
+        ),
       ]);
-      
+
       return { jsonBody: result };
     } catch (error) {
-      if (error instanceof Error && error.message === 'Processing timeout') {
+      if (error instanceof Error && error.message === "Processing timeout") {
         return {
           status: 504,
           jsonBody: {
-            error: 'Gateway Timeout',
-            message: 'Processing took too long'
-          }
+            error: "Gateway Timeout",
+            message: "Processing took too long",
+          },
         };
       }
-      
+
       return toErrorResponse(error, context);
     }
   },
-  methods: ['POST'],
-  route: 'process',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "process",
+  authLevel: "anonymous",
 });
 ```
 
@@ -6976,65 +7215,68 @@ async function withRetry<T>(
   } = {}
 ): Promise<T> {
   const { maxRetries = 3, delayMs = 1000, backoff = true } = options;
-  
+
   let lastError: Error;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error as Error;
-      
+
       // Don't retry on client errors
-      if (error instanceof BadRequestError || 
-          error instanceof UnauthorizedError ||
-          error instanceof ForbiddenError ||
-          error instanceof NotFoundError) {
+      if (
+        error instanceof BadRequestError ||
+        error instanceof UnauthorizedError ||
+        error instanceof ForbiddenError ||
+        error instanceof NotFoundError
+      ) {
         throw error;
       }
-      
+
       // Don't retry on last attempt
       if (attempt === maxRetries) {
         break;
       }
-      
+
       // Calculate delay with optional exponential backoff
       const delay = backoff ? delayMs * Math.pow(2, attempt) : delayMs;
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError!;
 }
 
 // Usage
-app.openapiPath('FetchExternalData', 'Fetch data from external API', {
+app.openapiPath("FetchExternalData", "Fetch data from external API", {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
-      
+
       // Retry fetching from external API
-      const data = await withRetry(
-        () => fetchFromExternalAPI(id),
-        { maxRetries: 3, delayMs: 500, backoff: true }
-      );
-      
+      const data = await withRetry(() => fetchFromExternalAPI(id), {
+        maxRetries: 3,
+        delayMs: 500,
+        backoff: true,
+      });
+
       return { jsonBody: data };
     } catch (error) {
-      context.error('Failed after retries:', error);
-      
+      context.error("Failed after retries:", error);
+
       return {
         status: 502,
         jsonBody: {
-          error: 'Bad Gateway',
-          message: 'Failed to fetch data from external service'
-        }
+          error: "Bad Gateway",
+          message: "Failed to fetch data from external service",
+        },
       };
     }
   },
-  methods: ['GET'],
-  route: 'external/{id}',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "external/{id}",
+  authLevel: "anonymous",
 });
 ```
 
@@ -7043,11 +7285,11 @@ app.openapiPath('FetchExternalData', 'Fetch data from external API', {
 Log errors for monitoring:
 
 ```typescript
-import { InvocationContext } from '@azure/functions';
+import { InvocationContext } from "@azure/functions";
 
 interface ErrorLog {
   timestamp: string;
-  level: 'error' | 'warn';
+  level: "error" | "warn";
   message: string;
   error?: {
     name: string;
@@ -7074,41 +7316,46 @@ function logError(
 ): void {
   const errorLog: ErrorLog = {
     timestamp: new Date().toISOString(),
-    level: error instanceof ValidationError ? 'warn' : 'error',
+    level: error instanceof ValidationError ? "warn" : "error",
     message: error instanceof Error ? error.message : String(error),
-    error: error instanceof Error ? {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    } : undefined,
+    error:
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : undefined,
     context: {
       functionName: context.functionName,
       invocationId: context.invocationId,
       method: request?.method,
-      url: request?.url
+      url: request?.url,
     },
-    user: user ? {
-      id: user.userId,
-      email: user.username
-    } : undefined
+    user: user
+      ? {
+          id: user.userId,
+          email: user.username,
+        }
+      : undefined,
   };
-  
+
   // Log to Application Insights (automatic in Azure Functions)
-  if (errorLog.level === 'error') {
-    context.error('Error occurred:', errorLog);
+  if (errorLog.level === "error") {
+    context.error("Error occurred:", errorLog);
   } else {
-    context.warn('Warning occurred:', errorLog);
+    context.warn("Warning occurred:", errorLog);
   }
-  
+
   // Optionally send to external monitoring service
   // await sendToMonitoringService(errorLog);
 }
 
 // Usage
-app.openapiPath('MonitoredEndpoint', 'Endpoint with error monitoring', {
+app.openapiPath("MonitoredEndpoint", "Endpoint with error monitoring", {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
-    
+
     try {
       const body = await parseBody(request, schema);
       const result = await processData(body);
@@ -7118,9 +7365,9 @@ app.openapiPath('MonitoredEndpoint', 'Endpoint with error monitoring', {
       return toErrorResponse(error, context);
     }
   },
-  methods: ['POST'],
-  route: 'monitored',
-  authLevel: 'anonymous'
+  methods: ["POST"],
+  route: "monitored",
+  authLevel: "anonymous",
 });
 ```
 
@@ -7132,47 +7379,47 @@ Prevent cascading failures:
 class CircuitBreaker {
   private failures = 0;
   private lastFailureTime?: number;
-  private state: 'closed' | 'open' | 'half-open' = 'closed';
-  
+  private state: "closed" | "open" | "half-open" = "closed";
+
   constructor(
     private threshold: number = 5,
     private timeout: number = 60000 // 1 minute
   ) {}
-  
+
   async execute<T>(fn: () => Promise<T>): Promise<T> {
-    if (this.state === 'open') {
+    if (this.state === "open") {
       // Check if timeout has passed
       if (Date.now() - this.lastFailureTime! < this.timeout) {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
       // Try half-open
-      this.state = 'half-open';
+      this.state = "half-open";
     }
-    
+
     try {
       const result = await fn();
-      
+
       // Success - reset
-      if (this.state === 'half-open') {
-        this.state = 'closed';
+      if (this.state === "half-open") {
+        this.state = "closed";
         this.failures = 0;
       }
-      
+
       return result;
     } catch (error) {
       this.failures++;
       this.lastFailureTime = Date.now();
-      
+
       if (this.failures >= this.threshold) {
-        this.state = 'open';
+        this.state = "open";
       }
-      
+
       throw error;
     }
   }
-  
+
   reset(): void {
-    this.state = 'closed';
+    this.state = "closed";
     this.failures = 0;
     this.lastFailureTime = undefined;
   }
@@ -7181,38 +7428,42 @@ class CircuitBreaker {
 // Create circuit breaker for external service
 const externalServiceBreaker = new CircuitBreaker(5, 60000);
 
-app.openapiPath('CallExternalService', 'Call external service', {
+app.openapiPath("CallExternalService", "Call external service", {
   handler: async (request, context) => {
     try {
-      const result = await externalServiceBreaker.execute(
-        () => callExternalService()
+      const result = await externalServiceBreaker.execute(() =>
+        callExternalService()
       );
-      
+
       return { jsonBody: result };
     } catch (error) {
-      if (error instanceof Error && error.message === 'Circuit breaker is OPEN') {
-        context.warn('Circuit breaker is open for external service');
+      if (
+        error instanceof Error &&
+        error.message === "Circuit breaker is OPEN"
+      ) {
+        context.warn("Circuit breaker is open for external service");
         return {
           status: 503,
           jsonBody: {
-            error: 'Service Unavailable',
-            message: 'External service is temporarily unavailable'
-          }
+            error: "Service Unavailable",
+            message: "External service is temporarily unavailable",
+          },
         };
       }
-      
+
       return toErrorResponse(error, context);
     }
   },
-  methods: ['GET'],
-  route: 'external/call',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "external/call",
+  authLevel: "anonymous",
 });
 ```
 
 #### Error Handling Best Practices
 
 **✅ DO:**
+
 - Use try-catch blocks for all async operations
 - Create custom error classes for different scenarios
 - Log errors with context (user, request, timestamp)
@@ -7225,6 +7476,7 @@ app.openapiPath('CallExternalService', 'Call external service', {
 - Monitor error rates and patterns
 
 **❌ DON'T:**
+
 - Don't expose stack traces in production
 - Don't ignore caught errors
 - Don't return generic "error" messages
@@ -7242,13 +7494,13 @@ Consistent error responses:
 
 ```typescript
 interface ErrorResponse {
-  error: string;           // Error type (e.g., "Bad Request")
-  message: string;         // Human-readable message
-  code?: string;           // Error code (e.g., "USER_NOT_FOUND")
-  details?: any;           // Additional details (dev only)
-  timestamp?: string;      // ISO timestamp
-  requestId?: string;      // Request tracking ID
-  path?: string;           // Request path
+  error: string; // Error type (e.g., "Bad Request")
+  message: string; // Human-readable message
+  code?: string; // Error code (e.g., "USER_NOT_FOUND")
+  details?: any; // Additional details (dev only)
+  timestamp?: string; // ISO timestamp
+  requestId?: string; // Request tracking ID
+  path?: string; // Request path
 }
 
 function createErrorResponse(
@@ -7268,58 +7520,53 @@ function createErrorResponse(
     code: options?.code,
     timestamp: new Date().toISOString(),
     requestId: options?.context?.invocationId,
-    path: options?.request?.url
+    path: options?.request?.url,
   };
-  
+
   // Include details only in development
-  if (process.env.NODE_ENV === 'development' && options?.details) {
+  if (process.env.NODE_ENV === "development" && options?.details) {
     response.details = options.details;
   }
-  
+
   return {
     status: statusCode,
-    jsonBody: response
+    jsonBody: response,
   };
 }
 
 // Usage
-app.openapiPath('Example', 'Example with standard errors', {
+app.openapiPath("Example", "Example with standard errors", {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
       const item = await db.items.findUnique({ where: { id } });
-      
+
       if (!item) {
-        return createErrorResponse(
-          'Not Found',
-          `Item ${id} not found`,
-          404,
-          {
-            code: 'ITEM_NOT_FOUND',
-            context,
-            request
-          }
-        );
+        return createErrorResponse("Not Found", `Item ${id} not found`, 404, {
+          code: "ITEM_NOT_FOUND",
+          context,
+          request,
+        });
       }
-      
+
       return { jsonBody: item };
     } catch (error) {
       return createErrorResponse(
-        'Internal Server Error',
-        'An unexpected error occurred',
+        "Internal Server Error",
+        "An unexpected error occurred",
         500,
         {
-          code: 'INTERNAL_ERROR',
+          code: "INTERNAL_ERROR",
           details: error,
           context,
-          request
+          request,
         }
       );
     }
   },
-  methods: ['GET'],
-  route: 'items/{id}',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "items/{id}",
+  authLevel: "anonymous",
 });
 ```
 
@@ -7331,15 +7578,15 @@ Version 2.0 is a major rewrite that introduces significant API changes and impro
 
 ### Breaking Changes Overview
 
-| Category | v1.x | v2.x | Impact |
-|----------|------|------|--------|
-| **API Design** | Standalone functions | Module augmentation on `app` | 🔴 High - All registration code |
-| **OpenAPI Setup** | `registerOpenAPIHandler()` | `app.openapiSetup()` | 🔴 High - Configuration |
-| **Endpoint Registration** | `registerFunction()` | `app.openapiPath()` | 🔴 High - All endpoints |
-| **Type Inference** | Manual type casting | Automatic from schemas | 🟢 Low - Optional but recommended |
-| **Swagger UI** | `registerSwaggerUIHandler()` | Built-in with `openapiSetup()` | 🟡 Medium - UI setup |
-| **Security Schemes** | Manual object creation | Dedicated methods | 🟡 Medium - Security configuration |
-| **Zod Version** | 3.x | 4.x | 🟢 Low - Mostly compatible |
+| Category                  | v1.x                         | v2.x                           | Impact                             |
+| ------------------------- | ---------------------------- | ------------------------------ | ---------------------------------- |
+| **API Design**            | Standalone functions         | Module augmentation on `app`   | 🔴 High - All registration code    |
+| **OpenAPI Setup**         | `registerOpenAPIHandler()`   | `app.openapiSetup()`           | 🔴 High - Configuration            |
+| **Endpoint Registration** | `registerFunction()`         | `app.openapiPath()`            | 🔴 High - All endpoints            |
+| **Type Inference**        | Manual type casting          | Automatic from schemas         | 🟢 Low - Optional but recommended  |
+| **Swagger UI**            | `registerSwaggerUIHandler()` | Built-in with `openapiSetup()` | 🟡 Medium - UI setup               |
+| **Security Schemes**      | Manual object creation       | Dedicated methods              | 🟡 Medium - Security configuration |
+| **Zod Version**           | 3.x                          | 4.x                            | 🟢 Low - Mostly compatible         |
 
 ---
 
@@ -7360,6 +7607,7 @@ Update your `package.json`:
 ```
 
 Then run:
+
 ```bash
 npm install
 ```
@@ -7367,67 +7615,72 @@ npm install
 #### Step 2: Update Import Statement
 
 **Before (v1.x):**
+
 ```typescript
-import { 
-  registerFunction, 
+import {
+  registerFunction,
   registerOpenAPIHandler,
   registerSwaggerUIHandler,
-  OpenAPIObjectConfig 
-} from '@apvee/azure-functions-openapi';
+  OpenAPIObjectConfig,
+} from "@apvee/azure-functions-openapi";
 ```
 
 **After (v2.x):**
+
 ```typescript
-import '@apvee/azure-functions-openapi'; // Module augmentation
-import { app } from '@azure/functions';
+import "@apvee/azure-functions-openapi"; // Module augmentation
+import { app } from "@azure/functions";
 ```
 
 #### Step 3: Migrate OpenAPI Configuration
 
 **Before (v1.x):**
+
 ```typescript
 const openAPIConfig: OpenAPIObjectConfig = {
   info: {
-    title: 'My API',
-    version: '1.0.0',
+    title: "My API",
+    version: "1.0.0",
     contact: {
-      name: 'Apvee Solutions',
-      email: 'hello@apvee.com'
-    }
+      name: "Apvee Solutions",
+      email: "hello@apvee.com",
+    },
   },
   security: [],
-  tags: [{ name: 'Users', description: 'User management' }]
+  tags: [{ name: "Users", description: "User management" }],
 };
 
 // Register multiple OpenAPI handlers
 const documents = [
-  registerOpenAPIHandler('anonymous', openAPIConfig, '3.1.0', 'json'),
-  registerOpenAPIHandler('anonymous', openAPIConfig, '3.0.3', 'json'),
-  registerOpenAPIHandler('anonymous', openAPIConfig, '2.0', 'json')
+  registerOpenAPIHandler("anonymous", openAPIConfig, "3.1.0", "json"),
+  registerOpenAPIHandler("anonymous", openAPIConfig, "3.0.3", "json"),
+  registerOpenAPIHandler("anonymous", openAPIConfig, "2.0", "json"),
 ];
 
 // Register Swagger UI
-registerSwaggerUIHandler('anonymous', 'api', documents);
+registerSwaggerUIHandler("anonymous", "api", documents);
 ```
 
 **After (v2.x):**
+
 ```typescript
 app.openapiSetup({
   info: {
-    title: 'My API',
-    version: '1.0.0',
+    title: "My API",
+    version: "1.0.0",
     contact: {
-      name: 'Apvee Solutions',
-      email: 'hello@apvee.com'
-    }
+      name: "Apvee Solutions",
+      email: "hello@apvee.com",
+    },
   },
-  tags: [{ name: 'Users', description: 'User management' }],
+  tags: [{ name: "Users", description: "User management" }],
   // Swagger UI is automatically configured!
   // All three versions (2.0, 3.0.3, 3.1.0) are automatically available
 });
 ```
 
 **Key Changes:**
+
 - ✅ Single method replaces three separate functions
 - ✅ Swagger UI is automatically configured
 - ✅ All OpenAPI versions (2.0, 3.0.3, 3.1.0) are automatically generated
@@ -7436,83 +7689,87 @@ app.openapiSetup({
 #### Step 4: Migrate Endpoint Registration
 
 **Before (v1.x):**
+
 ```typescript
-import { registerFunction } from '@apvee/azure-functions-openapi';
-import { z } from 'zod';
+import { registerFunction } from "@apvee/azure-functions-openapi";
+import { z } from "zod";
 
 const UserSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  email: z.string().email()
+  email: z.string().email(),
 });
 
-registerFunction('GetUser', 'Get user by ID', {
+registerFunction("GetUser", "Get user by ID", {
   handler: async (request, context) => {
     // Manual type casting needed
     const userId = request.params.id as string;
-    
+
     const user = await getUser(userId);
     return { jsonBody: user };
   },
-  methods: ['GET'],
-  route: 'users/{id}',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "users/{id}",
+  authLevel: "anonymous",
   request: {
-    params: z.object({ id: z.string().uuid() })
+    params: z.object({ id: z.string().uuid() }),
   },
   responses: [
     {
       httpCode: 200,
-      description: 'Success',
+      description: "Success",
       content: {
-        'application/json': { schema: UserSchema }
-      }
-    }
-  ]
+        "application/json": { schema: UserSchema },
+      },
+    },
+  ],
 });
 ```
 
 **After (v2.x) - Option 1: Standard Handler**
+
 ```typescript
-app.openapiPath('GetUser', 'Get user by ID', {
+app.openapiPath("GetUser", "Get user by ID", {
   handler: async (request, context) => {
     const userId = request.params.id; // Still works
-    
+
     const user = await getUser(userId);
     return { jsonBody: user };
   },
-  methods: ['GET'],
-  route: 'users/{id}',
-  authLevel: 'anonymous',
+  methods: ["GET"],
+  route: "users/{id}",
+  authLevel: "anonymous",
   request: {
-    params: z.object({ id: z.string().uuid() })
+    params: z.object({ id: z.string().uuid() }),
   },
   responses: [
     {
       httpCode: 200,
-      description: 'Success',
-      content: { 'application/json': { schema: UserSchema } }
-    }
-  ]
+      description: "Success",
+      content: { "application/json": { schema: UserSchema } },
+    },
+  ],
 });
 ```
 
 **After (v2.x) - Option 2: Typed Handler (Recommended)**
+
 ```typescript
-app.openapiPath('GetUser', 'Get user by ID', {
+app.openapiPath("GetUser", "Get user by ID", {
   typedHandler: async ({ params, context }) => {
     // params.id is automatically typed as string from UUID schema!
     const user = await getUser(params.id);
     return { jsonBody: user };
   },
-  methods: ['GET'],
-  route: 'users/{id}',
+  methods: ["GET"],
+  route: "users/{id}",
   params: z.object({ id: z.string().uuid() }),
-  response: UserSchema
+  response: UserSchema,
 });
 ```
 
 **Key Changes:**
+
 - `registerFunction()` → `app.openapiPath()`
 - Optional: Use `typedHandler` for automatic type inference
 - Simplified schema definitions with `params`, `query`, `body`, `response` shortcuts
@@ -7520,34 +7777,41 @@ app.openapiPath('GetUser', 'Get user by ID', {
 #### Step 5: Migrate Security Schemes
 
 **Before (v1.x):**
+
 ```typescript
 // Manual security scheme creation
 const apiKeyScheme = {
-  type: 'apiKey',
-  in: 'header',
-  name: 'X-API-Key'
+  type: "apiKey",
+  in: "header",
+  name: "X-API-Key",
 };
 
-registerFunction('SecureEndpoint', 'Secure endpoint', {
-  handler: async (request, context) => { /* ... */ },
+registerFunction("SecureEndpoint", "Secure endpoint", {
+  handler: async (request, context) => {
+    /* ... */
+  },
   security: [{ apiKey: [] }],
   // ... rest of config
 });
 ```
 
 **After (v2.x):**
+
 ```typescript
 // Dedicated security methods
-const apiKey = app.openapiKeySecurity('header', 'X-API-Key');
+const apiKey = app.openapiKeySecurity("header", "X-API-Key");
 
-app.openapiPath('SecureEndpoint', 'Secure endpoint', {
-  handler: async (request, context) => { /* ... */ },
+app.openapiPath("SecureEndpoint", "Secure endpoint", {
+  handler: async (request, context) => {
+    /* ... */
+  },
   security: [apiKey], // Much simpler!
   // ... rest of config
 });
 ```
 
 **Available Security Methods:**
+
 - `app.openapiKeySecurity(in, name)` - Custom API keys
 - `app.openapiAzureFunctionKey(name)` - Azure Function keys
 - `app.openapiEasyAuth()` - Azure EasyAuth
@@ -7557,61 +7821,64 @@ app.openapiPath('SecureEndpoint', 'Secure endpoint', {
 #### Step 6: Migrate Complex Validation
 
 **Before (v1.x):**
+
 ```typescript
-registerFunction('CreateUser', 'Create a new user', {
+registerFunction("CreateUser", "Create a new user", {
   handler: async (request, context) => {
     // Manual parsing and validation
     const body = await request.json();
     const parsed = UserSchema.parse(body);
-    
+
     const user = await createUser(parsed);
     return { jsonBody: user };
   },
-  methods: ['POST'],
-  route: 'users',
+  methods: ["POST"],
+  route: "users",
   request: {
     body: {
       required: true,
-      content: { 'application/json': { schema: UserSchema } }
-    }
-  }
+      content: { "application/json": { schema: UserSchema } },
+    },
+  },
 });
 ```
 
 **After (v2.x):**
-```typescript
-import { parseBody } from '@apvee/azure-functions-openapi';
 
-app.openapiPath('CreateUser', 'Create a new user', {
+```typescript
+import { parseBody } from "@apvee/azure-functions-openapi";
+
+app.openapiPath("CreateUser", "Create a new user", {
   handler: async (request, context) => {
     // Utility function handles parsing and validation
     const user = await parseBody(request, UserSchema);
-    
+
     const created = await createUser(user);
     return { jsonBody: created };
   },
-  methods: ['POST'],
-  route: 'users',
+  methods: ["POST"],
+  route: "users",
   request: {
     body: {
       required: true,
-      content: { 'application/json': { schema: UserSchema } }
-    }
-  }
+      content: { "application/json": { schema: UserSchema } },
+    },
+  },
 });
 ```
 
 **Or even simpler with Typed Handler:**
+
 ```typescript
-app.openapiPath('CreateUser', 'Create a new user', {
+app.openapiPath("CreateUser", "Create a new user", {
   typedHandler: async ({ body, context }) => {
     // body is already validated and typed!
     const created = await createUser(body);
     return { jsonBody: created };
   },
-  methods: ['POST'],
-  route: 'users',
-  body: UserSchema
+  methods: ["POST"],
+  route: "users",
+  body: UserSchema,
 });
 ```
 
@@ -7641,108 +7908,125 @@ Use this checklist to track your migration progress:
 #### Pattern 1: Simple GET Endpoint
 
 **v1.x:**
+
 ```typescript
-registerFunction('ListUsers', 'List all users', {
+registerFunction("ListUsers", "List all users", {
   handler: async (request, context) => {
     const users = await getAllUsers();
     return { jsonBody: users };
   },
-  methods: ['GET'],
-  route: 'users',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "users",
+  authLevel: "anonymous",
 });
 ```
 
 **v2.x:**
+
 ```typescript
-app.openapiPath('ListUsers', 'List all users', {
+app.openapiPath("ListUsers", "List all users", {
   handler: async (request, context) => {
     const users = await getAllUsers();
     return { jsonBody: users };
   },
-  methods: ['GET'],
-  route: 'users',
-  authLevel: 'anonymous'
+  methods: ["GET"],
+  route: "users",
+  authLevel: "anonymous",
 });
 ```
 
 #### Pattern 2: POST with Body Validation
 
 **v1.x:**
+
 ```typescript
-registerFunction('CreateItem', 'Create item', {
+registerFunction("CreateItem", "Create item", {
   handler: async (request, context) => {
     const body = await request.json();
     const validated = ItemSchema.parse(body);
     // ... process
   },
-  methods: ['POST'],
-  route: 'items',
+  methods: ["POST"],
+  route: "items",
   request: {
-    body: { required: true, content: { 'application/json': { schema: ItemSchema } } }
-  }
+    body: {
+      required: true,
+      content: { "application/json": { schema: ItemSchema } },
+    },
+  },
 });
 ```
 
 **v2.x (Option 1 - Standard):**
-```typescript
-import { parseBody } from '@apvee/azure-functions-openapi';
 
-app.openapiPath('CreateItem', 'Create item', {
+```typescript
+import { parseBody } from "@apvee/azure-functions-openapi";
+
+app.openapiPath("CreateItem", "Create item", {
   handler: async (request, context) => {
     const validated = await parseBody(request, ItemSchema);
     // ... process
   },
-  methods: ['POST'],
-  route: 'items',
+  methods: ["POST"],
+  route: "items",
   request: {
-    body: { required: true, content: { 'application/json': { schema: ItemSchema } } }
-  }
+    body: {
+      required: true,
+      content: { "application/json": { schema: ItemSchema } },
+    },
+  },
 });
 ```
 
 **v2.x (Option 2 - Typed Handler):**
+
 ```typescript
-app.openapiPath('CreateItem', 'Create item', {
+app.openapiPath("CreateItem", "Create item", {
   typedHandler: async ({ body, context }) => {
     // body is already validated!
     // ... process
   },
-  methods: ['POST'],
-  route: 'items',
-  body: ItemSchema
+  methods: ["POST"],
+  route: "items",
+  body: ItemSchema,
 });
 ```
 
 #### Pattern 3: Authenticated Endpoint
 
 **v1.x:**
+
 ```typescript
 const bearerScheme = {
-  type: 'http',
-  scheme: 'bearer',
-  bearerFormat: 'JWT'
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "JWT",
 };
 
-registerFunction('GetProfile', 'Get user profile', {
-  handler: async (request, context) => { /* ... */ },
-  methods: ['GET'],
-  route: 'profile',
-  authLevel: 'anonymous',
-  security: [{ bearer: [] }]
+registerFunction("GetProfile", "Get user profile", {
+  handler: async (request, context) => {
+    /* ... */
+  },
+  methods: ["GET"],
+  route: "profile",
+  authLevel: "anonymous",
+  security: [{ bearer: [] }],
 });
 ```
 
 **v2.x:**
-```typescript
-const bearer = app.openapiBearerSecurity('JWT');
 
-app.openapiPath('GetProfile', 'Get user profile', {
-  handler: async (request, context) => { /* ... */ },
-  methods: ['GET'],
-  route: 'profile',
-  authLevel: 'anonymous',
-  security: [bearer]
+```typescript
+const bearer = app.openapiBearerSecurity("JWT");
+
+app.openapiPath("GetProfile", "Get user profile", {
+  handler: async (request, context) => {
+    /* ... */
+  },
+  methods: ["GET"],
+  route: "profile",
+  authLevel: "anonymous",
+  security: [bearer],
 });
 ```
 
@@ -7753,61 +8037,74 @@ app.openapiPath('GetProfile', 'Get user profile', {
 Take advantage of these new capabilities:
 
 #### 1. **Automatic Type Inference**
+
 ```typescript
-app.openapiPath('Example', 'Example endpoint', {
+app.openapiPath("Example", "Example endpoint", {
   typedHandler: async ({ params, query, body, headers, context }) => {
     // All parameters are automatically typed from your schemas!
     // No more manual type casting or assertions
   },
   params: z.object({ id: z.string().uuid() }),
   query: z.object({ filter: z.string().optional() }),
-  body: z.object({ name: z.string() })
+  body: z.object({ name: z.string() }),
 });
 ```
 
 #### 2. **Utility Functions**
+
 ```typescript
-import { 
-  parseBody, 
-  parseQueryParams, 
+import {
+  parseBody,
+  parseQueryParams,
   parseRouteParams,
   parseHeaders,
   parseEasyAuthPrincipal,
   extractFunctionKey,
-  createTypedHandler
-} from '@apvee/azure-functions-openapi';
+  createTypedHandler,
+} from "@apvee/azure-functions-openapi";
 ```
 
 #### 3. **Reusable Schemas**
+
 ```typescript
-app.openapiSchema('User', UserSchema);
+app.openapiSchema("User", UserSchema);
 
 // Reference in multiple endpoints
-app.openapiPath('GetUser', 'Get user', {
-  response: { $ref: '#/components/schemas/User' }
+app.openapiPath("GetUser", "Get user", {
+  response: { $ref: "#/components/schemas/User" },
 });
 ```
 
 #### 4. **Webhooks (OpenAPI 3.1.0)**
+
 ```typescript
-app.openapiWebhook('UserCreated', 'Fired when user is created', {
-  methods: ['POST'],
+app.openapiWebhook("UserCreated", "Fired when user is created", {
+  methods: ["POST"],
   request: {
     body: {
-      content: { 'application/json': { schema: UserSchema } }
-    }
-  }
+      content: { "application/json": { schema: UserSchema } },
+    },
+  },
 });
 ```
 
 #### 5. **Multiple Response Status Codes**
+
 ```typescript
-app.openapiPath('GetUser', 'Get user', {
+app.openapiPath("GetUser", "Get user", {
   responses: [
-    { httpCode: 200, description: 'Success', content: { 'application/json': { schema: UserSchema } } },
-    { httpCode: 404, description: 'Not found', content: { 'application/json': { schema: ErrorSchema } } },
-    { httpCode: 500, description: 'Server error' }
-  ]
+    {
+      httpCode: 200,
+      description: "Success",
+      content: { "application/json": { schema: UserSchema } },
+    },
+    {
+      httpCode: 404,
+      description: "Not found",
+      content: { "application/json": { schema: ErrorSchema } },
+    },
+    { httpCode: 500, description: "Server error" },
+  ],
 });
 ```
 
@@ -7820,6 +8117,7 @@ app.openapiPath('GetUser', 'Get user', {
 **Problem:** TypeScript complains about missing types or incompatible signatures.
 
 **Solution:**
+
 1. Ensure you've imported the module augmentation: `import '@apvee/azure-functions-openapi';`
 2. Update TypeScript to version v5.5 or higher (required for Zod v4)
 3. Check that `@azure/functions` is version 4.0 or higher
@@ -7829,6 +8127,7 @@ app.openapiPath('GetUser', 'Get user', {
 **Problem:** `/api/openapi/ui` returns 404 or blank page.
 
 **Solution:**
+
 1. Ensure `app.openapiSetup()` is called before any `app.openapiPath()` registrations
 2. Check that your function app has `enableHttpStream: true` in the setup
 
@@ -7837,6 +8136,7 @@ app.openapiPath('GetUser', 'Get user', {
 **Problem:** Parameters in `typedHandler` are not properly typed.
 
 **Solution:**
+
 1. Use the shorthand properties: `params`, `query`, `body` instead of nested `request` object
 2. Ensure Zod schemas are properly defined
 3. Restart your TypeScript language server
@@ -7846,6 +8146,7 @@ app.openapiPath('GetUser', 'Get user', {
 **Problem:** Getting errors with Zod 4.x schemas.
 
 **Solution:**
+
 1. Zod 4.x has breaking changes from 3.x
 2. Update `.refine()` and `.transform()` usage if needed
 3. Check for deprecated Zod methods
@@ -7935,4 +8236,3 @@ If you find this library useful, please consider:
 ---
 
 **Built with ❤️ by [Apvee Solutions](https://www.apvee.com)**
-
