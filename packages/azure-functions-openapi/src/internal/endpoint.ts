@@ -1,45 +1,12 @@
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
-import { app, HttpHandler, HttpMethod } from "@azure/functions";
+import { app, HttpHandler } from "@azure/functions";
 import { FunctionRouteConfig } from "../types";
 import { RequestSchemas } from "../utils";
 import { globalConfigManager } from "./config";
 import { wrapTypedHandler } from "./parsing";
 import { openAPIRegistry } from "./registry";
+import { mapHttpMethod, normalizeAzureFunctionRoute, normalizeOpenAPIPath } from "./route";
 import { transformToRouteConfig } from "./transform";
-
-/**
- * Normalizes a path for OpenAPI documentation.
- * Ensures the path starts with a single leading slash and removes multiple consecutive slashes.
- * 
- * @param routePrefix - Optional route prefix for the Azure Function
- * @param route - The route path
- * @returns Normalized path string for OpenAPI (always starts with /)
- */
-function normalizeOpenAPIPath(routePrefix: string | undefined, route: string): string {
-    const fullPath = routePrefix ? `/${routePrefix}/${route}` : `/${route}`;
-    
-    // Replace multiple slashes with a single slash
-    return fullPath.replace(/\/+/g, '/');
-}
-
-/**
- * Normalizes a route for Azure Functions registration.
- * Azure Functions expects routes without leading slashes and handles prefixes via configuration.
- * Cleans the route by removing leading/trailing slashes and multiple consecutive slashes.
- * 
- * @param route - The route path
- * @returns Normalized route for Azure Functions (no leading/trailing slashes)
- */
-function normalizeAzureFunctionRoute(route: string): string {
-    // Remove leading/trailing slashes and replace multiple slashes with single slash
-    const normalized = route
-        .replace(/^\/+/, '')
-        .replace(/\/+$/, '')
-        .replace(/\/+/g, '/');
-    
-    // Return empty string for root route
-    return normalized || '';
-}
 
 /**
  * Registers an Azure Function HTTP path with OpenAPI documentation.
@@ -130,8 +97,8 @@ function registerPath(
     // Normalize the route for Azure Functions registration (without leading slash and prefix)
     const normalizedRoute = normalizeAzureFunctionRoute(options.route);
 
-    // Get auth level from options or use anonymous as default
-    const authLevel = options.authLevel || 'anonymous';
+    // Auth level: explicit option > global default (set by openapiSetup) > 'anonymous'
+    const authLevel = options.authLevel || globalConfigManager.getDefaultAuthLevel();
 
     // Register with Azure Functions
     app.http(name, {
@@ -147,14 +114,25 @@ function registerPath(
     // Transform FunctionRouteConfig to RouteConfig using shortcuts
     const transformedConfig = transformToRouteConfig(options);
 
+    // Disambiguate operationId when the same registration covers multiple HTTP methods.
+    // OpenAPI requires operationId to be unique across the document; reusing the same
+    // value for, say, PUT and PATCH would generate an invalid spec. We append a stable
+    // method suffix only when there is more than one method.
+    const baseOperationId = options.operationId || name;
+    const needsMethodSuffix = options.methods.length > 1;
+
     // Register each HTTP method with OpenAPI registry
     options.methods.forEach(method => {
         // Normalize the path for OpenAPI (with prefix and leading slash)
         const fullPath = normalizeOpenAPIPath(routePrefix, options.route);
 
+        const operationId = needsMethodSuffix
+            ? `${baseOperationId}_${method.toLowerCase()}`
+            : baseOperationId;
+
         const routeConfig: RouteConfig = {
             ...transformedConfig,
-            operationId: options.operationId || name,  // Used to map webhook name to path in docs generation
+            operationId,  // Unique per (path, method) entry
             summary,
             method: mapHttpMethod(method),
             path: fullPath
@@ -166,14 +144,4 @@ function registerPath(
             openAPIRegistry.registerPath(routeConfig);
         }
     });
-}
-
-/**
- * Maps Azure Functions HttpMethod to OpenAPI method format.
- * 
- * @param method - Azure Functions HTTP method
- * @returns OpenAPI method string in lowercase
- */
-function mapHttpMethod(method: HttpMethod): 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace' {
-    return method.toLowerCase() as 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace';
 }

@@ -14,7 +14,7 @@ export async function GetSingleTodo(request: HttpRequest, context: InvocationCon
     try {
         const params = parseRouteParams(request.params, TodoParamIDSchema);
 
-        const todos = await TodoService.getToDoList();
+        const todos = await TodoService.getTodoList();
         const todo = todos.find(todo => todo.id === params.id);
 
         if (!todo) {

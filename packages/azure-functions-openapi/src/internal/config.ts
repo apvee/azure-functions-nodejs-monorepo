@@ -1,4 +1,5 @@
 import { OpenAPIObjectConfig } from '../types';
+import type { AuthLevel } from './security/types';
 
 /**
  * Global configuration for OpenAPI setup.
@@ -7,21 +8,23 @@ import { OpenAPIObjectConfig } from '../types';
 interface GlobalOpenAPIConfig {
     /** Route prefix for all Azure Functions (e.g., 'api') */
     routePrefix: string;
+    /** Default authLevel applied to routes that do not specify one explicitly */
+    defaultAuthLevel: AuthLevel;
     /** OpenAPI object configuration (info, security, tags, etc.) */
     openAPIConfig: OpenAPIObjectConfig;
 }
 
 /**
  * Singleton manager for global OpenAPI configuration.
- * Stores centralized settings initialized by app.openapi() and used by registerFunction().
+ * Stores centralized settings initialized by app.openapiSetup() and used by openapiPath/openapiWebhook.
  */
 class OpenAPIConfigManager {
     private config: GlobalOpenAPIConfig | null = null;
 
     /**
      * Sets the global OpenAPI configuration.
-     * Should be called once during app initialization via app.openapi().
-     * 
+     * Should be called once during app initialization via app.openapiSetup().
+     *
      * @param config - The global configuration to store
      */
     setConfig(config: GlobalOpenAPIConfig): void {
@@ -30,7 +33,7 @@ class OpenAPIConfigManager {
 
     /**
      * Gets the configured route prefix.
-     * 
+     *
      * @returns The route prefix string
      * @throws Error if configuration has not been set
      */
@@ -38,15 +41,24 @@ class OpenAPIConfigManager {
         if (!this.config) {
             throw new Error(
                 'OpenAPI configuration not initialized. ' +
-                'Please call app.openapi() before registering functions.'
+                'Please call app.openapiSetup() before registering functions.'
             );
         }
         return this.config.routePrefix;
     }
 
     /**
+     * Gets the default authLevel applied when an endpoint does not specify one.
+     * Falls back to 'anonymous' when no global configuration has been set yet
+     * (allowing utility usage and tests without explicit setup).
+     */
+    getDefaultAuthLevel(): AuthLevel {
+        return this.config?.defaultAuthLevel ?? 'anonymous';
+    }
+
+    /**
      * Gets the OpenAPI object configuration.
-     * 
+     *
      * @returns The OpenAPI configuration object
      * @throws Error if configuration has not been set
      */
@@ -54,7 +66,7 @@ class OpenAPIConfigManager {
         if (!this.config) {
             throw new Error(
                 'OpenAPI configuration not initialized. ' +
-                'Please call app.openapi() before generating OpenAPI documents.'
+                'Please call app.openapiSetup() before generating OpenAPI documents.'
             );
         }
         return this.config.openAPIConfig;

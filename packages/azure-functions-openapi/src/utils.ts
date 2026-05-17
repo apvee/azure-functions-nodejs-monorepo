@@ -259,10 +259,11 @@ export async function parseBody<T extends z.ZodTypeAny>(
     request: HttpRequest,
     schema: T
 ): Promise<z.infer<T>> {
-    // Check Content-Type
+    // Check Content-Type: accept application/json and any *+json (e.g. application/problem+json,
+    // application/ld+json, application/vnd.api+json) per RFC 6839.
     const contentType = request.headers.get('content-type');
-    if (!contentType?.includes('application/json')) {
-        throw new ValidationError('Content-Type must be application/json');
+    if (!isJsonContentType(contentType)) {
+        throw new ValidationError('Content-Type must be a JSON media type (application/json or */*+json)');
     }
     
     // Parse JSON body
@@ -282,6 +283,23 @@ export async function parseBody<T extends z.ZodTypeAny>(
         }
         throw error;
     }
+}
+
+/**
+ * Returns true when the provided Content-Type header denotes a JSON media type.
+ * Accepts `application/json`, `*+json` structured suffix (RFC 6839), and any
+ * media-type parameters (e.g. `; charset=utf-8`). Case-insensitive.
+ *
+ * @internal
+ */
+export function isJsonContentType(contentType: string | null | undefined): boolean {
+    if (!contentType) return false;
+    // Strip parameters (everything after ';')
+    const mime = contentType.split(';')[0].trim().toLowerCase();
+    if (!mime) return false;
+    if (mime === 'application/json') return true;
+    // Match "type/subtype+json" (RFC 6839 structured syntax suffix)
+    return /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.-]+\+json$/.test(mime);
 }
 
 /**

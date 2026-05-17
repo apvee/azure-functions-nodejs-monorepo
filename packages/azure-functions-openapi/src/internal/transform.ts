@@ -5,6 +5,7 @@
 
 import { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { ContentTypeConfig, FunctionRouteConfig, ResponseConfig } from '../types';
+import { getLogger } from './logger';
 
 /**
  * HTTP status code descriptions mapping.
@@ -161,8 +162,8 @@ function transformResponse(response: ResponseConfig): any {
     // Validation: warn if 2xx status without body (except allowed codes)
     const allowedNoBody = [204, 205, 304];  // No Content, Reset Content, Not Modified
     if (!allowedNoBody.includes(response.httpCode) && response.httpCode >= 200 && response.httpCode < 300) {
-        console.warn(
-            `⚠️  Warning: Response ${response.httpCode} has no schema or content. ` +
+        getLogger().warn(
+            `Response ${response.httpCode} has no schema or content. ` +
             `This is unusual for successful 2xx responses. ` +
             `Did you forget to add a schema? If this is intentional (e.g., 202 Accepted with async processing), ignore this warning.`
         );
@@ -202,8 +203,8 @@ function transformRequest(config: FunctionRouteConfig): any {
     const hasShortcuts = !!(config.params || config.query || config.body || config.headers);
     
     if (config.request && hasShortcuts) {
-        console.warn(
-            '⚠️  Warning: Both "request" and shortcuts (params/query/body/headers) are provided. ' +
+        getLogger().warn(
+            'Both "request" and shortcuts (params/query/body/headers) are provided. ' +
             'The shortcuts will be IGNORED. Use either shortcuts OR request, not both. ' +
             'See FunctionRouteConfig.request JSDoc for details.'
         );

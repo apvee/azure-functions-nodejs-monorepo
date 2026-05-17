@@ -174,7 +174,7 @@ app.openapiWebhook('OrderCreated', 'Notify when order is created', {
 Setup is now **much simpler** with a single `openapiSetup()` call:
 
 ```typescript
-// Generates all versions and formats automatically
+// Generate the OpenAPI documents you want — only OpenAPI 3.1.0 / JSON+YAML are emitted by default
 app.openapiSetup({
   info: { title: 'My API', version: '1.0.0' },
   routePrefix: 'api',
@@ -7422,15 +7422,16 @@ app.openapiSetup({
     }
   },
   tags: [{ name: 'Users', description: 'User management' }],
-  // Swagger UI is automatically configured!
-  // All three versions (2.0, 3.0.3, 3.1.0) are automatically available
+  // Swagger UI is automatically configured
+  // To emit all three versions explicitly, opt-in via `versions`:
+  versions: ['3.1.0', '3.0.3', '2.0']
 });
 ```
 
 **Key Changes:**
 - ✅ Single method replaces three separate functions
 - ✅ Swagger UI is automatically configured
-- ✅ All OpenAPI versions (2.0, 3.0.3, 3.1.0) are automatically generated
+- ✅ You can opt-in to multiple OpenAPI versions (2.0, 3.0.3, 3.1.0) via `versions`
 - ✅ Simpler, cleaner configuration
 
 #### Step 4: Migrate Endpoint Registration

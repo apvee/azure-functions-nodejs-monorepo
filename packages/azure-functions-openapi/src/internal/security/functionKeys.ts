@@ -63,20 +63,50 @@ export function registerAzureFunctionKey(config: AzureFunctionKeyConfig): Securi
         schemeDescription += ' (authentication not required but supported)';
     }
 
-    // Register security scheme in OpenAPI registry
-    // We model this as an API key since that's what Azure uses under the hood
+    // Azure Functions accepts the key in BOTH the `code` query parameter and the
+    // `x-functions-key` header. OpenAPI's `securitySchemes` only allows one
+    // location per scheme, so when both are allowed we register two schemes and
+    // declare them as alternatives (logical OR) via a single security
+    // requirement containing both scheme names.
+    const azureVendorExtensions = {
+        'x-azure-function-authLevel': authLevel,
+        'x-azure-function-allowQuery': allowQueryParameter,
+        'x-azure-function-allowHeader': allowHeader,
+    };
+
+    if (allowQueryParameter && allowHeader) {
+        const queryName = `${name}_Query`;
+        const headerName = `${name}_Header`;
+
+        openAPIRegistry.registerComponent('securitySchemes', queryName, {
+            type: 'apiKey',
+            name: 'code',
+            in: 'query',
+            description: `${schemeDescription} (query parameter 'code')`,
+            ...azureVendorExtensions,
+        } as any);
+
+        openAPIRegistry.registerComponent('securitySchemes', headerName, {
+            type: 'apiKey',
+            name: 'x-functions-key',
+            in: 'header',
+            description: `${schemeDescription} (header 'x-functions-key')`,
+            ...azureVendorExtensions,
+        } as any);
+
+        // Single requirement listing both schemes => caller satisfies either.
+        return { [queryName]: [], [headerName]: [] };
+    }
+
+    // Single-location case: register one apiKey scheme as before.
     openAPIRegistry.registerComponent('securitySchemes', name, {
         type: 'apiKey',
         name: allowQueryParameter ? 'code' : 'x-functions-key',
         in: allowQueryParameter ? 'query' : 'header',
         description: schemeDescription,
-        // Add vendor extension for Azure-specific metadata
-        'x-azure-function-authLevel': authLevel,
-        'x-azure-function-allowQuery': allowQueryParameter,
-        'x-azure-function-allowHeader': allowHeader,
-    } as any); // Cast to any to allow vendor extensions
+        ...azureVendorExtensions,
+    } as any);
 
-    // Return security requirement
     return { [name]: [] };
 }
 

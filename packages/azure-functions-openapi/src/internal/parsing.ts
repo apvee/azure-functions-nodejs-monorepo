@@ -133,51 +133,34 @@ export async function parseRequest<T extends RequestSchemas>(
 // ============================================================================
 
 /**
- * Cache for safe request prototypes to improve performance.
- * We create the prototype once and reuse it for all safe requests.
- * 
+ * Body-consuming methods that must be blocked once the body has already been parsed.
+ * Calling these on the original request a second time throws "body already consumed"
+ * deep inside the Azure Functions runtime, with no useful stack trace.
+ *
  * @internal
  */
-const SAFE_REQUEST_PROTOTYPE = (() => {
-    // Create a prototype that excludes body-consuming methods
-    const proto = Object.create(Object.getPrototypeOf({}));
-    
-    // Define getters that throw errors for body-consuming methods
-    const dangerousMethods = ['json', 'text', 'formData', 'arrayBuffer', 'blob'] as const;
-    
-    for (const method of dangerousMethods) {
-        Object.defineProperty(proto, method, {
-            get() {
-                throw new Error(
-                    `Cannot call request.${method}() - body has already been parsed by the typed handler wrapper. ` +
-                    `The parsed body is available in the 'body' parameter of your handler. ` +
-                    `If you need the raw request, use the regular 'handler' instead of 'typedHandler'.`
-                );
-            },
-            enumerable: false,
-            configurable: false
-        });
-    }
-    
-    return proto;
-})();
+const BODY_CONSUMING_METHODS = new Set<string | symbol>([
+    'json',
+    'text',
+    'formData',
+    'arrayBuffer',
+    'blob',
+]);
 
 /**
- * Creates a "safe" HTTP request object by preventing access to methods that would re-consume the body stream.
- * 
- * When the request body has been parsed (via parseBody), methods like json(), text(), formData()
- * cannot be called again because they would attempt to re-read the already consumed body stream,
- * causing errors.
- * 
- * This function creates a new object that:
- * - Inherits all properties from the original request
- * - Blocks body-consuming methods with helpful error messages
- * - Uses Object.create for optimal performance (no property copying or deletion)
- * 
+ * Creates a "safe" HTTP request that wraps the original request via a Proxy so that
+ * every property/method (including those defined on the `HttpRequest` prototype
+ * and any non-enumerable property) continues to work transparently, while
+ * body-consuming methods are replaced with a helpful error.
+ *
+ * Using a Proxy avoids the pitfalls of `Object.assign` on platform objects
+ * (loss of prototype, loss of non-enumerable properties such as `headers`,
+ * `params`, `query` getters on some runtimes).
+ *
  * @param request - The original HttpRequest
  * @param bodyWasParsed - Whether the body was parsed (schema was provided)
  * @returns Safe request object with body-consuming methods blocked if necessary
- * 
+ *
  * @internal
  */
 export function createSafeRequest(
@@ -188,16 +171,30 @@ export function createSafeRequest(
     if (!bodyWasParsed) {
         return request;
     }
-    
-    // Create a new object with safe prototype that blocks body methods
-    // This is much faster than copying properties or using delete
-    const safeRequest = Object.create(SAFE_REQUEST_PROTOTYPE);
-    
-    // Copy all enumerable properties from original request
-    // This preserves url, method, headers, params, query, etc.
-    Object.assign(safeRequest, request);
-    
-    return safeRequest as HttpRequest;
+
+    return new Proxy(request, {
+        get(target, prop, receiver) {
+            if (BODY_CONSUMING_METHODS.has(prop)) {
+                const methodName = typeof prop === 'symbol' ? prop.toString() : prop;
+                const message =
+                    `Cannot call request.${methodName}() - body has already been parsed by the typed handler wrapper. ` +
+                    `The parsed body is available in the 'body' parameter of your handler. ` +
+                    `If you need access to the raw body, use the regular 'handler' instead of 'typedHandler'.`;
+                // Body-consuming methods on HttpRequest are async; reject the
+                // returned promise instead of throwing synchronously so callers
+                // can `await` / `.catch()` the failure as they would for any
+                // other body parse error.
+                return () => Promise.reject(new Error(message));
+            }
+            const value = Reflect.get(target, prop, receiver);
+            // Re-bind functions so that `this` keeps pointing to the real request,
+            // preserving access to internal slots / private fields used by the runtime.
+            if (typeof value === 'function') {
+                return value.bind(target);
+            }
+            return value;
+        },
+    });
 }
 
 /**

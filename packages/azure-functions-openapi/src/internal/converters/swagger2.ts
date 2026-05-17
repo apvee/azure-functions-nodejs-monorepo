@@ -13,7 +13,7 @@ const HTTP_METHODS: string[] = ['get', 'put', 'post', 'delete', 'options', 'head
 const SCHEMA_PROPERTIES: string[] = ['format', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'minLength', 'maxLength', 'multipleOf', 'minItems', 'maxItems', 'uniqueItems', 'minProperties', 'maxProperties', 'additionalProperties', 'pattern', 'enum', 'default'];
 const ARRAY_PROPERTIES: string[] = ['type', 'items'];
 
-const APPLICATION_JSON_REGEX = /^(application\/json|[^;\/ \t]+\/[^;\/ \t]+[+]json)[ \t]*(;.*)?$/i;
+const APPLICATION_JSON_REGEX = /^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$/i;
 const SUPPORTED_MIME_TYPES = {
     APPLICATION_X_WWW_URLENCODED: 'application/x-www-form-urlencoded',
     MULTIPART_FORM_DATA: 'multipart/form-data'
@@ -92,7 +92,7 @@ export class Swagger2Converter {
         if (typeof this.spec.paths !== 'object') return;
 
         for (const path in this.spec.paths) {
-            let pathObject = this.spec.paths[path] = this.resolveReference(this.spec, this.spec.paths[path]) || {};
+            const pathObject = this.spec.paths[path] = this.resolveReference(this.spec, this.spec.paths[path]) || {};
             this.convertParameters(pathObject);
             for (const method in pathObject) {
                 if (HTTP_METHODS.includes(method)) {
@@ -108,7 +108,7 @@ export class Swagger2Converter {
     private convertOperationParameters(operation: any): void {
         operation.parameters = operation.parameters || [];
         if (operation.requestBody) {
-            let param = this.resolveReference(this.spec, operation.requestBody) || {};
+            const param = this.resolveReference(this.spec, operation.requestBody) || {};
 
             if (operation.requestBody.content) {
                 const contentType = getSupportedMimeTypes(operation.requestBody.content)[0];
@@ -188,7 +188,7 @@ export class Swagger2Converter {
         const schema = this.resolveReference(this.spec, obj.schema);
         if (!schema) return;
         for (const propName in schema) {
-            if (propName.startsWith('x-') && !obj.hasOwnProperty(propName)) {
+            if (propName.startsWith('x-') && !Object.prototype.hasOwnProperty.call(obj, propName)) {
                 obj[propName] = schema[propName];
             }
         }

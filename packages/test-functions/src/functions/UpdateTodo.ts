@@ -1,21 +1,31 @@
 import { app } from "@azure/functions";
 import { ErrorResponseSchema } from "../models/errors";
 import { TodoParamIDSchema, TodoSchema, UpdateTodoSchema } from "../models/todo";
-import { TodoService } from "../services/TodoService";
+import { TodoNotFoundError, TodoService } from "../services/TodoService";
 
 /**
  * Updates an existing todo item using a typed handler.
  * Both route parameters and request body are automatically validated and typed.
- * Validation errors return 400 Bad Request automatically.
+ * Validation errors return 400 Bad Request automatically. A missing todo
+ * surfaces a structured 404 Not Found response.
  */
 app.openapiPath('UpdateTodo', 'Update Single Todo', {
     typedHandler: async ({ params, body, context }) => {
         // params and body are already validated and typed!
-        // Type inference: params.id: string (UUID), body: UpdateTodo
         context.log(`Processing request to update todo: ${params.id}`);
 
-        const todo = await TodoService.updateTodo(params.id, body);
-        return { status: 200, jsonBody: todo };
+        try {
+            const todo = await TodoService.updateTodo(params.id, body);
+            return { status: 200, jsonBody: todo };
+        } catch (error) {
+            if (error instanceof TodoNotFoundError) {
+                return {
+                    status: 404,
+                    jsonBody: { code: 404, message: error.message },
+                };
+            }
+            throw error;
+        }
     },
     methods: ['PUT', 'PATCH'],
     route: 'todos/{id}',

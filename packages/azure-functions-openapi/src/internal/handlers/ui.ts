@@ -1,4 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { promises as fsp } from 'fs';
 import * as fs from 'fs';
 import * as path from 'path';
 import { OpenAPIDocumentInfo } from "../../types";
@@ -23,8 +24,70 @@ const ALLOWED_SWAGGER_FILES: Record<string, { path: string; contentType: string 
 };
 
 /**
+ * In-process cache for Swagger UI assets. Static files are read once and kept in
+ * memory to avoid synchronous disk I/O on every request, which is harmful on
+ * Azure Functions where a single host process handles many concurrent invocations.
+ *
+ * Cache key is the whitelist filename. The cached entry contains:
+ *  - content: the file body as a UTF-8 string
+ *  - etag: a stable identifier derived from the file modification time
+ */
+interface CachedAsset {
+    content: string;
+    etag: string;
+}
+const ASSET_CACHE = new Map<string, CachedAsset>();
+
+/**
+ * Resolves a Swagger UI asset path on disk, supporting both the package's own
+ * `node_modules` and a hoisted monorepo root. Returned promise resolves to
+ * `null` if the asset cannot be located.
+ *
+ * @internal
+ */
+async function resolveAssetPath(relativePath: string): Promise<string | null> {
+    const candidates = [
+        path.join(process.cwd(), 'node_modules/swagger-ui-dist', relativePath),
+        path.join(process.cwd(), '../../node_modules/swagger-ui-dist', relativePath),
+    ];
+    for (const candidate of candidates) {
+        if (fs.existsSync(candidate)) {
+            return candidate;
+        }
+    }
+    return null;
+}
+
+/**
+ * Returns a cached asset entry, populating the cache on first access.
+ *
+ * @internal
+ */
+async function loadAsset(file: string): Promise<CachedAsset | null> {
+    const cached = ASSET_CACHE.get(file);
+    if (cached) return cached;
+
+    const fileConfig = ALLOWED_SWAGGER_FILES[file];
+    if (!fileConfig) return null;
+
+    const filePath = await resolveAssetPath(fileConfig.path);
+    if (!filePath) return null;
+
+    const [content, stats] = await Promise.all([
+        fsp.readFile(filePath, 'utf8'),
+        fsp.stat(filePath),
+    ]);
+    const entry: CachedAsset = {
+        content,
+        etag: `"${stats.mtime.getTime()}"`,
+    };
+    ASSET_CACHE.set(file, entry);
+    return entry;
+}
+
+/**
  * Registers Swagger UI handlers for Azure Functions.
- * This function is internal and should not be called directly - use app.openapi() instead.
+ * This function is internal and should not be called directly - use app.openapiSetup() instead.
  * 
  * Creates two HTTP GET endpoints:
  * - Custom UI route (default: `/swagger-ui`) - Serves the Swagger UI HTML page
@@ -58,47 +121,48 @@ export function registerSwaggerUIHandler(
      */
     const assetsHandler = async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
         const file = request.params.file;
-        
+
         // Validate file against whitelist
         if (!file || !ALLOWED_SWAGGER_FILES[file]) {
             context.warn(`Attempted to access non-whitelisted file: ${file}`);
-            return { 
-                status: 404, 
-                body: 'File not found' 
-            };
-        }
-        
-        const fileConfig = ALLOWED_SWAGGER_FILES[file];
-        
-        // Try local node_modules first, then root node_modules (monorepo support)
-        const localPath = path.join(process.cwd(), 'node_modules/swagger-ui-dist', fileConfig.path);
-        const rootPath = path.join(process.cwd(), '../../node_modules/swagger-ui-dist', fileConfig.path);
-        
-        let filePath: string;
-        if (fs.existsSync(localPath)) {
-            filePath = localPath;
-        } else if (fs.existsSync(rootPath)) {
-            filePath = rootPath;
-        } else {
-            context.error(`Swagger UI file not found: ${file}. Please ensure swagger-ui-dist is installed.`);
             return {
                 status: 404,
-                body: 'Swagger UI assets not found. Please install swagger-ui-dist package.'
+                body: 'File not found'
             };
         }
-        
+
+        const fileConfig = ALLOWED_SWAGGER_FILES[file];
+
         try {
-            const fileContent = fs.readFileSync(filePath, 'utf8');
-            const stats = fs.statSync(filePath);
-            
+            const asset = await loadAsset(file);
+            if (!asset) {
+                context.error(`Swagger UI file not found: ${file}. Please ensure swagger-ui-dist is installed.`);
+                return {
+                    status: 404,
+                    body: 'Swagger UI assets not found. Please install swagger-ui-dist package.'
+                };
+            }
+
+            // Conditional GET via ETag — clients re-using the same UI page can skip the body.
+            const ifNoneMatch = request.headers.get('if-none-match');
+            if (ifNoneMatch && ifNoneMatch === asset.etag) {
+                return {
+                    status: 304,
+                    headers: {
+                        'cache-control': 'public, max-age=86400',
+                        'etag': asset.etag,
+                    },
+                };
+            }
+
             return {
                 status: 200,
                 headers: {
                     'content-type': fileConfig.contentType,
-                    'cache-control': 'public, max-age=86400', // Cache for 24 hours
-                    'etag': `"${stats.mtime.getTime()}"` // Use file modification time for ETag
+                    'cache-control': 'public, max-age=86400',
+                    'etag': asset.etag,
                 },
-                body: fileContent
+                body: asset.content,
             };
         } catch (error) {
             context.error(`Error reading Swagger UI file "${file}": ${error}`);

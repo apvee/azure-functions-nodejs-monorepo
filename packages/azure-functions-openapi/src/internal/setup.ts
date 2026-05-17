@@ -23,9 +23,16 @@ import { registerSwaggerUIHandler } from './handlers/ui';
  * @internal
  */
 export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] {
-    // Store global configuration for use by registerFunction
+    // Default values
+    const versions = config.versions || ['3.1.0'];
+    const formats = config.formats || ['json', 'yaml'];
+    const authLevel = config.authLevel || 'anonymous';
+    const routePrefix = config.routePrefix || 'api';
+
+    // Store global configuration for use by openapiPath/openapiWebhook
     globalConfigManager.setConfig({
-        routePrefix: config.routePrefix || 'api',
+        routePrefix,
+        defaultAuthLevel: authLevel,
         openAPIConfig: {
             info: config.info,
             security: config.security,
@@ -34,12 +41,6 @@ export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] 
             servers: config.servers
         }
     });
-
-    // Default values
-    const versions = config.versions || ['3.1.0'];
-    const formats = config.formats || ['json', 'yaml'];
-    const authLevel = config.authLevel || 'anonymous';
-    const routePrefix = config.routePrefix || 'api';
 
     // Generate OpenAPI documents for all version/format combinations
     const documents: OpenAPIDocumentInfo[] = [];
