@@ -264,7 +264,7 @@ export interface AzureAdJwtClaims {
      * Additional custom claims.
      * Can include any other properties depending on token configuration.
      */
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**
@@ -388,7 +388,7 @@ export type ContentTypeConfig = {
      * ```
      */
     examples?: Record<string, { 
-        value: any; 
+        value: unknown; 
         summary?: string; 
         description?: string;
     }>;
@@ -424,7 +424,7 @@ export type ContentTypeConfig = {
         /** Content type for this part (overrides default) */
         contentType?: string;
         /** Custom headers for this part */
-        headers?: Record<string, any>;
+        headers?: Record<string, unknown>;
         /** Serialization style (form, spaceDelimited, pipeDelimited, deepObject) */
         style?: string;
         /** Whether to explode array/object parameters */
@@ -520,7 +520,7 @@ export type ResponseConfig = {
      * Only used with `schema`, not with `content` array.
      */
     examples?: Record<string, { 
-        value: any; 
+        value: unknown; 
         summary?: string; 
         description?: string;
     }>;
