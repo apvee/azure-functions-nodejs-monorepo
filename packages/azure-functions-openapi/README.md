@@ -41,7 +41,7 @@ app.openAPIPath("GetUser", "Get user by ID", {
 ### Key Capabilities
 
 - 🎯 **Automatic Type Inference** - TypeScript infers all parameter types from your Zod schemas
-- 📝 **Multi-Version OpenAPI** - Generate specs in OpenAPI 2.0, 3.0.3, and 3.1.0 formats
+- 📝 **Multi-Version OpenAPI** - OpenAPI 3.1.0 by default, with opt-in OpenAPI 3.0.3 and Swagger 2.0 output
 - 🎨 **Integrated Swagger UI** - Beautiful, interactive API documentation out of the box
 - 🔒 **Azure Security Built-in** - Native support for Function Keys, EasyAuth, and Azure AD
 - ✅ **Runtime Validation** - Automatic request/response validation with detailed error messages
@@ -120,6 +120,7 @@ v2.0 introduces native support for multiple Azure authentication methods:
 - **Azure AD Bearer Token** - Manual JWT validation for Microsoft Entra ID
 - **Azure AD Client Credentials** - Service-to-service authentication with app roles
 - **Custom API Keys** - Flexible header/query/cookie-based authentication
+- **Safe host resolution** - `servers` is never derived from the request `Host` header unless you explicitly opt in with `trustHostHeader`
 
 ```typescript
 // Azure EasyAuth example
@@ -152,7 +153,7 @@ Fully aligned with **Zod 4.x**, ensuring compatibility with the latest validatio
 ```json
 {
   "peerDependencies": {
-    "@azure/functions": "^4.0.0",
+    "@azure/functions": "^4.5.2",
     "zod": "^4.0.0"
   }
 }
@@ -179,12 +180,15 @@ app.openAPIWebhook('OrderCreated', 'Notify when order is created', {
 Setup is now **much simpler** with a single `openAPISetup()` call:
 
 ```typescript
-// Generate the OpenAPI documents you want — only OpenAPI 3.1.0 / JSON+YAML are emitted by default
+// Only OpenAPI 3.1.0 in JSON/YAML is emitted by default.
+// Add 3.0.3 or 2.0 only when your tooling needs them.
 app.openAPISetup({
   info: { title: 'My API', version: '1.0.0' },
   routePrefix: 'api',
   versions: ['3.1.0', '3.0.3', '2.0'], // Optional, defaults to ['3.1.0']
   formats: ['json', 'yaml'],           // Optional, defaults to ['json', 'yaml']
+  servers: [{ url: 'https://api.example.com' }],
+  trustHostHeader: false,               // Optional, defaults to false
   swaggerUI: { 
     enabled: true,                     // Optional, defaults to true
     route: 'docs'                      // Optional, defaults to 'swagger-ui'
@@ -329,13 +333,13 @@ app.openAPIPath('UpdateTodo', 'Update a todo item', {
 
 ### Multi-Version OpenAPI Support
 
-Generate OpenAPI specifications in multiple versions and formats simultaneously:
+Generate OpenAPI specifications in multiple versions and formats when your tooling needs them. By default, the library emits OpenAPI 3.1.0 in JSON and YAML only.
 
 - **OpenAPI 3.1.0** - Latest spec with full JSON Schema support and webhooks
 - **OpenAPI 3.0.3** - Widely supported by most tools
 - **OpenAPI 2.0 (Swagger)** - Legacy support for older tools
 
-Export in **JSON** or **YAML** format to suit your needs.
+Add `versions: ["3.1.0", "3.0.3", "2.0"]` to generate all supported versions simultaneously. Export in **JSON** or **YAML** format to suit your needs.
 
 ### Integrated Swagger UI
 
@@ -509,7 +513,7 @@ npm install @azure/functions zod
 | Package                          | Version    | Notes                    |
 | -------------------------------- | ---------- | ------------------------ |
 | `@apvee/azure-functions-openapi` | `^2.0.0`   | This library             |
-| `@azure/functions`               | `^4.0.0`   | Azure Functions runtime  |
+| `@azure/functions`               | `^4.5.2`   | Azure Functions runtime  |
 | `zod`                            | `^4.0.0`   | Schema validation        |
 | Node.js                          | `>=18.0.0` | Recommended: Node 20 LTS |
 
@@ -751,6 +755,8 @@ app.openAPISetup({
   },
 
   // Optional: Server configurations
+  // Recommended in production. When omitted, `servers` is not derived from
+  // the request Host header unless `trustHostHeader` is explicitly enabled.
   servers: [
     {
       url: "https://api.example.com",
@@ -805,6 +811,13 @@ app.openAPISetup({
   // Optional: Output formats (default: ['json', 'yaml'])
   formats: ["json", "yaml"],
 
+  // Optional: trust the incoming Host header for generated `servers`
+  // (default: false). Prefer explicit `servers` in production.
+  trustHostHeader: false,
+
+  // Optional: host allowlist used only when `trustHostHeader: true`
+  trustedHosts: ["api.example.com", "staging-api.example.com"],
+
   // Optional: Swagger UI configuration
   swaggerUI: {
     enabled: true, // default: true
@@ -827,13 +840,15 @@ app.openAPISetup({
 | `authLevel`           | `'anonymous' \| 'function' \| 'admin'` | `'anonymous'`            | Auth level for OpenAPI/Swagger endpoints         |
 | `versions`            | `Array<'2.0' \| '3.0.3' \| '3.1.0'>`   | `['3.1.0']`              | OpenAPI versions to generate                     |
 | `formats`             | `Array<'json' \| 'yaml'>`              | `['json', 'yaml']`       | Output formats                                   |
+| `trustHostHeader`     | `boolean`                              | `false`                  | Derive `servers` from the request `Host` header only when explicitly enabled |
+| `trustedHosts`        | `string[]`                             | `[]`                     | Hostname allowlist used when `trustHostHeader` is enabled |
 | `swaggerUI.enabled`   | `boolean`                              | `true`                   | Enable/disable Swagger UI                        |
 | `swaggerUI.route`     | `string`                               | `'swagger-ui'`           | Swagger UI route                                 |
 | `swaggerUI.authLevel` | `'anonymous' \| 'function' \| 'admin'` | Same as main `authLevel` | Auth level for Swagger UI                        |
 
 #### Generated Endpoints
 
-Based on your configuration, the following endpoints are automatically created:
+Based on your configuration, the following endpoints are automatically created. With the default `versions: ["3.1.0"]`, only the 3.1.0 document routes are registered; 3.0.3 and 2.0 routes are registered only when you add those versions.
 
 **OpenAPI Documents:**
 
@@ -7577,7 +7592,7 @@ Update your `package.json`:
 {
   "dependencies": {
     "@apvee/azure-functions-openapi": "^2.0.0",
-    "@azure/functions": "^4.0.0",
+    "@azure/functions": "^4.5.2",
     "zod": "^4.0.0"
   }
 }
@@ -8221,7 +8236,7 @@ See the [LICENSE](LICENSE) file for full details.
 #### 📦 Package
 
 - **npm Package**: [@apvee/azure-functions-openapi](https://www.npmjs.com/package/@apvee/azure-functions-openapi)
-- **Version**: 2.0.0-alpha.0
+- **Version**: 2.0.0
 - **Install**: `npm install @apvee/azure-functions-openapi`
 
 #### 🔗 Repository
