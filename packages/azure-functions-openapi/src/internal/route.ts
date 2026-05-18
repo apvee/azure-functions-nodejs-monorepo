@@ -48,10 +48,7 @@ export function normalizeOpenAPIPath(routePrefix: string | undefined, route: str
  * @internal
  */
 export function normalizeAzureFunctionRoute(route: string): string {
-    const normalized = route
-        .replace(/^\/+/, '')
-        .replace(/\/+$/, '')
-        .replace(/\/+/g, '/');
+    const normalized = route.replace(/^\/+/, '').replace(/\/+$/, '').replace(/\/+/g, '/');
     return normalized || '';
 }
 

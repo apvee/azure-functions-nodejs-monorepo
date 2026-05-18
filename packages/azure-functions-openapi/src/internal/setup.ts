@@ -21,7 +21,7 @@ export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] 
     const authLevel = config.authLevel || 'anonymous';
     const routePrefix = config.routePrefix || 'api';
     const trustHostHeader = config.trustHostHeader === true;
-    const trustedHosts = (config.trustedHosts ?? []).map(h => h.toLowerCase());
+    const trustedHosts = (config.trustedHosts ?? []).map((h) => h.toLowerCase());
 
     // Surface a clear warning when an anonymous OpenAPI surface is being deployed
     // to Azure. The OpenAPI document discloses every route + schema and is a high
@@ -29,8 +29,8 @@ export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] 
     if (authLevel === 'anonymous' && isRunningOnAzure()) {
         getLogger().warn(
             '[openapi] OpenAPI endpoints are configured with authLevel="anonymous" while running ' +
-            'on Azure (WEBSITE_SITE_NAME detected). This exposes the full API surface publicly. ' +
-            'Consider authLevel="function" or "admin", or fronting the app with APIM / EasyAuth.'
+                'on Azure (WEBSITE_SITE_NAME detected). This exposes the full API surface publicly. ' +
+                'Consider authLevel="function" or "admin", or fronting the app with APIM / EasyAuth.'
         );
     }
 
@@ -43,8 +43,8 @@ export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] 
             security: config.security,
             externalDocs: config.externalDocs,
             tags: config.tags,
-            servers: config.servers
-        }
+            servers: config.servers,
+        },
     });
 
     // Generate OpenAPI documents for all version/format combinations
@@ -71,12 +71,7 @@ export function setupOpenAPI(config: OpenAPISetupConfig): OpenAPIDocumentInfo[] 
         const swaggerAuthLevel = config.swaggerUI?.authLevel || authLevel;
         const swaggerUIRoute = config.swaggerUI?.route || 'swagger-ui';
 
-        registerSwaggerUIHandler(
-            swaggerAuthLevel,
-            routePrefix,
-            documents,
-            swaggerUIRoute
-        );
+        registerSwaggerUIHandler(swaggerAuthLevel, routePrefix, documents, swaggerUIRoute);
     }
 
     return documents;

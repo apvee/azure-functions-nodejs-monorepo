@@ -41,7 +41,7 @@ class OpenAPIConfigManager {
         if (!this.config) {
             throw new Error(
                 'OpenAPI configuration not initialized. ' +
-                'Please call app.openAPISetup() before registering functions.'
+                    'Please call app.openAPISetup() before registering functions.'
             );
         }
         return this.config.routePrefix;
@@ -66,7 +66,7 @@ class OpenAPIConfigManager {
         if (!this.config) {
             throw new Error(
                 'OpenAPI configuration not initialized. ' +
-                'Please call app.openAPISetup() before generating OpenAPI documents.'
+                    'Please call app.openAPISetup() before generating OpenAPI documents.'
             );
         }
         return this.config.openAPIConfig;
@@ -74,7 +74,7 @@ class OpenAPIConfigManager {
 
     /**
      * Checks if the global configuration has been initialized.
-     * 
+     *
      * @returns True if configuration is set, false otherwise
      */
     isConfigured(): boolean {

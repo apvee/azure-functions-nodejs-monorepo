@@ -18,10 +18,10 @@
   "dependencies": {
     "@apvee/azure-functions-openapi": "file:../azure-functions-openapi",
     "@azure/functions": "^4.0.0",
-    "@ngneat/falso": "^7.2.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@ngneat/falso": "^7.2.0",
     "@types/node": "^20.x",
     "rimraf": "^5.0.0",
     "typescript": "^5.6.0"

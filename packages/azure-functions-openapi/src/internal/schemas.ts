@@ -1,7 +1,7 @@
-import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
-import { SecurityRequirementObject } from "../types";
-import { openAPIRegistry } from "./registry";
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
+import { z } from 'zod';
+import { SecurityRequirementObject } from '../types';
+import { openAPIRegistry } from './registry';
 import {
     registerCustomApiKey,
     registerAzureFunctionKey,
@@ -13,18 +13,18 @@ import {
     type AzureEasyAuthConfig,
     type AzureADBearerConfig,
     type AzureADClientCredentialsConfig,
-} from "./security";
+} from './security';
 
 // Extend Zod with OpenAPI metadata support
 extendZodWithOpenApi(z);
 
 /**
  * Registers a Zod schema as a named type in the OpenAPI registry.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use app.openAPISchema() instead.
- * 
+ *
  * This allows the schema to be referenced by name in OpenAPI documentation,
  * promoting reusability and keeping the generated spec cleaner.
  *
@@ -42,10 +42,10 @@ export function registerTypeSchema(typeName: string, schema: z.ZodTypeAny): void
 /**
  * Sanitizes a parameter name to create a valid OpenAPI security scheme name.
  * Converts to PascalCase and removes special characters.
- * 
+ *
  * @param paramName - The parameter name (e.g., 'X-API-Key', 'api_key', 'code')
  * @returns Sanitized scheme name (e.g., 'XApiKey', 'ApiKey', 'Code')
- * 
+ *
  * @internal
  */
 function sanitizeSchemeNameFromParameter(paramName: string): string {
@@ -53,18 +53,18 @@ function sanitizeSchemeNameFromParameter(paramName: string): string {
     const parts = paramName
         .replace(/[^a-zA-Z0-9]/g, '_')
         .split('_')
-        .filter(part => part.length > 0);
-    
+        .filter((part) => part.length > 0);
+
     // Convert to PascalCase
     const pascalCase = parts
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join('');
-    
+
     // Ensure it starts with a letter (prepend 'Key' if starts with number)
     if (/^\d/.test(pascalCase)) {
         return 'Key' + pascalCase;
     }
-    
+
     return pascalCase || 'ApiKey'; // Fallback to 'ApiKey' if empty
 }
 
@@ -72,14 +72,14 @@ function sanitizeSchemeNameFromParameter(paramName: string): string {
  * Registers an API key security schema in the OpenAPI registry.
  * This is for CUSTOM API keys with user-implemented validation logic.
  * For native Azure Function Keys, use registerAzureFunctionKeySecurity instead.
- * 
+ *
  * The security scheme name is automatically generated from the parameter name
  * to prevent conflicts when multiple API keys are registered.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use app.openAPIKeySecurity() or app.openAPICustomApiKey() instead.
- * 
+ *
  * This creates a security scheme that requires an API key to be provided in the specified location
  * (header, query parameter, or cookie). The security requirement can then be applied to endpoints.
  *
@@ -87,17 +87,17 @@ function sanitizeSchemeNameFromParameter(paramName: string): string {
  * @param input - The location where the API key should be provided
  * @param description - Optional description for the security scheme
  * @returns A security requirement object to use in endpoint configurations
- * 
+ *
  * @example
  * ```typescript
  * // Parameter name 'X-API-Key' generates scheme name 'XApiKey'
  * const sec1 = registerApiKeySecuritySchema('X-API-Key', 'header');
  * // Returns: { XApiKey: [] }
- * 
+ *
  * // Parameter name 'api_key' generates scheme name 'ApiKey'
  * const sec2 = registerApiKeySecuritySchema('api_key', 'query');
  * // Returns: { ApiKey: [] }
- * 
+ *
  * // No conflicts - each has unique scheme name
  * ```
  */
@@ -108,7 +108,7 @@ export function registerApiKeySecuritySchema(
 ): SecurityRequirementObject {
     // Generate unique scheme name from parameter name to prevent conflicts
     const schemeName = sanitizeSchemeNameFromParameter(name);
-    
+
     // Use the new customApiKey module with auto-generated scheme name
     const config: CustomApiKeyConfig = {
         name: schemeName,
@@ -127,11 +127,11 @@ export function registerApiKeySecuritySchema(
 /**
  * Registers Azure Function Keys security schema in the OpenAPI registry.
  * This is for native Azure Functions key-based authentication.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use app.openAPIAzureFunctionKey() instead.
- * 
+ *
  * @param config - Azure Function Key configuration
  * @returns Security requirement object
  */
@@ -148,11 +148,11 @@ export function registerAzureFunctionKeySecurity(
 /**
  * Registers Azure EasyAuth security schema in the OpenAPI registry.
  * This is for Azure App Service Authentication (EasyAuth).
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use app.openAPIEasyAuth() instead.
- * 
+ *
  * @param config - Azure EasyAuth configuration
  * @returns Security requirement object
  */
@@ -169,11 +169,11 @@ export function registerAzureEasyAuthSecurity(
 /**
  * Registers Azure AD Bearer Token security schema in the OpenAPI registry.
  * This is for manual JWT validation from Microsoft Entra ID.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use app.openAPIAzureADBearer() instead.
- * 
+ *
  * @param config - Azure AD Bearer Token configuration
  * @returns Security requirement object
  */
@@ -190,11 +190,11 @@ export function registerAzureADBearerSecurity(
 /**
  * Registers Azure AD Client Credentials security schema in the OpenAPI registry.
  * This is for service-to-service (daemon) authentication.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use app.openAPIAzureADClientCredentials() instead.
- * 
+ *
  * @param config - Azure AD Client Credentials configuration
  * @returns Security requirement object
  */
@@ -203,4 +203,3 @@ export function registerAzureADClientCredentialsSecurity(
 ): SecurityRequirementObject {
     return registerAzureADClientCredentials(config);
 }
-

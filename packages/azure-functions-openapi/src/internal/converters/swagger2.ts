@@ -5,18 +5,45 @@
  * License: MIT
  */
 
-"use strict";
+'use strict';
 import camelCase from 'lodash.camelcase';
 import cloneDeep from 'lodash.clonedeep';
 
-const HTTP_METHODS: string[] = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
-const SCHEMA_PROPERTIES: string[] = ['format', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'minLength', 'maxLength', 'multipleOf', 'minItems', 'maxItems', 'uniqueItems', 'minProperties', 'maxProperties', 'additionalProperties', 'pattern', 'enum', 'default'];
+const HTTP_METHODS: string[] = [
+    'get',
+    'put',
+    'post',
+    'delete',
+    'options',
+    'head',
+    'patch',
+    'trace',
+];
+const SCHEMA_PROPERTIES: string[] = [
+    'format',
+    'minimum',
+    'maximum',
+    'exclusiveMinimum',
+    'exclusiveMaximum',
+    'minLength',
+    'maxLength',
+    'multipleOf',
+    'minItems',
+    'maxItems',
+    'uniqueItems',
+    'minProperties',
+    'maxProperties',
+    'additionalProperties',
+    'pattern',
+    'enum',
+    'default',
+];
 const ARRAY_PROPERTIES: string[] = ['type', 'items'];
 
 const APPLICATION_JSON_REGEX = /^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$/i;
 const SUPPORTED_MIME_TYPES = {
     APPLICATION_X_WWW_URLENCODED: 'application/x-www-form-urlencoded',
-    MULTIPART_FORM_DATA: 'multipart/form-data'
+    MULTIPART_FORM_DATA: 'multipart/form-data',
 };
 
 function capitalizeFirstLetter(str: string): string {
@@ -56,13 +83,15 @@ export class Swagger2Converter {
         if (!obj || !obj.$ref) return obj;
         const ref: string = obj.$ref;
         if (ref.startsWith('#')) {
-            const keys = ref.split('/').map(k => k.replace(/~1/g, '/').replace(/~0/g, '~'));
+            const keys = ref.split('/').map((k) => k.replace(/~1/g, '/').replace(/~0/g, '~'));
             keys.shift();
             let cur: any = base;
-            keys.forEach(k => { cur = cur ? cur[k] : undefined; });
+            keys.forEach((k) => {
+                cur = cur ? cur[k] : undefined;
+            });
             return cur ? cloneDeep(cur) : undefined;
         } else {
-            throw new Error("Remote $ref URLs are not supported in this implementation.");
+            throw new Error('Remote $ref URLs are not supported in this implementation.');
         }
     }
 
@@ -92,12 +121,16 @@ export class Swagger2Converter {
         if (typeof this.spec.paths !== 'object') return;
 
         for (const path in this.spec.paths) {
-            const pathObject = this.spec.paths[path] = this.resolveReference(this.spec, this.spec.paths[path]) || {};
+            const pathObject = (this.spec.paths[path] =
+                this.resolveReference(this.spec, this.spec.paths[path]) || {});
             this.convertParameters(pathObject);
             for (const method in pathObject) {
                 if (HTTP_METHODS.includes(method)) {
-                    const operation = pathObject[method] = this.resolveReference(this.spec, pathObject[method]) || {};
-                    operation.operationId = operation.operationId || capitalizeFirstLetter(camelCase(`${method}${operation.summary || path}`));
+                    const operation = (pathObject[method] =
+                        this.resolveReference(this.spec, pathObject[method]) || {});
+                    operation.operationId =
+                        operation.operationId ||
+                        capitalizeFirstLetter(camelCase(`${method}${operation.summary || path}`));
                     this.convertOperationParameters(operation);
                     this.convertResponses(operation);
                 }
@@ -114,10 +147,17 @@ export class Swagger2Converter {
                 const contentType = getSupportedMimeTypes(operation.requestBody.content)[0];
                 if (contentType) {
                     param.name = 'body';
-                    param.in = contentType === SUPPORTED_MIME_TYPES.APPLICATION_X_WWW_URLENCODED ||
-                        contentType === SUPPORTED_MIME_TYPES.MULTIPART_FORM_DATA ? 'formData' : 'body';
+                    param.in =
+                        contentType === SUPPORTED_MIME_TYPES.APPLICATION_X_WWW_URLENCODED ||
+                        contentType === SUPPORTED_MIME_TYPES.MULTIPART_FORM_DATA
+                            ? 'formData'
+                            : 'body';
                     param.schema = operation.requestBody.content[contentType].schema;
-                    if (param.in === 'formData' && param.schema.type === 'object' && param.schema.properties) {
+                    if (
+                        param.in === 'formData' &&
+                        param.schema.type === 'object' &&
+                        param.schema.properties
+                    ) {
                         const required = param.schema.required || [];
                         for (const name in param.schema.properties) {
                             const schema = param.schema.properties[name];
@@ -126,7 +166,7 @@ export class Swagger2Converter {
                                     name,
                                     in: 'formData',
                                     required: required.includes(name),
-                                    ...schema
+                                    ...schema,
                                 };
                                 operation.parameters.push(formDataParam);
                             }
@@ -166,7 +206,8 @@ export class Swagger2Converter {
                 }
             }
             if (param.type === 'array') {
-                const style = param.style || (['query', 'cookie'].includes(param.in) ? 'form' : 'simple');
+                const style =
+                    param.style || (['query', 'cookie'].includes(param.in) ? 'form' : 'simple');
                 param.collectionFormat = this.getCollectionFormat(style, param.explode);
             }
             delete param.style;
@@ -177,7 +218,7 @@ export class Swagger2Converter {
     private copySchemaProperties(obj: any, props: string[]): void {
         const schema = this.resolveReference(this.spec, obj.schema);
         if (!schema) return;
-        props.forEach(prop => {
+        props.forEach((prop) => {
             if (schema[prop] !== undefined) {
                 obj[prop] = schema[prop];
             }
@@ -198,12 +239,15 @@ export class Swagger2Converter {
         if (typeof operation.responses !== 'object') return;
 
         for (const code in operation.responses) {
-            const response = operation.responses[code] = this.resolveReference(this.spec, operation.responses[code]) || {};
+            const response = (operation.responses[code] =
+                this.resolveReference(this.spec, operation.responses[code]) || {});
             if (response.content) {
                 let anySchema = null;
                 let jsonSchema = null;
                 for (const mediaRange in response.content) {
-                    const mediaType = mediaRange.includes('*') ? 'application/octet-stream' : mediaRange;
+                    const mediaType = mediaRange.includes('*')
+                        ? 'application/octet-stream'
+                        : mediaRange;
                     operation.produces = operation.produces || [];
                     if (!operation.produces.includes(mediaType)) {
                         operation.produces.push(mediaType);
@@ -224,7 +268,11 @@ export class Swagger2Converter {
                 if (anySchema) {
                     response.schema = jsonSchema || anySchema;
                     const resolvedSchema = this.resolveReference(this.spec, response.schema);
-                    if (resolvedSchema && response.schema.$ref && !response.schema.$ref.startsWith('#')) {
+                    if (
+                        resolvedSchema &&
+                        response.schema.$ref &&
+                        !response.schema.$ref.startsWith('#')
+                    ) {
                         response.schema = resolvedSchema;
                     }
                     this.convertSchema(response.schema, 'response');
@@ -273,7 +321,10 @@ export class Swagger2Converter {
             case 'object':
                 if (def.properties) {
                     for (const propName in def.properties) {
-                        if (def.properties[propName].writeOnly && operationDirection === 'response') {
+                        if (
+                            def.properties[propName].writeOnly &&
+                            operationDirection === 'response'
+                        ) {
                             delete def.properties[propName];
                         } else {
                             this.convertSchema(def.properties[propName], operationDirection);
@@ -314,13 +365,17 @@ export class Swagger2Converter {
         for (const payload in mapping) {
             const schemaNameOrRef = mapping[payload];
             if (typeof schemaNameOrRef !== 'string') {
-                console.warn(`Ignoring ${schemaNameOrRef} for ${payload} in discriminator.mapping.`);
+                console.warn(
+                    `Ignoring ${schemaNameOrRef} for ${payload} in discriminator.mapping.`
+                );
                 continue;
             }
 
             let schema: any;
             if (/^[a-zA-Z0-9._-]+$/.test(schemaNameOrRef)) {
-                schema = this.resolveReference(this.spec, { $ref: `#/components/schemas/${schemaNameOrRef}` });
+                schema = this.resolveReference(this.spec, {
+                    $ref: `#/components/schemas/${schemaNameOrRef}`,
+                });
             }
 
             if (!schema) {
@@ -331,7 +386,9 @@ export class Swagger2Converter {
                 schema['x-discriminator-value'] = payload;
                 schema['x-ms-discriminator-value'] = payload;
             } else {
-                console.warn(`Unable to resolve ${schemaNameOrRef} for ${payload} in discriminator.mapping.`);
+                console.warn(
+                    `Unable to resolve ${schemaNameOrRef} for ${payload} in discriminator.mapping.`
+                );
             }
         }
     }
@@ -422,7 +479,7 @@ function isJsonMimeType(type: string): boolean {
 
 function getSupportedMimeTypes(content: any): string[] {
     const MIME_VALUES = Object.values(SUPPORTED_MIME_TYPES);
-    return Object.keys(content).filter(key => {
+    return Object.keys(content).filter((key) => {
         return MIME_VALUES.includes(key) || isJsonMimeType(key);
     });
 }

@@ -1,12 +1,12 @@
-import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
-import { OpenApiGeneratorV3, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
+import { OpenApiGeneratorV3, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi';
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { stringify as yamlStringify } from 'yaml';
-import { OpenAPIDocumentInfo, OpenAPIObject, OpenAPIObjectConfig, ServerObject } from "../../types";
-import { Swagger2Converter } from "../converters/swagger2";
-import { openAPIRegistry } from "../registry";
-import { redactSensitiveUrl } from "../sanitize";
-import { getLogger } from "../logger";
+import { OpenAPIDocumentInfo, OpenAPIObject, OpenAPIObjectConfig, ServerObject } from '../../types';
+import { Swagger2Converter } from '../converters/swagger2';
+import { openAPIRegistry } from '../registry';
+import { redactSensitiveUrl } from '../sanitize';
+import { getLogger } from '../logger';
 
 /**
  * Options for resolving the `servers` array of a generated OpenAPI document
@@ -33,7 +33,7 @@ export interface HostResolutionOptions {
 export function resolveServers(
     configuredServers: ServerObject[] | undefined,
     requestUrl: string,
-    options: HostResolutionOptions,
+    options: HostResolutionOptions
 ): ServerObject[] | undefined {
     if (configuredServers && configuredServers.length > 0) {
         return configuredServers;
@@ -54,11 +54,11 @@ export function resolveServers(
     }
 
     if (options.trustedHosts.length > 0) {
-        const allow = options.trustedHosts.map(h => h.toLowerCase());
+        const allow = options.trustedHosts.map((h) => h.toLowerCase());
         if (!allow.includes(host)) {
             getLogger().warn(
                 `[openapi] Ignoring untrusted host "${host}" for OpenAPI servers field. ` +
-                `Add it to OpenAPISetupConfig.trustedHosts to opt in.`
+                    `Add it to OpenAPISetupConfig.trustedHosts to opt in.`
             );
             return undefined;
         }
@@ -93,7 +93,7 @@ export interface RegisterOpenAPIHandlerOptions {
  * @internal
  */
 export function registerOpenAPIHandler(
-    options: RegisterOpenAPIHandlerOptions,
+    options: RegisterOpenAPIHandlerOptions
 ): OpenAPIDocumentInfo {
     const { authLevel, configuration, version, format, route, hostResolution } = options;
 
@@ -109,7 +109,10 @@ export function registerOpenAPIHandler(
     app.http(functionName, {
         methods: ['GET'],
         authLevel,
-        handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+        handler: async (
+            request: HttpRequest,
+            context: InvocationContext
+        ): Promise<HttpResponseInit> => {
             const safeUrl = redactSensitiveUrl(request.url);
             context.log(`Generating OpenAPI ${version} ${format} definition for "${safeUrl}"`);
 
@@ -117,7 +120,9 @@ export function registerOpenAPIHandler(
             let definitions = openAPIRegistry.definitions;
 
             if (version !== '3.1.0') {
-                context.log('Pre-processing: Converting webhooks to routes for OpenAPI version compatibility');
+                context.log(
+                    'Pre-processing: Converting webhooks to routes for OpenAPI version compatibility'
+                );
                 const processedDefs: typeof definitions = [];
 
                 for (const def of openAPIRegistry.definitions) {
@@ -128,12 +133,14 @@ export function registerOpenAPIHandler(
                         if (!originalWebhook.operationId || !originalWebhook.path) {
                             context.warn(
                                 `Webhook with path "${originalWebhook.path || 'unknown'}" and operationId ` +
-                                `"${originalWebhook.operationId || 'unknown'}" is missing required fields - skipping conversion`
+                                    `"${originalWebhook.operationId || 'unknown'}" is missing required fields - skipping conversion`
                             );
                             continue;
                         }
 
-                        context.log(`Converting webhook "${originalWebhook.operationId}" to route at path "${originalWebhook.path}"`);
+                        context.log(
+                            `Converting webhook "${originalWebhook.operationId}" to route at path "${originalWebhook.path}"`
+                        );
 
                         // Create a modified route config with webhook metadata
                         const routeConfig: RouteConfig = {
@@ -153,11 +160,12 @@ export function registerOpenAPIHandler(
                                   `This describes a webhook callback endpoint that YOUR system should implement to receive ` +
                                   `notifications from this API.\n\n` +
                                   `ℹ️ **Note**: This webhook appears under "paths" for OpenAPI ${version} compatibility. ` +
-                                  `In OpenAPI 3.1.0, this would be documented in the dedicated "webhooks" section.`
+                                  `In OpenAPI 3.1.0, this would be documented in the dedicated "webhooks" section.`,
                         };
 
                         (routeConfig as unknown as Record<string, unknown>)['x-webhook'] = true;
-                        (routeConfig as unknown as Record<string, unknown>)['x-outbound-callback'] = true;
+                        (routeConfig as unknown as Record<string, unknown>)['x-outbound-callback'] =
+                            true;
 
                         // Convert webhook definition to route definition. The
                         // OpenAPIRegistry union narrows this to a discriminated
@@ -173,7 +181,9 @@ export function registerOpenAPIHandler(
                 }
 
                 definitions = processedDefs;
-                context.log(`Pre-processing complete: ${processedDefs.length} definitions prepared`);
+                context.log(
+                    `Pre-processing complete: ${processedDefs.length} definitions prepared`
+                );
             }
 
             // Safely resolve the `servers` field.
@@ -185,26 +195,29 @@ export function registerOpenAPIHandler(
             const contentType = format === 'json' ? 'application/json' : 'application/x-yaml';
 
             if (!body) {
-                const OpenApiGenerator = version === '3.1.0' ? OpenApiGeneratorV31 : OpenApiGeneratorV3;
+                const OpenApiGenerator =
+                    version === '3.1.0' ? OpenApiGeneratorV31 : OpenApiGeneratorV3;
 
-                let openAPIDefinition: OpenAPIObject = new OpenApiGenerator(definitions)
-                    .generateDocument({
-                        openapi: version,
-                        info: configuration.info,
-                        security: configuration.security,
-                        ...(servers ? { servers } : {}),
-                        externalDocs: configuration.externalDocs,
-                        tags: configuration.tags,
-                    });
+                let openAPIDefinition: OpenAPIObject = new OpenApiGenerator(
+                    definitions
+                ).generateDocument({
+                    openapi: version,
+                    info: configuration.info,
+                    security: configuration.security,
+                    ...(servers ? { servers } : {}),
+                    externalDocs: configuration.externalDocs,
+                    tags: configuration.tags,
+                });
 
                 if (version === '2.0') {
                     const converter = new Swagger2Converter(openAPIDefinition);
                     openAPIDefinition = converter.convert() as OpenAPIObject;
                 }
 
-                body = format === 'yaml'
-                    ? yamlStringify(openAPIDefinition)
-                    : JSON.stringify(openAPIDefinition, null, 2);
+                body =
+                    format === 'yaml'
+                        ? yamlStringify(openAPIDefinition)
+                        : JSON.stringify(openAPIDefinition, null, 2);
                 responseCache.set(cacheKey, body);
             }
 

@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a defect in the library
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+        Please **do not** use this template to report security vulnerabilities — see [`SECURITY.md`](https://github.com/apvee/azure-functions-nodejs-monorepo/blob/main/SECURITY.md) instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: The `@apvee/azure-functions-openapi` version you are running.
+      placeholder: 2.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      placeholder: '20.11.1'
+    validations:
+      required: true
+
+  - type: input
+    id: azure-functions-version
+    attributes:
+      label: '@azure/functions version'
+      placeholder: '4.5.2'
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: |
+        The smallest code snippet, or a link to a repository, that demonstrates the bug.
+      render: typescript
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      render: shell

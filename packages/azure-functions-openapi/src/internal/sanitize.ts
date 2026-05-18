@@ -34,7 +34,9 @@ export const SENSITIVE_QUERY_KEYS: readonly string[] = [
 export function redactSensitiveUrl(url: string, extraKeys: readonly string[] = []): string {
     try {
         const parsed = new URL(url);
-        const keys = new Set<string>([...SENSITIVE_QUERY_KEYS, ...extraKeys].map(k => k.toLowerCase()));
+        const keys = new Set<string>(
+            [...SENSITIVE_QUERY_KEYS, ...extraKeys].map((k) => k.toLowerCase())
+        );
         const params = parsed.searchParams;
         const toUpdate: string[] = [];
         for (const key of params.keys()) {

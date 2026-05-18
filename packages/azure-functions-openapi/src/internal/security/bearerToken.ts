@@ -1,10 +1,10 @@
 /**
  * Azure AD Bearer Token security scheme implementation.
  * For manual JWT validation from Microsoft Entra ID.
- * 
+ *
  * @see https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
  * @see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
- * 
+ *
  * @internal
  */
 
@@ -14,23 +14,23 @@ import { openAPIRegistry } from '../registry';
 
 /**
  * Registers Azure AD Bearer Token security scheme in the OpenAPI registry.
- * 
+ *
  * This is for scenarios where:
  * - You want manual control over JWT validation
  * - You're NOT using Azure EasyAuth
  * - You need to validate Azure AD tokens directly in your function
- * 
+ *
  * The Bearer token should be provided in the Authorization header:
  * Authorization: Bearer {token}
- * 
+ *
  * Users must implement JWT validation logic themselves using libraries like:
  * - @azure/msal-node
  * - jsonwebtoken
  * - express-jwt
- * 
+ *
  * @param config - Azure AD Bearer Token configuration
  * @returns Security requirement object for OpenAPI
- * 
+ *
  * @example Basic Bearer token authentication
  * ```typescript
  * const securityReq = registerAzureADBearer({
@@ -40,7 +40,7 @@ import { openAPIRegistry } from '../registry';
  *   description: 'Azure AD Bearer token required'
  * });
  * ```
- * 
+ *
  * @example With required scopes
  * ```typescript
  * const securityReq = registerAzureADBearer({
@@ -51,23 +51,16 @@ import { openAPIRegistry } from '../registry';
  *   description: 'Azure AD token with User.Read and Mail.Send scopes'
  * });
  * ```
- * 
+ *
  * @internal
  */
 export function registerAzureADBearer(config: AzureADBearerConfig): SecurityRequirementObject {
-    const {
-        name,
-        tenantId,
-        audience,
-        issuer,
-        scopes = [],
-        description,
-    } = config;
+    const { name, tenantId, audience, issuer, scopes = [], description } = config;
 
     // Build description
     const parts: string[] = [];
     parts.push(description || 'Azure AD Bearer token authentication (manual JWT validation).');
-    
+
     if (tenantId) {
         parts.push(`Expected tenant: ${tenantId}.`);
     }
@@ -77,7 +70,7 @@ export function registerAzureADBearer(config: AzureADBearerConfig): SecurityRequ
     if (scopes.length > 0) {
         parts.push(`Required scopes: ${scopes.join(', ')}.`);
     }
-    
+
     const schemeDescription = parts.join(' ');
 
     // Build OpenID Connect URLs
@@ -136,13 +129,13 @@ export function buildAudienceUrl(clientId: string): string {
     if (clientId.startsWith('http://') || clientId.startsWith('https://')) {
         return clientId;
     }
-    
+
     // Check if it's a GUID (app registration client ID)
     const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (guidRegex.test(clientId)) {
         return clientId; // Client ID GUIDs are valid audiences
     }
-    
+
     // Otherwise, assume it's an API identifier and build URL
     return `api://${clientId}`;
 }

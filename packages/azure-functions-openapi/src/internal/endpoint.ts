@@ -1,49 +1,45 @@
-import { RouteConfig } from "@asteasolutions/zod-to-openapi";
-import { app, HttpHandler } from "@azure/functions";
-import { FunctionRouteConfig } from "../types";
-import { RequestSchemas } from "../utils";
-import { globalConfigManager } from "./config";
-import { wrapTypedHandler } from "./parsing";
-import { openAPIRegistry } from "./registry";
-import { mapHttpMethod, normalizeAzureFunctionRoute, normalizeOpenAPIPath } from "./route";
-import { transformToRouteConfig } from "./transform";
+import { RouteConfig } from '@asteasolutions/zod-to-openapi';
+import { app, HttpHandler } from '@azure/functions';
+import { FunctionRouteConfig } from '../types';
+import { RequestSchemas } from '../utils';
+import { globalConfigManager } from './config';
+import { wrapTypedHandler } from './parsing';
+import { openAPIRegistry } from './registry';
+import { mapHttpMethod, normalizeAzureFunctionRoute, normalizeOpenAPIPath } from './route';
+import { transformToRouteConfig } from './transform';
 
 /**
  * Registers an Azure Function HTTP path with OpenAPI documentation.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use the public API via module augmentation instead.
- * 
+ *
  * The path will be registered with both the Azure Functions runtime and documented
  * in the 'paths' section of the OpenAPI specification.
- * 
- * If azureFunctionRoutePrefix is not provided, it will use the global route prefix 
+ *
+ * If azureFunctionRoutePrefix is not provided, it will use the global route prefix
  * from the global configuration.
  *
  * @param name - The name of the function
  * @param summary - A brief summary for OpenAPI documentation
  * @param options - Configuration options including handler, methods, auth level, route, request/response schemas, etc.
  */
-export function registerOpenAPIPath(
-    name: string,
-    summary: string,
-    options: FunctionRouteConfig) {
-
+export function registerOpenAPIPath(name: string, summary: string, options: FunctionRouteConfig) {
     registerPath(name, summary, false, options);
 }
 
 /**
  * Registers an Azure Function as a webhook with OpenAPI documentation.
- * 
+ *
  * @internal
  * This is an internal implementation function. Do not use directly.
  * Use the public API via module augmentation instead.
- * 
+ *
  * Webhooks are documented in the 'webhooks' section of the OpenAPI 3.1.0 specification,
  * representing callback endpoints that your API will call, rather than endpoints that clients call.
- * 
- * If azureFunctionRoutePrefix is not provided, it will use the global route prefix 
+ *
+ * If azureFunctionRoutePrefix is not provided, it will use the global route prefix
  * from the global configuration.
  *
  * @param name - The name of the webhook
@@ -53,15 +49,15 @@ export function registerOpenAPIPath(
 export function registerOpenAPIWebhook(
     name: string,
     summary: string,
-    options: FunctionRouteConfig) {
-
+    options: FunctionRouteConfig
+) {
     registerPath(name, summary, true, options);
 }
 
 /**
  * Internal function to register a path or webhook with Azure Functions and OpenAPI registry.
  * Uses global configuration for route prefix and auth level if not explicitly provided.
- * 
+ *
  * @param name - The name of the function
  * @param summary - A summary of the function for OpenAPI documentation
  * @param isWebHook - Whether this is a webhook registration
@@ -75,16 +71,16 @@ function registerPath(
 ) {
     // Determine which handler to use
     let actualHandler: HttpHandler;
-    
+
     if (options.typedHandler) {
         // Build schemas from request shortcuts
         const schemas: RequestSchemas = {
             params: options.params,
             query: options.query,
             body: options.body,
-            headers: options.headers
+            headers: options.headers,
         };
-        
+
         // Wrap typed handler with automatic validation
         actualHandler = wrapTypedHandler(schemas, options.typedHandler);
     } else if (options.handler) {
@@ -93,7 +89,7 @@ function registerPath(
     } else {
         throw new Error(`Function '${name}' must provide either 'handler' or 'typedHandler'`);
     }
-    
+
     // Normalize the route for Azure Functions registration (without leading slash and prefix)
     const normalizedRoute = normalizeAzureFunctionRoute(options.route);
 
@@ -105,7 +101,7 @@ function registerPath(
         methods: options.methods,
         authLevel,
         handler: actualHandler,
-        route: normalizedRoute
+        route: normalizedRoute,
     });
 
     // Get route prefix from options or global config
@@ -122,7 +118,7 @@ function registerPath(
     const needsMethodSuffix = options.methods.length > 1;
 
     // Register each HTTP method with OpenAPI registry
-    options.methods.forEach(method => {
+    options.methods.forEach((method) => {
         // Normalize the path for OpenAPI (with prefix and leading slash)
         const fullPath = normalizeOpenAPIPath(routePrefix, options.route);
 
@@ -132,10 +128,10 @@ function registerPath(
 
         const routeConfig: RouteConfig = {
             ...transformedConfig,
-            operationId,  // Unique per (path, method) entry
+            operationId, // Unique per (path, method) entry
             summary,
             method: mapHttpMethod(method),
-            path: fullPath
+            path: fullPath,
         };
 
         if (isWebHook) {

@@ -1,9 +1,9 @@
 /**
  * Auto-detection of Azure authentication configuration from environment variables.
- * 
+ *
  * @see https://learn.microsoft.com/en-us/azure/app-service/configure-authentication-user-identities
  * @see https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings
- * 
+ *
  * @internal
  */
 
@@ -12,25 +12,25 @@ import type { EasyAuthProvider } from './types';
 /**
  * Azure App Service Authentication environment variables.
  * These are automatically set by Azure when EasyAuth is enabled.
- * 
+ *
  * @see https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings#authentication--authorization
- * 
+ *
  * @internal
  */
 export const EASYAUTH_ENV_VARS = {
     /** Indicates if EasyAuth is enabled (true/false) */
     WEBSITE_AUTH_ENABLED: 'WEBSITE_AUTH_ENABLED',
-    
+
     /** Default provider (aad, google, facebook, twitter, apple, github, custom) */
     WEBSITE_AUTH_DEFAULT_PROVIDER: 'WEBSITE_AUTH_DEFAULT_PROVIDER',
-    
+
     /** Azure AD specific */
     WEBSITE_AUTH_CLIENT_ID: 'WEBSITE_AUTH_CLIENT_ID',
     WEBSITE_AUTH_OPENID_ISSUER: 'WEBSITE_AUTH_OPENID_ISSUER',
-    
+
     /** Unauthenticated action (RedirectToLoginPage, AllowAnonymous, Return401, Return403) */
     WEBSITE_AUTH_UNAUTHENTICATED_ACTION: 'WEBSITE_AUTH_UNAUTHENTICATED_ACTION',
-    
+
     /** Token store enabled */
     WEBSITE_AUTH_TOKEN_STORE: 'WEBSITE_AUTH_TOKEN_STORE',
 } as const;
@@ -42,29 +42,29 @@ export const EASYAUTH_ENV_VARS = {
 export const AZURE_ENV_VARS = {
     /** Function App name */
     WEBSITE_SITE_NAME: 'WEBSITE_SITE_NAME',
-    
+
     /** Azure subscription ID */
     WEBSITE_OWNER_NAME: 'WEBSITE_OWNER_NAME',
-    
+
     /** Resource group name */
     WEBSITE_RESOURCE_GROUP: 'WEBSITE_RESOURCE_GROUP',
-    
+
     /** Azure region */
     REGION_NAME: 'REGION_NAME',
 } as const;
 
 /**
  * Detects if Azure EasyAuth is enabled in the current environment.
- * 
+ *
  * @returns true if EasyAuth is enabled, false otherwise
- * 
+ *
  * @example
  * ```typescript
  * if (isEasyAuthEnabled()) {
  *   console.log('EasyAuth is enabled');
  * }
  * ```
- * 
+ *
  * @internal
  */
 export function isEasyAuthEnabled(): boolean {
@@ -74,9 +74,9 @@ export function isEasyAuthEnabled(): boolean {
 
 /**
  * Detects the configured EasyAuth provider from environment.
- * 
+ *
  * @returns EasyAuth provider if detected, null otherwise
- * 
+ *
  * @example
  * ```typescript
  * const provider = detectEasyAuthProvider();
@@ -84,7 +84,7 @@ export function isEasyAuthEnabled(): boolean {
  *   console.log(`EasyAuth provider: ${provider}`);
  * }
  * ```
- * 
+ *
  * @internal
  */
 export function detectEasyAuthProvider(): EasyAuthProvider | null {
@@ -93,7 +93,7 @@ export function detectEasyAuthProvider(): EasyAuthProvider | null {
     }
 
     const defaultProvider = process.env[EASYAUTH_ENV_VARS.WEBSITE_AUTH_DEFAULT_PROVIDER];
-    
+
     // Map Azure provider names to our internal types
     switch (defaultProvider?.toLowerCase()) {
         case 'azureactivedirectory':
@@ -120,9 +120,9 @@ export function detectEasyAuthProvider(): EasyAuthProvider | null {
 
 /**
  * Gets the Azure AD client ID if configured.
- * 
+ *
  * @returns Client ID if configured, null otherwise
- * 
+ *
  * @internal
  */
 export function getEasyAuthClientId(): string | null {
@@ -134,9 +134,9 @@ export function getEasyAuthClientId(): string | null {
 
 /**
  * Gets the OpenID issuer URL if configured.
- * 
+ *
  * @returns Issuer URL if configured, null otherwise
- * 
+ *
  * @internal
  */
 export function getEasyAuthIssuer(): string | null {
@@ -149,9 +149,9 @@ export function getEasyAuthIssuer(): string | null {
 /**
  * Checks if token store is enabled.
  * Token store caches tokens for authenticated users.
- * 
+ *
  * @returns true if token store is enabled, false otherwise
- * 
+ *
  * @internal
  */
 export function isTokenStoreEnabled(): boolean {
@@ -161,9 +161,9 @@ export function isTokenStoreEnabled(): boolean {
 
 /**
  * Gets the unauthenticated action configuration.
- * 
+ *
  * @returns Unauthenticated action (RedirectToLoginPage, AllowAnonymous, Return401, Return403)
- * 
+ *
  * @internal
  */
 export function getUnauthenticatedAction(): string | null {
@@ -172,9 +172,9 @@ export function getUnauthenticatedAction(): string | null {
 
 /**
  * Gets Azure App Service metadata from environment.
- * 
+ *
  * @returns Object with site name, subscription, resource group, region
- * 
+ *
  * @internal
  */
 export function getAzureAppServiceMetadata(): {
@@ -194,17 +194,17 @@ export function getAzureAppServiceMetadata(): {
 /**
  * Extracts subscription ID from WEBSITE_OWNER_NAME.
  * Format: {subscription-id}+{resource-group}-{region}webspace
- * 
+ *
  * @param ownerName - The WEBSITE_OWNER_NAME value
  * @returns Subscription ID if found, null otherwise
- * 
+ *
  * @internal
  */
 function extractSubscriptionId(ownerName: string | undefined): string | null {
     if (!ownerName) {
         return null;
     }
-    
+
     const parts = ownerName.split('+');
     if (parts.length > 0) {
         const subscriptionId = parts[0];
@@ -214,15 +214,15 @@ function extractSubscriptionId(ownerName: string | undefined): string | null {
             return subscriptionId;
         }
     }
-    
+
     return null;
 }
 
 /**
  * Checks if running in Azure App Service environment.
- * 
+ *
  * @returns true if running in Azure, false otherwise
- * 
+ *
  * @internal
  */
 export function isRunningInAzure(): boolean {
@@ -234,40 +234,40 @@ export function isRunningInAzure(): boolean {
 
 /**
  * Auto-detection configuration result.
- * 
+ *
  * @internal
  */
 export interface AutoDetectionResult {
     /** Whether EasyAuth is enabled */
     easyAuthEnabled: boolean;
-    
+
     /** Detected EasyAuth provider */
     provider: EasyAuthProvider | null;
-    
+
     /** Azure AD client ID (if AAD) */
     clientId: string | null;
-    
+
     /** OpenID issuer URL */
     issuer: string | null;
-    
+
     /** Token store enabled */
     tokenStoreEnabled: boolean;
-    
+
     /** Unauthenticated action */
     unauthenticatedAction: string | null;
-    
+
     /** Azure App Service metadata */
     azureMetadata: ReturnType<typeof getAzureAppServiceMetadata>;
-    
+
     /** Running in Azure */
     isAzure: boolean;
 }
 
 /**
  * Performs full auto-detection of Azure authentication configuration.
- * 
+ *
  * @returns Complete auto-detection result
- * 
+ *
  * @example
  * ```typescript
  * const detection = autoDetectAzureAuth();
@@ -275,7 +275,7 @@ export interface AutoDetectionResult {
  *   console.log(`EasyAuth detected: ${detection.provider}`);
  * }
  * ```
- * 
+ *
  * @internal
  */
 export function autoDetectAzureAuth(): AutoDetectionResult {

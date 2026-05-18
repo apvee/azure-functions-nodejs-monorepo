@@ -8135,6 +8135,77 @@ If you encounter issues during migration:
 
 ---
 
+## 🛡️ Production Deployment Checklist
+
+`@apvee/azure-functions-openapi` is **secure by default**, but a few configuration choices materially change the security and operational properties of your generated spec / Swagger UI. Review the items below before going to production.
+
+### 1. Choose the right `authLevel` for the OpenAPI surface
+
+| Setting                                  | Use when…                                                                              | Security implication                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `authLevel: 'anonymous'` (**default**)   | Public APIs whose schema is intentionally open knowledge                                | The full schema (routes, params, examples) is reachable by anyone                   |
+| `authLevel: 'function'`                  | Internal APIs, dev / staging, partner-only docs                                         | Requires a function key (`?code=…` or `x-functions-key` header) to view the spec    |
+| `authLevel: 'admin'`                     | Strictly internal, ops-only docs                                                        | Requires the host master key                                                        |
+| EasyAuth / APIM / Front Door in front    | You front the Function App with a separate identity / API gateway                       | Keep `authLevel: 'anonymous'` and let the gateway enforce auth                      |
+
+When `authLevel: 'anonymous'` is detected **together with** `WEBSITE_SITE_NAME` (the standard Azure App Service marker), the library logs a warning at startup so it is visible in App Insights.
+
+### 2. Configure `servers` explicitly — do not trust the `Host` header
+
+By default the generated spec **omits** the `servers` field unless you provide it via `OpenAPISetupConfig.servers`. The previous behaviour — derived from the incoming `Host` header — is a host-header injection vector and is now opt-in.
+
+```ts
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' },
+  servers: [{ url: 'https://api.example.com' }],
+});
+```
+
+If you really need to derive the server URL from the request, opt in **and** constrain it with an allowlist:
+
+```ts
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' },
+  trustHostHeader: true,
+  trustedHosts: ['api.example.com', 'api-staging.example.com'],
+});
+```
+
+Requests whose host is not on the allowlist will be served a spec without `servers` and the rejected host will be logged via the internal logger.
+
+### 3. Redact secrets in logs
+
+The library scrubs the following query parameters from URLs before passing them to `context.log`: `code`, `x-functions-key`, `access_token`, `token`, `api_key`, `apiKey`. If your application code also logs `request.url` directly, use the exported `redactSensitiveUrl` helper from `@apvee/azure-functions-openapi/internal` only as an internal pattern — for application logs, prefer logging structured fields you control rather than the full URL.
+
+### 4. Lock down Swagger UI in production
+
+Swagger UI is enabled by default and inherits the OpenAPI `authLevel`. For a production deployment:
+
+- Either disable it: `swaggerUI: { enabled: false }`.
+- Or keep it but raise the auth bar: `swaggerUI: { authLevel: 'function' }`.
+- Front the app with APIM / Azure Front Door and apply security headers (`Strict-Transport-Security`, `Content-Security-Policy`, etc.) there. The library does **not** set CSP because the appropriate policy depends on your deployment topology.
+
+### 5. Front the app with a gateway for rate-limiting and CORS
+
+The library does not implement rate-limiting or CORS — these are deliberately delegated to Azure API Management, Azure Front Door, or Functions' built-in CORS configuration. Apply per-endpoint quotas there.
+
+### 6. Keep dependencies fresh
+
+- The repository ships a `dependabot.yml` that groups dev tooling and surfaces runtime upgrades weekly.
+- CI runs `npm audit --omit=dev --audit-level=high` on every push; a failing job blocks merges.
+
+### 7. Validate inputs with Zod schemas
+
+Always declare `params`, `query`, `body`, and `headers` schemas in `app.openAPIPath(...)`. The library enforces them at runtime and rejects malformed input with a `400` response.
+
+### 8. EasyAuth specifics
+
+When `WEBSITE_AUTH_ENABLED=true` is detected, EasyAuth handles authentication **before** your function runs. Your Function must be `authLevel: 'anonymous'`; the library will emit an `AuthLevelWarning` when this rule is violated.
+
+`parseEasyAuthPrincipal` caps its input at 64 KiB and rejects malformed base64 / JSON with a `ValidationError`.
+
+---
+
 ## License & Links
 
 ### License
