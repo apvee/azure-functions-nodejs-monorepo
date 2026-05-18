@@ -1,7 +1,7 @@
 /**
  * Custom API Key security scheme implementation.
  * For user-implemented API key validation (not Azure native Function Keys).
- * 
+ *
  * @internal
  */
 
@@ -12,17 +12,17 @@ import { openAPIRegistry } from '../registry';
 /**
  * Registers a custom API key security scheme in the OpenAPI registry.
  * This is for user-implemented API key validation, NOT for Azure Function Keys.
- * 
+ *
  * The API key can be provided in:
  * - Query parameter: ?api_key=xxx
  * - Header: X-API-Key: xxx
  * - Cookie: session=xxx
- * 
+ *
  * Users must implement their own validation logic in the handler.
- * 
+ *
  * @param config - Custom API key configuration
  * @returns Security requirement object for OpenAPI
- * 
+ *
  * @example
  * ```typescript
  * const securityReq = registerCustomApiKey({
@@ -32,7 +32,7 @@ import { openAPIRegistry } from '../registry';
  *   description: 'Custom API key for application access'
  * });
  * ```
- * 
+ *
  * @internal
  */
 export function registerCustomApiKey(config: CustomApiKeyConfig): SecurityRequirementObject {
@@ -41,7 +41,8 @@ export function registerCustomApiKey(config: CustomApiKeyConfig): SecurityRequir
         type: 'apiKey',
         name: config.parameterName,
         in: config.in,
-        description: config.description || `API key provided in ${config.in}: ${config.parameterName}`,
+        description:
+            config.description || `API key provided in ${config.in}: ${config.parameterName}`,
     });
 
     // Return security requirement
@@ -50,8 +51,8 @@ export function registerCustomApiKey(config: CustomApiKeyConfig): SecurityRequir
 
 /**
  * Default custom API key configuration.
- * Maintains backward compatibility with existing openapiKeySecurity API.
- * 
+ * Maintains backward compatibility with existing openAPIKeySecurity API.
+ *
  * @internal
  */
 export const DEFAULT_CUSTOM_API_KEY_CONFIG: Omit<CustomApiKeyConfig, 'name' | 'parameterName'> = {

@@ -3,20 +3,41 @@
   "version": "2.0.0-alpha.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/apvee/azure-functions-nodejs-monorepo.git"
+    "url": "https://github.com/apvee/azure-functions-nodejs-monorepo.git",
+    "directory": "packages/azure-functions-openapi"
   },
-  "homepage": "https://github.com/apvee/azure-functions-nodejs-monorepo",
+  "bugs": {
+    "url": "https://github.com/apvee/azure-functions-nodejs-monorepo/issues"
+  },
+  "homepage": "https://github.com/apvee/azure-functions-nodejs-monorepo/tree/main/packages/azure-functions-openapi#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./register": {
+      "types": "./dist/register.d.ts",
+      "default": "./dist/register.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist/",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "package.json"
   ],
   "scripts": {
     "build": "npm run clean && tsc",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "lint": "eslint \"src/**/*.ts\"",
+    "format": "prettier --check \"src/**/*.{ts,md,json}\"",
+    "format:write": "prettier --write \"src/**/*.{ts,md,json}\"",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "api",
@@ -30,22 +51,28 @@
   "author": "Fabio Franzini (Apvee Solutions)",
   "license": "MIT",
   "description": "An extension for Azure Functions V4 that provides support for exporting OpenAPI spec files from annotated Azure Functions.",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.clonedeep": "^4.5.0",
+    "openapi3-ts": "^4.5.0",
     "swagger-ui-dist": "^5.30.2",
-    "yaml": "^2.5.1"
+    "yaml": "^2.8.3"
   },
   "peerDependencies": {
-    "@azure/functions": "^4.0.0",
+    "@azure/functions": "^4.5.2",
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/lodash.camelcase": "^4.3.9",
     "@types/lodash.clonedeep": "^4.5.9",
-    "@types/node": "^22.5.4",
+    "@types/node": "^22.19.19",
     "rimraf": "^5.0.10",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "vite": "^5.4.21",
+    "vitest": "^3.2.4"
   }
 }

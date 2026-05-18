@@ -1,7 +1,7 @@
 /**
  * Internal security module barrel export.
  * Aggregates all security-related functionality for internal use.
- * 
+ *
  * @internal
  */
 
@@ -21,10 +21,7 @@ export type {
 } from './types';
 
 // Custom API Key
-export {
-    registerCustomApiKey,
-    DEFAULT_CUSTOM_API_KEY_CONFIG,
-} from './customApiKey';
+export { registerCustomApiKey, DEFAULT_CUSTOM_API_KEY_CONFIG } from './customApiKey';
 
 // Azure Function Keys
 export {

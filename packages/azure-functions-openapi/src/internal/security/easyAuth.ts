@@ -1,9 +1,9 @@
 /**
  * Azure EasyAuth (App Service Authentication) security scheme implementation.
- * 
+ *
  * @see https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization
  * @see https://learn.microsoft.com/en-us/azure/app-service/configure-authentication-user-identities
- * 
+ *
  * @internal
  */
 
@@ -15,12 +15,15 @@ import { openAPIRegistry } from '../registry';
  * Map of EasyAuth providers to their OAuth2 flows and descriptions.
  * @internal
  */
-const EASY_AUTH_PROVIDER_INFO: Record<EasyAuthProvider, {
-    displayName: string;
-    authorizationUrl: string;
-    tokenUrl: string;
-    description: string;
-}> = {
+const EASY_AUTH_PROVIDER_INFO: Record<
+    EasyAuthProvider,
+    {
+        displayName: string;
+        authorizationUrl: string;
+        tokenUrl: string;
+        description: string;
+    }
+> = {
     aad: {
         displayName: 'Microsoft Entra ID (Azure AD)',
         authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
@@ -67,7 +70,7 @@ const EASY_AUTH_PROVIDER_INFO: Record<EasyAuthProvider, {
 
 /**
  * Registers Azure EasyAuth security scheme in the OpenAPI registry.
- * 
+ *
  * Azure EasyAuth provides built-in authentication with multiple identity providers:
  * - Microsoft Entra ID (Azure AD)
  * - Google
@@ -76,18 +79,18 @@ const EASY_AUTH_PROVIDER_INFO: Record<EasyAuthProvider, {
  * - Apple
  * - GitHub
  * - Custom OpenID Connect providers
- * 
+ *
  * When enabled, Azure automatically:
  * - Handles OAuth2 flows
  * - Validates tokens
  * - Injects X-MS-CLIENT-PRINCIPAL header with user identity
- * 
+ *
  * **IMPORTANT**: EasyAuth requires authLevel: 'anonymous' on the Function.
  * Authentication is handled by Azure App Service BEFORE the function executes.
- * 
+ *
  * @param config - Azure EasyAuth configuration
  * @returns Security requirement object for OpenAPI
- * 
+ *
  * @example Single provider (Azure AD)
  * ```typescript
  * const securityReq = registerAzureEasyAuth({
@@ -96,7 +99,7 @@ const EASY_AUTH_PROVIDER_INFO: Record<EasyAuthProvider, {
  *   description: 'Sign in with Microsoft account'
  * });
  * ```
- * 
+ *
  * @example Multiple providers
  * ```typescript
  * const securityReq = registerAzureEasyAuth({
@@ -105,28 +108,24 @@ const EASY_AUTH_PROVIDER_INFO: Record<EasyAuthProvider, {
  *   description: 'Sign in with Microsoft, Google, or GitHub'
  * });
  * ```
- * 
+ *
  * @internal
  */
 export function registerAzureEasyAuth(config: AzureEasyAuthConfig): SecurityRequirementObject {
-    const {
-        name,
-        providers,
-        description,
-        requirePrincipalHeader = true,
-    } = config;
+    const { name, providers, description, requirePrincipalHeader = true } = config;
 
     // Normalize providers to array
     const providerList = Array.isArray(providers) ? providers : [providers];
 
     // Build description
     const providerNames = providerList
-        .map(p => EASY_AUTH_PROVIDER_INFO[p]?.displayName || p)
+        .map((p) => EASY_AUTH_PROVIDER_INFO[p]?.displayName || p)
         .join(', ');
-    
-    const schemeDescription = description || 
+
+    const schemeDescription =
+        description ||
         `Azure EasyAuth with ${providerNames}. ` +
-        `User identity is available in X-MS-CLIENT-PRINCIPAL header.`;
+            `User identity is available in X-MS-CLIENT-PRINCIPAL header.`;
 
     // For OpenAPI, we model EasyAuth as OAuth2
     // We'll create a security scheme for the primary provider
@@ -152,7 +151,8 @@ export function registerAzureEasyAuth(config: AzureEasyAuthConfig): SecurityRequ
         'x-azure-easyauth': true,
         'x-azure-easyauth-providers': providerList,
         'x-azure-easyauth-requirePrincipalHeader': requirePrincipalHeader,
-    } as any); // Cast to any to allow vendor extensions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
+    } as any);
 
     // Return security requirement
     return { [name]: ['openid', 'profile', 'email'] };

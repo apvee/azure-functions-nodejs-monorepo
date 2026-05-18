@@ -16,7 +16,7 @@ export async function GetAllTodos(request: HttpRequest, context: InvocationConte
     try {
         const filterParams = parseQueryParams(request.query, FilterParamsSchema);
 
-        const todos = await TodoService.getToDoList();
+        const todos = await TodoService.getTodoList();
         const skip = filterParams.skip ?? 0;
         const limit = filterParams.limit ?? todos.length;
         const result = todos.slice(skip, Math.min(todos.length, skip + limit));
@@ -46,7 +46,7 @@ export async function GetAllTodos(request: HttpRequest, context: InvocationConte
     }
 }
 
-app.openapiPath('GetAllTodos', 'Get All Todos', {
+app.openAPIPath('GetAllTodos', 'Get All Todos', {
     handler: GetAllTodos,
     methods: ['GET'],
     route: 'todos',

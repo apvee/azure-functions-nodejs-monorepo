@@ -8,7 +8,7 @@ import { TodoParamIDSchema } from "../models/todo";
  * Returns 204 No Content on success (no response body).
  * This demonstrates proper handling of responses without body with typed handlers.
  */
-app.openapiPath('AcceptTodo', 'Accept/Acknowledge Todo', {
+app.openAPIPath('AcceptTodo', 'Accept/Acknowledge Todo', {
     typedHandler: async ({ params, context }) => {
         // params.id is already validated and typed as string (UUID)!
         context.log(`Processing POST request to accept todo: ${params.id}`);

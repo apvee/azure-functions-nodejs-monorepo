@@ -46,7 +46,7 @@ export async function ExportTodos(request: HttpRequest, context: InvocationConte
     try {
         const filterParams = parseQueryParams(request.query, FilterParamsSchema);
 
-        const todos = await TodoService.getToDoList();
+        const todos = await TodoService.getTodoList();
         const skip = filterParams.skip ?? 0;
         const limit = filterParams.limit ?? todos.length;
         const result = todos.slice(skip, Math.min(todos.length, skip + limit));
@@ -95,7 +95,7 @@ export async function ExportTodos(request: HttpRequest, context: InvocationConte
     }
 }
 
-app.openapiPath('ExportTodos', 'Export Todos in Multiple Formats', {
+app.openAPIPath('ExportTodos', 'Export Todos in Multiple Formats', {
     handler: ExportTodos,
     methods: ['GET'],
     route: 'todos/export',

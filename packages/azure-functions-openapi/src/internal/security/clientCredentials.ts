@@ -1,10 +1,10 @@
 /**
  * Azure AD Client Credentials security scheme implementation.
  * For service-to-service (daemon/background) authentication.
- * 
+ *
  * @see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow
  * @see https://learn.microsoft.com/en-us/entra/identity-platform/scenario-daemon-overview
- * 
+ *
  * @internal
  */
 
@@ -14,23 +14,23 @@ import { openAPIRegistry } from '../registry';
 
 /**
  * Registers Azure AD Client Credentials security scheme in the OpenAPI registry.
- * 
+ *
  * This is for service-to-service (daemon) authentication where:
  * - NO user context exists (background jobs, automated services)
  * - Calling application authenticates with its own credentials (client ID + secret/certificate)
  * - Permissions are granted via App Roles, not Scopes
- * 
+ *
  * The Bearer token should be provided in the Authorization header:
  * Authorization: Bearer {token}
- * 
+ *
  * Token contains:
  * - appid: Client ID of the calling application
  * - roles: Application permissions (App Roles)
  * - NO user claims (oid, upn, etc.)
- * 
+ *
  * @param config - Azure AD Client Credentials configuration
  * @returns Security requirement object for OpenAPI
- * 
+ *
  * @example Basic service-to-service authentication
  * ```typescript
  * const securityReq = registerAzureADClientCredentials({
@@ -40,7 +40,7 @@ import { openAPIRegistry } from '../registry';
  *   description: 'Service-to-service authentication'
  * });
  * ```
- * 
+ *
  * @example With required application roles
  * ```typescript
  * const securityReq = registerAzureADClientCredentials({
@@ -51,23 +51,19 @@ import { openAPIRegistry } from '../registry';
  *   description: 'Service authentication with read/write permissions'
  * });
  * ```
- * 
+ *
  * @internal
  */
-export function registerAzureADClientCredentials(config: AzureADClientCredentialsConfig): SecurityRequirementObject {
-    const {
-        name,
-        tenantId,
-        audience,
-        roles = [],
-        description,
-    } = config;
+export function registerAzureADClientCredentials(
+    config: AzureADClientCredentialsConfig
+): SecurityRequirementObject {
+    const { name, tenantId, audience, roles = [], description } = config;
 
     // Build description
     const parts: string[] = [];
     parts.push(description || 'Azure AD Client Credentials (service-to-service) authentication.');
     parts.push('No user context. Application authenticates with client credentials.');
-    
+
     if (tenantId) {
         parts.push(`Expected tenant: ${tenantId}.`);
     }
@@ -77,7 +73,7 @@ export function registerAzureADClientCredentials(config: AzureADClientCredential
     if (roles.length > 0) {
         parts.push(`Required app roles: ${roles.join(', ')}.`);
     }
-    
+
     const schemeDescription = parts.join(' ');
 
     // Build token URL
@@ -111,7 +107,8 @@ export function registerAzureADClientCredentials(config: AzureADClientCredential
         'x-azure-ad-audience': audience,
         'x-azure-ad-roles': roles,
         'x-azure-ad-openIdConnectUrl': openIdConfigUrl,
-    } as any); // Cast to any to allow vendor extensions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
+    } as any);
 
     // Return security requirement with .default scope
     return { [name]: ['.default'] };

@@ -20,12 +20,12 @@ import { app } from "@azure/functions";
 import { z } from "zod";
 
 // Setup OpenAPI documentation
-app.openapiSetup({
+app.openAPISetup({
   info: { title: "My API", version: "1.0.0" },
 });
 
 // Register a fully typed endpoint
-app.openapiPath("GetUser", "Get user by ID", {
+app.openAPIPath("GetUser", "Get user by ID", {
   typedHandler: async ({ params, context }) => {
     // params.id is automatically typed as string!
     const user = await getUser(params.id);
@@ -76,10 +76,8 @@ registerFunction("GetUser", "Get user", {
 import "@apvee/azure-functions-openapi";
 import { app } from "@azure/functions";
 
-app.openapiSetup({ info: { title: "My API", version: "1.0.0" } });
-app.openapiPath("GetUser", "Get user", {
-  /* ... */
-});
+app.openAPISetup({ info: { title: 'My API', version: '1.0.0' } });
+app.openAPIPath('GetUser', 'Get user', { /* ... */ });
 ```
 
 The new API extends Azure Functions natively, providing better IDE support and a more intuitive developer experience.
@@ -89,7 +87,7 @@ The new API extends Azure Functions natively, providing better IDE support and a
 The biggest feature in v2.0 is **automatic type inference**. No more manual type assertions!
 
 ```typescript
-app.openapiPath("UpdateUser", "Update user information", {
+app.openAPIPath('UpdateUser', 'Update user information', {
   typedHandler: async ({ params, body, query, context }) => {
     // All parameters are automatically typed from your schemas!
     // params.id: string (from UUID schema)
@@ -125,9 +123,9 @@ v2.0 introduces native support for multiple Azure authentication methods:
 
 ```typescript
 // Azure EasyAuth example
-const easyAuth = app.openapiEasyAuth("aad");
+const easyAuth = app.openAPIEasyAuth('aad');
 
-app.openapiPath("GetProfile", "Get user profile", {
+app.openAPIPath('GetProfile', 'Get user profile', {
   handler: getProfileHandler,
   methods: ["GET"],
   route: "profile",
@@ -165,7 +163,7 @@ Fully aligned with **Zod 4.x**, ensuring compatibility with the latest validatio
 Document callback endpoints that your API calls using the new **webhooks** feature:
 
 ```typescript
-app.openapiWebhook("OrderCreated", "Notify when order is created", {
+app.openAPIWebhook('OrderCreated', 'Notify when order is created', {
   typedHandler: async ({ body, context }) => {
     context.log(`Webhook received: Order ${body.orderId}`);
     return { jsonBody: { received: true } };
@@ -178,19 +176,19 @@ app.openapiWebhook("OrderCreated", "Notify when order is created", {
 
 ### ⚡ Simplified Configuration
 
-Setup is now **much simpler** with a single `openapiSetup()` call:
+Setup is now **much simpler** with a single `openAPISetup()` call:
 
 ```typescript
-// Generates all versions and formats automatically
-app.openapiSetup({
-  info: { title: "My API", version: "1.0.0" },
-  routePrefix: "api",
-  versions: ["3.1.0", "3.0.3", "2.0"], // Optional, defaults to ['3.1.0']
-  formats: ["json", "yaml"], // Optional, defaults to ['json', 'yaml']
-  swaggerUI: {
-    enabled: true, // Optional, defaults to true
-    route: "docs", // Optional, defaults to 'swagger-ui'
-  },
+// Generate the OpenAPI documents you want — only OpenAPI 3.1.0 / JSON+YAML are emitted by default
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' },
+  routePrefix: 'api',
+  versions: ['3.1.0', '3.0.3', '2.0'], // Optional, defaults to ['3.1.0']
+  formats: ['json', 'yaml'],           // Optional, defaults to ['json', 'yaml']
+  swaggerUI: { 
+    enabled: true,                     // Optional, defaults to true
+    route: 'docs'                      // Optional, defaults to 'swagger-ui'
+  }
 });
 ```
 
@@ -211,12 +209,11 @@ Export powerful utilities for manual validation and parsing:
 While v2.0 brings many improvements, some APIs have changed. See the [Migration Guide](#-migration-guide-v1-v2) below for detailed migration steps.
 
 **Removed APIs:**
-
-- `registerOpenAPIHandler()` → Use `app.openapiSetup()`
-- `registerSwaggerUIHandler()` → Use `app.openapiSetup()`
-- `registerFunction()` → Use `app.openapiPath()` or `app.openapiWebhook()`
-- `registerApiKeySecuritySchema()` → Use `app.openapiKeySecurity()`
-- `registerTypeSchema()` → Use `app.openapiSchema()`
+- `registerOpenAPIHandler()` → Use `app.openAPISetup()`
+- `registerSwaggerUIHandler()` → Use `app.openAPISetup()`
+- `registerFunction()` → Use `app.openAPIPath()` or `app.openAPIWebhook()`
+- `registerApiKeySecuritySchema()` → Use `app.openAPIKeySecurity()`
+- `registerTypeSchema()` → Use `app.openAPISchema()`
 
 **Private APIs:**
 
@@ -235,7 +232,7 @@ By integrating OpenAPI documentation directly into your codebase, you ensure tha
 
 ```typescript
 // Documentation is generated from the same schemas used for validation
-app.openapiPath("CreateUser", "Create a new user", {
+app.openAPIPath('CreateUser', 'Create a new user', {
   typedHandler: async ({ body, context }) => {
     // This schema validates the request AND generates the documentation
     return { status: 201, jsonBody: await createUser(body) };
@@ -302,13 +299,9 @@ Extends `@azure/functions` natively with intuitive OpenAPI methods. No separate 
 import "@apvee/azure-functions-openapi";
 import { app } from "@azure/functions";
 
-// All app.openapiXxx() methods are now available
-app.openapiSetup({
-  /* config */
-});
-app.openapiPath("MyEndpoint", "Description", {
-  /* config */
-});
+// All app.openAPIXxx() methods are now available
+app.openAPISetup({ /* config */ });
+app.openAPIPath('MyEndpoint', 'Description', { /* config */ });
 ```
 
 ### Automatic Type Inference
@@ -316,7 +309,7 @@ app.openapiPath("MyEndpoint", "Description", {
 TypeScript automatically infers parameter types from Zod schemas. No manual type assertions, no type mismatches.
 
 ```typescript
-app.openapiPath("UpdateTodo", "Update a todo item", {
+app.openAPIPath('UpdateTodo', 'Update a todo item', {
   typedHandler: async ({ params, body }) => {
     // params.id is automatically string (from UUID schema)
     // body.title is automatically string
@@ -349,8 +342,8 @@ Export in **JSON** or **YAML** format to suit your needs.
 Beautiful, interactive API documentation served automatically:
 
 ```typescript
-app.openapiSetup({
-  info: { title: "My API", version: "1.0.0" },
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' },
   swaggerUI: {
     enabled: true,
     route: "docs", // Access at: http://localhost:7071/docs
@@ -385,12 +378,12 @@ Native integration with Azure authentication mechanisms:
 
 ```typescript
 // Example: Azure AD Bearer Token
-const adAuth = app.openapiAzureADBearer({
-  name: "AzureAD",
-  scopes: ["User.Read", "Mail.Send"],
+const adAuth = app.openAPIAzureADBearer({
+  name: 'AzureAD',
+  scopes: ['User.Read', 'Mail.Send']
 });
 
-app.openapiPath("SendEmail", "Send email on behalf of user", {
+app.openAPIPath('SendEmail', 'Send email on behalf of user', {
   handler: sendEmailHandler,
   methods: ["POST"],
   route: "send-email",
@@ -404,7 +397,7 @@ app.openapiPath("SendEmail", "Send email on behalf of user", {
 Document callback endpoints that your API calls using the webhooks feature:
 
 ```typescript
-app.openapiWebhook("PaymentCompleted", "Notify when payment is completed", {
+app.openAPIWebhook('PaymentCompleted', 'Notify when payment is completed', {
   typedHandler: async ({ body, context }) => {
     context.log(`Payment ${body.paymentId} completed`);
     return { jsonBody: { acknowledged: true } };
@@ -424,7 +417,7 @@ Support for complex response scenarios:
 - **Detailed Descriptions** - Clear documentation for each response
 
 ```typescript
-app.openapiPath("GetReport", "Get report in multiple formats", {
+app.openAPIPath('GetReport', 'Get report in multiple formats', {
   handler: getReportHandler,
   methods: ["GET"],
   route: "reports/{id}",
@@ -471,19 +464,17 @@ Get started quickly with sensible defaults, customize when needed:
 
 ```typescript
 // Minimal setup - generates OpenAPI 3.1.0 in JSON/YAML + Swagger UI
-app.openapiSetup({
-  info: { title: "My API", version: "1.0.0" },
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' }
 });
 
 // Or fully customize everything
-app.openapiSetup({
-  info: {
-    /* ... */
-  },
-  routePrefix: "api",
-  versions: ["3.1.0", "3.0.3", "2.0"],
-  formats: ["json", "yaml"],
-  authLevel: "anonymous",
+app.openAPISetup({
+  info: { /* ... */ },
+  routePrefix: 'api',
+  versions: ['3.1.0', '3.0.3', '2.0'],
+  formats: ['json', 'yaml'],
+  authLevel: 'anonymous',
   security: [globalSecurityScheme],
   servers: [{ url: "https://api.example.com" }],
   tags: [{ name: "Users", description: "User management" }],
@@ -568,7 +559,7 @@ import "@apvee/azure-functions-openapi";
 import { app } from "@azure/functions";
 
 // Configure OpenAPI documentation
-app.openapiSetup({
+app.openAPISetup({
   info: {
     title: "My First API",
     version: "1.0.0",
@@ -591,7 +582,7 @@ const GreetingSchema = z.object({
 });
 
 // Register endpoint with OpenAPI documentation
-app.openapiPath("GetGreeting", "Get a greeting message", {
+app.openAPIPath('GetGreeting', 'Get a greeting message', {
   typedHandler: async ({ query, context }) => {
     const name = query.name || "World";
 
@@ -662,7 +653,7 @@ import { app } from "@azure/functions";
 import { z } from "zod";
 
 // Setup OpenAPI
-app.openapiSetup({
+app.openAPISetup({
   info: {
     title: "My First API",
     version: "1.0.0",
@@ -682,7 +673,7 @@ const GreetingSchema = z.object({
 });
 
 // Register endpoint
-app.openapiPath("GetGreeting", "Get a personalized greeting", {
+app.openAPIPath('GetGreeting', 'Get a personalized greeting', {
   typedHandler: async ({ query, context }) => {
     const name = query.name || "World";
     context.log(`Greeting requested for: ${name}`);
@@ -712,7 +703,7 @@ app.openapiPath("GetGreeting", "Get a personalized greeting", {
 
 ### Setup OpenAPI Documentation
 
-The `app.openapiSetup()` method is the entry point for configuring OpenAPI documentation. Call it once in your `src/index.ts` file before registering any endpoints.
+The `app.openAPISetup()` method is the entry point for configuring OpenAPI documentation. Call it once in your `src/index.ts` file before registering any endpoints.
 
 #### Basic Setup
 
@@ -722,7 +713,7 @@ Minimal configuration with defaults:
 import "@apvee/azure-functions-openapi";
 import { app } from "@azure/functions";
 
-app.openapiSetup({
+app.openAPISetup({
   info: {
     title: "My API",
     version: "1.0.0",
@@ -741,7 +732,7 @@ This generates:
 Full example with all available options:
 
 ```typescript
-app.openapiSetup({
+app.openAPISetup({
   // Required: API metadata
   info: {
     title: "Todo API",
@@ -867,7 +858,7 @@ GET /{swaggerUI.route}/assets/{file}
 Configure different servers for different deployment stages:
 
 ```typescript
-app.openapiSetup({
+app.openAPISetup({
   info: {
     title: "Multi-Environment API",
     version: "1.0.0",
@@ -893,7 +884,7 @@ app.openapiSetup({
 Require authentication to view OpenAPI docs and Swagger UI:
 
 ```typescript
-app.openapiSetup({
+app.openAPISetup({
   info: {
     title: "Secured API",
     version: "1.0.0",
@@ -921,7 +912,7 @@ curl "http://localhost:7071/docs?code=YOUR_ADMIN_KEY"
 
 ### Registering HTTP Endpoints
 
-The `app.openapiPath()` method registers HTTP endpoints with OpenAPI documentation. It replaces the traditional `app.http()` method and automatically handles both Azure Functions registration and OpenAPI documentation generation.
+The `app.openAPIPath()` method registers HTTP endpoints with OpenAPI documentation. It replaces the traditional `app.http()` method and automatically handles both Azure Functions registration and OpenAPI documentation generation.
 
 #### Basic Endpoint
 
@@ -936,7 +927,7 @@ const StatusSchema = z.object({
   version: z.string(),
 });
 
-app.openapiPath("GetStatus", "Get API status", {
+app.openAPIPath('GetStatus', 'Get API status', {
   handler: async (request, context) => {
     return {
       jsonBody: {
@@ -963,7 +954,7 @@ const UserSchema = z.object({
   email: z.string(),
 });
 
-app.openapiPath("GetUser", "Get user by ID", {
+app.openAPIPath('GetUser', 'Get user by ID', {
   typedHandler: async ({ params, context }) => {
     // params.id is automatically typed as string and validated as UUID
     context.log(`Fetching user: ${params.id}`);
@@ -992,7 +983,7 @@ const TodoListSchema = z.object({
   pageSize: z.number(),
 });
 
-app.openapiPath("ListTodos", "List todos with pagination", {
+app.openAPIPath('ListTodos', 'List todos with pagination', {
   typedHandler: async ({ query, context }) => {
     // query parameters are automatically typed and coerced
     const page = query.page || 1;
@@ -1050,7 +1041,7 @@ const TodoSchema = z.object({
   createdAt: z.string(),
 });
 
-app.openapiPath("CreateTodo", "Create a new todo", {
+app.openAPIPath('CreateTodo', 'Create a new todo', {
   typedHandler: async ({ body, context }) => {
     // body is automatically typed and validated
     context.log(`Creating todo: ${body.title}`);
@@ -1074,7 +1065,7 @@ app.openapiPath("CreateTodo", "Create a new todo", {
 Support multiple methods on the same route:
 
 ```typescript
-app.openapiPath("ManageTodo", "Manage todo item", {
+app.openAPIPath('ManageTodo', 'Manage todo item', {
   typedHandler: async ({ request, params, body, context }) => {
     const method = request.method;
     const todoId = params.id;
@@ -1107,7 +1098,7 @@ app.openapiPath("ManageTodo", "Manage todo item", {
 Validate custom request headers:
 
 ```typescript
-app.openapiPath("SecureEndpoint", "Endpoint with custom API key", {
+app.openAPIPath('SecureEndpoint', 'Endpoint with custom API key', {
   typedHandler: async ({ headers, context }) => {
     // headers are automatically typed and validated
     const apiKey = headers["x-api-key"];
@@ -1141,7 +1132,7 @@ const ErrorSchema = z.object({
   details: z.any().optional(),
 });
 
-app.openapiPath("UpdateTodo", "Update an existing todo", {
+app.openAPIPath('UpdateTodo', 'Update an existing todo', {
   typedHandler: async ({ params, body, context }) => {
     try {
       const todo = await getTodo(params.id);
@@ -1223,7 +1214,7 @@ app.openapiPath("UpdateTodo", "Update an existing todo", {
 **Traditional Handler** - Manual parsing and validation:
 
 ```typescript
-app.openapiPath("CreateUser", "Create user", {
+app.openAPIPath('CreateUser', 'Create user', {
   handler: async (request, context) => {
     // Manual parsing required
     const body = await request.json();
@@ -1246,7 +1237,7 @@ app.openapiPath("CreateUser", "Create user", {
 **Typed Handler** - Automatic parsing and validation:
 
 ```typescript
-app.openapiPath("CreateUser", "Create user", {
+app.openAPIPath('CreateUser', 'Create user', {
   typedHandler: async ({ body, context }) => {
     // body is already parsed, validated, and typed!
     // No manual checks needed
@@ -1275,7 +1266,7 @@ const ParamsSchema = z.object({ id: z.string().uuid() });
 const QuerySchema = z.object({ include: z.string().optional() });
 const BodySchema = z.object({ title: z.string(), completed: z.boolean() });
 
-app.openapiPath("UpdateTodo", "Update todo", {
+app.openAPIPath('UpdateTodo', 'Update todo', {
   typedHandler: async ({ params, query, body, context }) => {
     // TypeScript knows:
     // - params.id is string (from UUID schema)
@@ -1300,7 +1291,7 @@ app.openapiPath("UpdateTodo", "Update todo", {
 Typed handlers automatically validate all request data. If validation fails, a **400 Bad Request** response is returned with detailed error information:
 
 ```typescript
-app.openapiPath("CreateUser", "Create new user", {
+app.openAPIPath('CreateUser', 'Create new user', {
   typedHandler: async ({ body, context }) => {
     // If we reach here, body is guaranteed to be valid
     const user = await createUser(body);
@@ -1364,7 +1355,7 @@ type TypedHandlerArgs = {
 **Example with all parameters:**
 
 ```typescript
-app.openapiPath("ComplexEndpoint", "Example with all parameters", {
+app.openAPIPath('ComplexEndpoint', 'Example with all parameters', {
   typedHandler: async ({ params, query, body, headers, request, context }) => {
     context.log(`Method: ${request.method}`);
     context.log(`URL: ${request.url}`);
@@ -1478,7 +1469,7 @@ const updateTodoHandler = createTypedHandler(
 );
 
 // Use in endpoint registration
-app.openapiPath("UpdateTodo", "Update todo", {
+app.openAPIPath('UpdateTodo', 'Update todo', {
   handler: updateTodoHandler, // Use as regular handler
   methods: ["PATCH"],
   route: "todos/{id}",
@@ -1493,7 +1484,7 @@ app.openapiPath("UpdateTodo", "Update todo", {
 **Inline Handler** (best for simple logic):
 
 ```typescript
-app.openapiPath("DeleteTodo", "Delete todo", {
+app.openAPIPath('DeleteTodo', 'Delete todo', {
   typedHandler: async ({ params, context }) => {
     await deleteTodo(params.id);
     return { status: 204 };
@@ -1526,7 +1517,7 @@ export const deleteTodoHandler = createTypedHandler(
 // In index.ts
 import { deleteTodoHandler } from "./handlers/deleteTodo";
 
-app.openapiPath("DeleteTodo", "Delete todo", {
+app.openAPIPath('DeleteTodo', 'Delete todo', {
   handler: deleteTodoHandler,
   methods: ["DELETE"],
   route: "todos/{id}",
@@ -1539,7 +1530,7 @@ app.openapiPath("DeleteTodo", "Delete todo", {
 Validation errors are handled automatically, but you can add custom error handling:
 
 ```typescript
-app.openapiPath("RiskyOperation", "Operation that might fail", {
+app.openAPIPath('RiskyOperation', 'Operation that might fail', {
   typedHandler: async ({ body, context }) => {
     try {
       const result = await performRiskyOperation(body);
@@ -1584,7 +1575,7 @@ app.openapiPath("RiskyOperation", "Operation that might fail", {
 
 ### Registering Reusable Schemas
 
-The `app.openapiSchema()` method registers Zod schemas as named types in the OpenAPI registry. This promotes reusability and keeps your OpenAPI specification clean by using references instead of inlining schemas everywhere.
+The `app.openAPISchema()` method registers Zod schemas as named types in the OpenAPI registry. This promotes reusability and keeps your OpenAPI specification clean by using references instead of inlining schemas everywhere.
 
 #### Basic Schema Registration
 
@@ -1602,10 +1593,10 @@ const UserSchema = z.object({
 });
 
 // Register schema with a name
-app.openapiSchema("User", UserSchema);
+app.openAPISchema('User', UserSchema);
 
 // Now use it in endpoints
-app.openapiPath("GetUser", "Get user by ID", {
+app.openAPIPath('GetUser', 'Get user by ID', {
   typedHandler: async ({ params }) => {
     const user = await getUserById(params.id);
     return { jsonBody: user };
@@ -1633,7 +1624,7 @@ const AddressSchema = z.object({
     .describe("5-digit ZIP code"),
 });
 
-app.openapiSchema("Address", AddressSchema);
+app.openAPISchema('Address', AddressSchema);
 
 // User profile with nested address
 const UserProfileSchema = z.object({
@@ -1646,7 +1637,7 @@ const UserProfileSchema = z.object({
   }),
 });
 
-app.openapiSchema("UserProfile", UserProfileSchema);
+app.openAPISchema('UserProfile', UserProfileSchema);
 ```
 
 #### Array Schemas
@@ -1662,7 +1653,7 @@ const TodoSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
-app.openapiSchema("Todo", TodoSchema);
+app.openAPISchema('Todo', TodoSchema);
 
 // Paginated list
 const PaginatedTodosSchema = z.object({
@@ -1673,10 +1664,10 @@ const PaginatedTodosSchema = z.object({
   hasMore: z.boolean().describe("Whether more pages exist"),
 });
 
-app.openapiSchema("PaginatedTodos", PaginatedTodosSchema);
+app.openAPISchema('PaginatedTodos', PaginatedTodosSchema);
 
 // Use in endpoint
-app.openapiPath("ListTodos", "List all todos with pagination", {
+app.openAPIPath('ListTodos', 'List all todos with pagination', {
   typedHandler: async ({ query }) => {
     const todos = await getTodos(query);
     return { jsonBody: todos };
@@ -1705,7 +1696,7 @@ const ErrorSchema = z.object({
   details: z.any().optional().describe("Additional error details"),
 });
 
-app.openapiSchema("Error", ErrorSchema);
+app.openAPISchema('Error', ErrorSchema);
 
 // Validation error schema
 const ValidationErrorSchema = z.object({
@@ -1719,10 +1710,10 @@ const ValidationErrorSchema = z.object({
   ),
 });
 
-app.openapiSchema("ValidationError", ValidationErrorSchema);
+app.openAPISchema('ValidationError', ValidationErrorSchema);
 
 // Use in endpoints
-app.openapiPath("CreateUser", "Create new user", {
+app.openAPIPath('CreateUser', 'Create new user', {
   typedHandler: async ({ body }) => {
     const user = await createUser(body);
     return { status: 201, jsonBody: user };
@@ -1769,7 +1760,7 @@ const EmailNotificationSchema = BaseNotificationSchema.extend({
   body: z.string(),
 });
 
-app.openapiSchema("EmailNotification", EmailNotificationSchema);
+app.openAPISchema('EmailNotification', EmailNotificationSchema);
 
 // SMS notification
 const SmsNotificationSchema = BaseNotificationSchema.extend({
@@ -1778,7 +1769,7 @@ const SmsNotificationSchema = BaseNotificationSchema.extend({
   message: z.string().max(160),
 });
 
-app.openapiSchema("SmsNotification", SmsNotificationSchema);
+app.openAPISchema('SmsNotification', SmsNotificationSchema);
 
 // Union of all notification types
 const NotificationSchema = z.discriminatedUnion("type", [
@@ -1786,7 +1777,7 @@ const NotificationSchema = z.discriminatedUnion("type", [
   SmsNotificationSchema,
 ]);
 
-app.openapiSchema("Notification", NotificationSchema);
+app.openAPISchema('Notification', NotificationSchema);
 ```
 
 #### Schema Organization Best Practices
@@ -1822,14 +1813,14 @@ import { TodoSchema, CreateTodoSchema, UpdateTodoSchema } from "./todo";
 
 export function registerSchemas(app: typeof import("@azure/functions").app) {
   // User schemas
-  app.openapiSchema("User", UserSchema);
-  app.openapiSchema("CreateUser", CreateUserSchema);
-  app.openapiSchema("UpdateUser", UpdateUserSchema);
-
+  app.openAPISchema('User', UserSchema);
+  app.openAPISchema('CreateUser', CreateUserSchema);
+  app.openAPISchema('UpdateUser', UpdateUserSchema);
+  
   // Todo schemas
-  app.openapiSchema("Todo", TodoSchema);
-  app.openapiSchema("CreateTodo", CreateTodoSchema);
-  app.openapiSchema("UpdateTodo", UpdateTodoSchema);
+  app.openAPISchema('Todo', TodoSchema);
+  app.openAPISchema('CreateTodo', CreateTodoSchema);
+  app.openAPISchema('UpdateTodo', UpdateTodoSchema);
 }
 
 // In index.ts
@@ -1837,9 +1828,7 @@ import "@apvee/azure-functions-openapi";
 import { app } from "@azure/functions";
 import { registerSchemas } from "./schemas";
 
-app.openapiSetup({
-  /* config */
-});
+app.openAPISetup({ /* config */ });
 registerSchemas(app);
 ```
 
@@ -1873,10 +1862,10 @@ registerSchemas(app);
 
 ```typescript
 // Register common schemas
-app.openapiSchema("Todo", TodoSchema);
-app.openapiSchema("Error", ErrorSchema);
+app.openAPISchema('Todo', TodoSchema);
+app.openAPISchema('Error', ErrorSchema);
 
-app.openapiPath("UpdateTodo", "Update todo", {
+app.openAPIPath('UpdateTodo', 'Update todo', {
   typedHandler: async ({ params, body }) => {
     const todo = await updateTodo(params.id, body);
     return { jsonBody: todo };
@@ -1933,7 +1922,7 @@ const OrderCompletedSchema = z.object({
 });
 
 // Register webhook
-app.openapiWebhook("OrderCompleted", "Notifies when an order is completed", {
+app.openAPIWebhook('OrderCompleted', 'Notifies when an order is completed', {
   typedHandler: async ({ body, context }) => {
     // This is the handler that receives the webhook at YOUR endpoint
     // (for testing or development purposes)
@@ -1958,13 +1947,13 @@ Document webhooks that require authentication:
 
 ```typescript
 // Register security scheme for webhook signatures
-const webhookSignature = app.openapiKeySecurity(
-  "X-Webhook-Signature",
-  "header",
-  "HMAC signature for webhook verification"
+const webhookSignature = app.openAPIKeySecurity(
+  'X-Webhook-Signature',
+  'header',
+  'HMAC signature for webhook verification'
 );
 
-app.openapiWebhook("PaymentProcessed", "Notifies when payment is processed", {
+app.openAPIWebhook('PaymentProcessed', 'Notifies when payment is processed', {
   typedHandler: async ({ body, headers, context }) => {
     // Verify webhook signature
     const signature = headers["x-webhook-signature"];
@@ -1997,7 +1986,7 @@ Document different webhook events for various scenarios:
 
 ```typescript
 // User registration webhook
-app.openapiWebhook("UserRegistered", "Notifies when a new user registers", {
+app.openAPIWebhook('UserRegistered', 'Notifies when a new user registers', {
   typedHandler: async ({ body, context }) => {
     context.log(`New user: ${body.userId}`);
     return { status: 200 };
@@ -2012,7 +2001,7 @@ app.openapiWebhook("UserRegistered", "Notifies when a new user registers", {
 });
 
 // User deletion webhook
-app.openapiWebhook("UserDeleted", "Notifies when a user is deleted", {
+app.openAPIWebhook('UserDeleted', 'Notifies when a user is deleted', {
   typedHandler: async ({ body, context }) => {
     context.log(`User deleted: ${body.userId}`);
     return { status: 200 };
@@ -2027,26 +2016,20 @@ app.openapiWebhook("UserDeleted", "Notifies when a user is deleted", {
 });
 
 // Subscription events
-app.openapiWebhook(
-  "SubscriptionChanged",
-  "Notifies when subscription status changes",
-  {
-    typedHandler: async ({ body, context }) => {
-      context.log(
-        `Subscription ${body.subscriptionId} changed to ${body.status}`
-      );
-      return { status: 200 };
-    },
-    methods: ["POST"],
-    body: z.object({
-      subscriptionId: z.string().uuid(),
-      userId: z.string().uuid(),
-      status: z.enum(["active", "cancelled", "expired", "paused"]),
-      changedAt: z.string().datetime(),
-    }),
-    tags: ["Subscription Events"],
-  }
-);
+app.openAPIWebhook('SubscriptionChanged', 'Notifies when subscription status changes', {
+  typedHandler: async ({ body, context }) => {
+    context.log(`Subscription ${body.subscriptionId} changed to ${body.status}`);
+    return { status: 200 };
+  },
+  methods: ['POST'],
+  body: z.object({
+    subscriptionId: z.string().uuid(),
+    userId: z.string().uuid(),
+    status: z.enum(['active', 'cancelled', 'expired', 'paused']),
+    changedAt: z.string().datetime()
+  }),
+  tags: ['Subscription Events']
+});
 ```
 
 #### Webhook Retry Logic Documentation
@@ -2054,7 +2037,7 @@ app.openapiWebhook(
 Document how your API handles webhook failures:
 
 ```typescript
-app.openapiWebhook("OrderShipped", "Notifies when order is shipped", {
+app.openAPIWebhook('OrderShipped', 'Notifies when order is shipped', {
   typedHandler: async ({ body, headers, context }) => {
     // Document retry attempt in description
     const attemptNumber = headers["x-webhook-attempt"];
@@ -2118,16 +2101,16 @@ const WebhookEventSchema = z.object({
   livemode: z.boolean().describe("Whether in production mode"),
 });
 
-app.openapiSchema("WebhookEvent", WebhookEventSchema);
+app.openAPISchema('WebhookEvent', WebhookEventSchema);
 
 // Webhook signature security
-const stripeSignature = app.openapiKeySecurity(
-  "Stripe-Signature",
-  "header",
-  "Webhook signature for verification (see Stripe documentation)"
+const stripeSignature = app.openAPIKeySecurity(
+  'Stripe-Signature',
+  'header',
+  'Webhook signature for verification (see Stripe documentation)'
 );
 
-app.openapiWebhook("StripeWebhook", "Generic Stripe-style webhook endpoint", {
+app.openAPIWebhook('StripeWebhook', 'Generic Stripe-style webhook endpoint', {
   typedHandler: async ({ body, headers, context }) => {
     const signature = headers["stripe-signature"];
 
@@ -2199,7 +2182,7 @@ using your webhook secret to ensure the request came from Stripe.
 
 #### Webhook Configuration Options
 
-The `app.openapiWebhook()` method accepts the same options as `app.openapiPath()`:
+The `app.openAPIWebhook()` method accepts the same options as `app.openAPIPath()`:
 
 | Option                      | Description                                  |
 | --------------------------- | -------------------------------------------- |
@@ -2271,10 +2254,10 @@ Security in OpenAPI works through **security schemes** (how to authenticate) and
 
 ```typescript
 // 1. Define security scheme
-const apiKeySecurity = app.openapiKeySecurity("X-API-Key", "header");
+const apiKeySecurity = app.openAPIKeySecurity('X-API-Key', 'header');
 
 // 2. Apply to endpoint
-app.openapiPath("SecureEndpoint", "Protected endpoint", {
+app.openAPIPath('SecureEndpoint', 'Protected endpoint', {
   handler: secureHandler,
   methods: ["GET"],
   route: "secure/data",
@@ -2301,15 +2284,15 @@ app.openapiPath("SecureEndpoint", "Protected endpoint", {
 **Global Security** (applies to all endpoints):
 
 ```typescript
-const globalAuth = app.openapiAzureFunctionKey("function");
+const globalAuth = app.openAPIAzureFunctionKey('function');
 
-app.openapiSetup({
-  info: { title: "Secure API", version: "1.0.0" },
-  security: [globalAuth], // All endpoints require function key
+app.openAPISetup({
+  info: { title: 'Secure API', version: '1.0.0' },
+  security: [globalAuth] // All endpoints require function key
 });
 
 // Override for specific endpoint
-app.openapiPath("PublicEndpoint", "No auth required", {
+app.openAPIPath('PublicEndpoint', 'No auth required', {
   handler: publicHandler,
   methods: ["GET"],
   route: "public",
@@ -2320,11 +2303,11 @@ app.openapiPath("PublicEndpoint", "No auth required", {
 **Endpoint-Specific Security:**
 
 ```typescript
-const adminAuth = app.openapiAzureFunctionKey("admin");
-const userAuth = app.openapiAzureFunctionKey("function");
+const adminAuth = app.openAPIAzureFunctionKey('admin');
+const userAuth = app.openAPIAzureFunctionKey('function');
 
 // Admin-only endpoint
-app.openapiPath("DeleteUser", "Delete user (admin only)", {
+app.openAPIPath('DeleteUser', 'Delete user (admin only)', {
   handler: deleteUserHandler,
   methods: ["DELETE"],
   route: "users/{id}",
@@ -2332,7 +2315,7 @@ app.openapiPath("DeleteUser", "Delete user (admin only)", {
 });
 
 // User endpoint
-app.openapiPath("GetProfile", "Get own profile", {
+app.openAPIPath('GetProfile', 'Get own profile', {
   handler: getProfileHandler,
   methods: ["GET"],
   route: "profile",
@@ -2345,10 +2328,10 @@ app.openapiPath("GetProfile", "Get own profile", {
 Allow multiple authentication methods (user can use any):
 
 ```typescript
-const apiKeyAuth = app.openapiKeySecurity("X-API-Key", "header");
-const bearerAuth = app.openapiAzureADBearer("AzureAD");
+const apiKeyAuth = app.openAPIKeySecurity('X-API-Key', 'header');
+const bearerAuth = app.openAPIAzureADBearer('AzureAD');
 
-app.openapiPath("FlexibleAuth", "Accepts API key OR bearer token", {
+app.openAPIPath('FlexibleAuth', 'Accepts API key OR bearer token', {
   handler: flexAuthHandler,
   methods: ["GET"],
   route: "flexible",
@@ -2364,10 +2347,10 @@ app.openapiPath("FlexibleAuth", "Accepts API key OR bearer token", {
 Require multiple authentication methods simultaneously:
 
 ```typescript
-const apiKeyAuth = app.openapiKeySecurity("X-API-Key", "header");
-const clientCertAuth = app.openapiKeySecurity("X-Client-Cert", "header");
+const apiKeyAuth = app.openAPIKeySecurity('X-API-Key', 'header');
+const clientCertAuth = app.openAPIKeySecurity('X-Client-Cert', 'header');
 
-app.openapiPath("HighSecurity", "Requires both API key AND client cert", {
+app.openAPIPath('HighSecurity', 'Requires both API key AND client cert', {
   handler: highSecurityHandler,
   methods: ["POST"],
   route: "high-security",
@@ -2381,7 +2364,7 @@ app.openapiPath("HighSecurity", "Requires both API key AND client cert", {
 
 ### Custom API Keys
 
-Use `app.openapiKeySecurity()` or its alias `app.openapiCustomApiKey()` to document custom API key authentication that YOU implement and validate. This is different from Azure Function Keys - you're responsible for validating these keys.
+Use `app.openAPIKeySecurity()` or its alias `app.openAPICustomApiKey()` to document custom API key authentication that YOU implement and validate. This is different from Azure Function Keys - you're responsible for validating these keys.
 
 #### Header-Based API Key
 
@@ -2389,14 +2372,14 @@ Most common approach - API key in request header:
 
 ```typescript
 // Register security scheme
-const apiKeySecurity = app.openapiKeySecurity(
-  "X-API-Key",
-  "header",
-  "Custom API key for authentication"
+const apiKeySecurity = app.openAPIKeySecurity(
+  'X-API-Key',
+  'header',
+  'Custom API key for authentication'
 );
 
 // Apply to endpoint
-app.openapiPath("GetSecureData", "Get secure data", {
+app.openAPIPath('GetSecureData', 'Get secure data', {
   handler: async (request, context) => {
     // Extract and validate API key
     const apiKey = request.headers.get("X-API-Key");
@@ -2439,13 +2422,13 @@ curl http://localhost:7071/api/secure/data \
 Less secure but simpler for quick testing:
 
 ```typescript
-const apiKeySecurity = app.openapiKeySecurity(
-  "apiKey",
-  "query",
-  "API key passed as query parameter"
+const apiKeySecurity = app.openAPIKeySecurity(
+  'apiKey',
+  'query',
+  'API key passed as query parameter'
 );
 
-app.openapiPath("GetData", "Get data with query param auth", {
+app.openAPIPath('GetData', 'Get data with query param auth', {
   handler: async (request, context) => {
     const apiKey = request.query.get("apiKey");
 
@@ -2472,13 +2455,13 @@ curl "http://localhost:7071/api/data?apiKey=your-api-key-here"
 For browser-based applications:
 
 ```typescript
-const apiKeySecurity = app.openapiKeySecurity(
-  "session",
-  "cookie",
-  "Session cookie for authentication"
+const apiKeySecurity = app.openAPIKeySecurity(
+  'session',
+  'cookie',
+  'Session cookie for authentication'
 );
 
-app.openapiPath("GetUserData", "Get user data with session", {
+app.openAPIPath('GetUserData', 'Get user data with session', {
   handler: async (request, context) => {
     // Extract cookie (pseudo-code)
     const sessionId = request.headers
@@ -2504,9 +2487,9 @@ app.openapiPath("GetUserData", "Get user data with session", {
 Combine typed handlers with header validation:
 
 ```typescript
-const apiKeySecurity = app.openapiKeySecurity("X-API-Key", "header");
+const apiKeySecurity = app.openAPIKeySecurity('X-API-Key', 'header');
 
-app.openapiPath("CreateResource", "Create new resource", {
+app.openAPIPath('CreateResource', 'Create new resource', {
   typedHandler: async ({ body, headers, context }) => {
     // Validate API key from headers
     const apiKey = headers["x-api-key"];
@@ -2612,21 +2595,21 @@ Different keys for different operations:
 
 ```typescript
 // Read-only API key
-const readKeySecurity = app.openapiKeySecurity(
-  "X-Read-API-Key",
-  "header",
-  "Read-only API key"
+const readKeySecurity = app.openAPIKeySecurity(
+  'X-Read-API-Key',
+  'header',
+  'Read-only API key'
 );
 
 // Write API key (more privileged)
-const writeKeySecurity = app.openapiKeySecurity(
-  "X-Write-API-Key",
-  "header",
-  "Write API key (required for modifications)"
+const writeKeySecurity = app.openAPIKeySecurity(
+  'X-Write-API-Key',
+  'header',
+  'Write API key (required for modifications)'
 );
 
 // Read endpoint
-app.openapiPath("GetData", "Get data (read key)", {
+app.openAPIPath('GetData', 'Get data (read key)', {
   handler: getDataHandler,
   methods: ["GET"],
   route: "data",
@@ -2634,7 +2617,7 @@ app.openapiPath("GetData", "Get data (read key)", {
 });
 
 // Write endpoint
-app.openapiPath("UpdateData", "Update data (write key required)", {
+app.openAPIPath('UpdateData', 'Update data (write key required)', {
   handler: updateDataHandler,
   methods: ["PUT"],
   route: "data/{id}",
@@ -2672,7 +2655,7 @@ app.openapiPath("UpdateData", "Update data (write key required)", {
 
 ### Azure Function Keys
 
-Azure Function Keys are the native authentication mechanism built into Azure Functions. Use `app.openapiAzureFunctionKey()` to document endpoints that use Azure's built-in key-based authentication.
+Azure Function Keys are the native authentication mechanism built into Azure Functions. Use `app.openAPIAzureFunctionKey()` to document endpoints that use Azure's built-in key-based authentication.
 
 #### Understanding Auth Levels
 
@@ -2690,9 +2673,9 @@ Basic setup with function-level authentication:
 
 ```typescript
 // Register function key security
-const functionKeySecurity = app.openapiAzureFunctionKey("function");
+const functionKeySecurity = app.openAPIAzureFunctionKey('function');
 
-app.openapiPath("GetData", "Get data (function key required)", {
+app.openAPIPath('GetData', 'Get data (function key required)', {
   handler: async (request, context) => {
     // Azure has already validated the key!
     // If we reach here, the key was valid
@@ -2722,9 +2705,9 @@ curl http://localhost:7071/api/data \
 Restrict to master/admin keys only:
 
 ```typescript
-const adminKeySecurity = app.openapiAzureFunctionKey("admin");
+const adminKeySecurity = app.openAPIAzureFunctionKey('admin');
 
-app.openapiPath("DeleteAllData", "Delete all data (admin only)", {
+app.openAPIPath('DeleteAllData', 'Delete all data (admin only)', {
   handler: async (request, context) => {
     context.warn("Admin operation: Deleting all data");
     await deleteAllData();
@@ -2746,16 +2729,15 @@ app.openapiPath("DeleteAllData", "Delete all data (admin only)", {
 Full configuration with all options:
 
 ```typescript
-const customFunctionKey = app.openapiAzureFunctionKey({
-  name: "FunctionAuth",
-  authLevel: "function",
-  description:
-    "Azure Function key authentication. Provide key via ?code=xxx or x-functions-key header",
-  allowQueryParameter: true, // Default: true
-  allowHeader: true, // Default: true
+const customFunctionKey = app.openAPIAzureFunctionKey({
+  name: 'FunctionAuth',
+  authLevel: 'function',
+  description: 'Azure Function key authentication. Provide key via ?code=xxx or x-functions-key header',
+  allowQueryParameter: true,  // Default: true
+  allowHeader: true            // Default: true
 });
 
-app.openapiPath("SecureEndpoint", "Secured endpoint", {
+app.openAPIPath('SecureEndpoint', 'Secured endpoint', {
   handler: secureHandler,
   methods: ["POST"],
   route: "secure/action",
@@ -2771,9 +2753,9 @@ Use the `extractFunctionKey()` utility to get the key from requests:
 ```typescript
 import { extractFunctionKey } from "@apvee/azure-functions-openapi";
 
-const functionKeySecurity = app.openapiAzureFunctionKey("function");
+const functionKeySecurity = app.openAPIAzureFunctionKey('function');
 
-app.openapiPath("TrackUsage", "Track API usage", {
+app.openAPIPath('TrackUsage', 'Track API usage', {
   handler: async (request, context) => {
     // Extract the key that was used
     const functionKey = extractFunctionKey(request);
@@ -2799,11 +2781,11 @@ app.openapiPath("TrackUsage", "Track API usage", {
 Different levels for different operations:
 
 ```typescript
-const functionKey = app.openapiAzureFunctionKey("function");
-const adminKey = app.openapiAzureFunctionKey("admin");
+const functionKey = app.openAPIAzureFunctionKey('function');
+const adminKey = app.openAPIAzureFunctionKey('admin');
 
 // Public read (no auth)
-app.openapiPath("ListPublicTodos", "List public todos", {
+app.openAPIPath('ListPublicTodos', 'List public todos', {
   handler: listPublicTodosHandler,
   methods: ["GET"],
   route: "public/todos",
@@ -2812,7 +2794,7 @@ app.openapiPath("ListPublicTodos", "List public todos", {
 });
 
 // Authenticated read (function key)
-app.openapiPath("ListMyTodos", "List my todos", {
+app.openAPIPath('ListMyTodos', 'List my todos', {
   handler: listMyTodosHandler,
   methods: ["GET"],
   route: "my/todos",
@@ -2821,7 +2803,7 @@ app.openapiPath("ListMyTodos", "List my todos", {
 });
 
 // Admin write (admin key)
-app.openapiPath("DeleteAllTodos", "Delete all todos", {
+app.openAPIPath('DeleteAllTodos', 'Delete all todos', {
   handler: deleteAllTodosHandler,
   methods: ["DELETE"],
   route: "todos/all",
@@ -2961,7 +2943,7 @@ const functionKey = await keyVaultClient.getSecret("function-key");
 
 ### Azure EasyAuth (App Service Authentication)
 
-Azure EasyAuth (App Service Authentication) is a built-in authentication feature that runs in Azure and validates users before requests reach your code. Use `app.openapiEasyAuth()` to document endpoints protected by EasyAuth.
+Azure EasyAuth (App Service Authentication) is a built-in authentication feature that runs in Azure and validates users before requests reach your code. Use `app.openAPIEasyAuth()` to document endpoints protected by EasyAuth.
 
 #### What is EasyAuth?
 
@@ -2981,9 +2963,9 @@ Basic configuration with Azure AD:
 import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
 // Register EasyAuth security
-const easyAuth = app.openapiEasyAuth();
+const easyAuth = app.openAPIEasyAuth();
 
-app.openapiPath("GetUserProfile", "Get current user profile", {
+app.openAPIPath('GetUserProfile', 'Get current user profile', {
   handler: async (request, context) => {
     // Parse user identity from EasyAuth headers
     const user = parseEasyAuthPrincipal(request);
@@ -3050,9 +3032,9 @@ The `parseEasyAuthPrincipal()` utility extracts user identity:
 ```typescript
 import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
-const easyAuth = app.openapiEasyAuth();
+const easyAuth = app.openAPIEasyAuth();
 
-app.openapiPath("CreateTodo", "Create a todo", {
+app.openAPIPath('CreateTodo', 'Create a todo', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
 
@@ -3140,14 +3122,13 @@ context.log("User details:", {
 Full EasyAuth configuration with all options:
 
 ```typescript
-const customEasyAuth = app.openapiEasyAuth({
-  name: "AzureEasyAuth",
-  description:
-    "Azure App Service Authentication. Users must be authenticated via Azure AD, Google, Facebook, or other configured providers.",
-  headerName: "X-MS-CLIENT-PRINCIPAL", // Default header
+const customEasyAuth = app.openAPIEasyAuth({
+  name: 'AzureEasyAuth',
+  description: 'Azure App Service Authentication. Users must be authenticated via Azure AD, Google, Facebook, or other configured providers.',
+  headerName: 'X-MS-CLIENT-PRINCIPAL' // Default header
 });
 
-app.openapiPath("ProtectedResource", "Access protected resource", {
+app.openAPIPath('ProtectedResource', 'Access protected resource', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
 
@@ -3182,9 +3163,9 @@ function hasRole(user: EasyAuthPrincipal, role: string): boolean {
   return user.claims.some((c) => c.typ === "roles" && c.val === role);
 }
 
-const easyAuth = app.openapiEasyAuth();
+const easyAuth = app.openAPIEasyAuth();
 
-app.openapiPath("AdminOnly", "Admin-only operation", {
+app.openAPIPath('AdminOnly', 'Admin-only operation', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
 
@@ -3224,12 +3205,11 @@ app.openapiPath("AdminOnly", "Admin-only operation", {
 EasyAuth can support multiple identity providers simultaneously:
 
 ```typescript
-const easyAuth = app.openapiEasyAuth({
-  description:
-    "Authenticate with Azure AD, Google, Facebook, GitHub, or Twitter",
+const easyAuth = app.openAPIEasyAuth({
+  description: 'Authenticate with Azure AD, Google, Facebook, GitHub, or Twitter'
 });
 
-app.openapiPath("GetProfile", "Get user profile", {
+app.openAPIPath('GetProfile', 'Get user profile', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
 
@@ -3295,7 +3275,7 @@ function mockEasyAuthPrincipal(request: HttpRequest): void {
 }
 
 // Use in handlers
-app.openapiPath("TestEasyAuth", "Test EasyAuth", {
+app.openAPIPath('TestEasyAuth', 'Test EasyAuth', {
   handler: async (request, context) => {
     mockEasyAuthPrincipal(request); // Only in dev
 
@@ -3316,7 +3296,7 @@ import { app } from "@azure/functions";
 import { z } from "zod";
 import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
-const easyAuth = app.openapiEasyAuth();
+const easyAuth = app.openAPIEasyAuth();
 
 const TodoSchema = z.object({
   id: z.string(),
@@ -3326,7 +3306,7 @@ const TodoSchema = z.object({
 });
 
 // Create todo (user-specific)
-app.openapiPath("CreateTodo", "Create a new todo", {
+app.openAPIPath('CreateTodo', 'Create a new todo', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
     if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
@@ -3346,7 +3326,7 @@ app.openapiPath("CreateTodo", "Create a new todo", {
 });
 
 // List user's todos
-app.openapiPath("ListMyTodos", "List my todos", {
+app.openAPIPath('ListMyTodos', 'List my todos', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
     if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
@@ -3364,7 +3344,7 @@ app.openapiPath("ListMyTodos", "List my todos", {
 });
 
 // Update todo (ownership check)
-app.openapiPath("UpdateTodo", "Update a todo", {
+app.openAPIPath('UpdateTodo', 'Update a todo', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
     if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
@@ -3392,7 +3372,7 @@ app.openapiPath("UpdateTodo", "Update a todo", {
 });
 
 // Delete todo (ownership check)
-app.openapiPath("DeleteTodo", "Delete a todo", {
+app.openAPIPath('DeleteTodo', 'Delete a todo', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
     if (!user) return { status: 401, jsonBody: { error: "Unauthorized" } };
@@ -3446,7 +3426,7 @@ app.openapiPath("DeleteTodo", "Delete a todo", {
 
 ### Azure AD Bearer Token Authentication
 
-Azure AD Bearer Token authentication allows you to manually validate JWT tokens issued by Azure Active Directory (Microsoft Entra ID). Use `app.openapiBearerToken()` when you need fine-grained control over token validation.
+Azure AD Bearer Token authentication allows you to manually validate JWT tokens issued by Azure Active Directory (Microsoft Entra ID). Use `app.openAPIBearerToken()` when you need fine-grained control over token validation.
 
 #### When to Use Bearer Token Auth
 
@@ -3472,12 +3452,12 @@ Basic configuration with Azure AD:
 import { app } from "@azure/functions";
 
 // Register Bearer token security
-const bearerAuth = app.openapiBearerToken({
-  issuer: "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
-  audience: "api://YOUR_API_CLIENT_ID",
+const bearerAuth = app.openAPIBearerToken({
+  issuer: 'https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0',
+  audience: 'api://YOUR_API_CLIENT_ID'
 });
 
-app.openapiPath("GetUserData", "Get user data", {
+app.openAPIPath('GetUserData', 'Get user data', {
   handler: async (request, context) => {
     // Extract token from Authorization header
     const authHeader = request.headers.get("authorization");
@@ -3599,12 +3579,12 @@ async function validateBearerToken(token: string): Promise<TokenClaims> {
 }
 
 // Use in handler
-const bearerAuth = app.openapiBearerToken({
+const bearerAuth = app.openAPIBearerToken({
   issuer: process.env.AAD_ISSUER,
   audience: process.env.AAD_AUDIENCE,
 });
 
-app.openapiPath("ProtectedEndpoint", "Protected endpoint", {
+app.openAPIPath('ProtectedEndpoint', 'Protected endpoint', {
   handler: async (request, context) => {
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.replace("Bearer ", "");
@@ -3653,13 +3633,13 @@ function hasScope(claims: TokenClaims, requiredScope: string): boolean {
   return scopes.includes(requiredScope);
 }
 
-const bearerAuth = app.openapiBearerToken({
+const bearerAuth = app.openAPIBearerToken({
   issuer: process.env.AAD_ISSUER,
   audience: process.env.AAD_AUDIENCE,
   scopes: ["api.read", "api.write"], // Document required scopes
 });
 
-app.openapiPath("WriteData", "Write data (requires api.write scope)", {
+app.openAPIPath('WriteData', 'Write data (requires api.write scope)', {
   handler: async (request, context) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) return { status: 401, jsonBody: { error: "No token" } };
@@ -3707,13 +3687,13 @@ function hasRole(claims: TokenClaims, requiredRole: string): boolean {
   return claims.roles?.includes(requiredRole) || false;
 }
 
-const bearerAuth = app.openapiBearerToken({
+const bearerAuth = app.openAPIBearerToken({
   issuer: process.env.AAD_ISSUER,
   audience: process.env.AAD_AUDIENCE,
   description: "Azure AD Bearer token with Admin role required",
 });
 
-app.openapiPath("AdminOperation", "Admin operation", {
+app.openAPIPath('AdminOperation', 'Admin operation', {
   handler: async (request, context) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) return { status: 401, jsonBody: { error: "No token" } };
@@ -3753,14 +3733,13 @@ app.openapiPath("AdminOperation", "Admin operation", {
 Full Bearer token configuration:
 
 ```typescript
-const advancedBearerAuth = app.openapiBearerToken({
-  name: "AzureADBearer",
-  issuer: "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
-  audience: "api://YOUR_API_CLIENT_ID",
-  scopes: ["api.read", "api.write", "api.admin"],
-  description:
-    "Azure AD Bearer token. Obtain from Microsoft Identity Platform.",
-  bearerFormat: "JWT", // Optional: specify token format
+const advancedBearerAuth = app.openAPIBearerToken({
+  name: 'AzureADBearer',
+  issuer: 'https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0',
+  audience: 'api://YOUR_API_CLIENT_ID',
+  scopes: ['api.read', 'api.write', 'api.admin'],
+  description: 'Azure AD Bearer token. Obtain from Microsoft Identity Platform.',
+  bearerFormat: 'JWT' // Optional: specify token format
 });
 ```
 
@@ -3778,7 +3757,7 @@ AAD_AUDIENCE=api://${AAD_CLIENT_ID}
 
 ```typescript
 // In your code
-const bearerAuth = app.openapiBearerToken({
+const bearerAuth = app.openAPIBearerToken({
   issuer: process.env.AAD_ISSUER!,
   audience: process.env.AAD_AUDIENCE!,
   scopes: process.env.AAD_SCOPES?.split(",") || [],
@@ -3947,7 +3926,7 @@ Authorization: Bearer {{access_token}}
 
 ### Azure AD Client Credentials (Service-to-Service)
 
-Azure AD Client Credentials flow is designed for service-to-service authentication where one service (daemon/backend) calls another service without user interaction. Use `app.openapiClientCredentials()` to document APIs that accept service principal tokens.
+Azure AD Client Credentials flow is designed for service-to-service authentication where one service (daemon/backend) calls another service without user interaction. Use `app.openAPIClientCredentials()` to document APIs that accept service principal tokens.
 
 #### When to Use Client Credentials
 
@@ -3973,14 +3952,14 @@ Basic configuration for service authentication:
 import { app } from "@azure/functions";
 
 // Register Client Credentials security
-const clientCredsAuth = app.openapiClientCredentials({
+const clientCredsAuth = app.openAPIClientCredentials({
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
     "api://YOUR_API_CLIENT_ID/.default": "Full API access",
   },
 });
 
-app.openapiPath("ProcessData", "Process data (service authentication)", {
+app.openAPIPath('ProcessData', 'Process data (service authentication)', {
   handler: async (request, context) => {
     // Extract token
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
@@ -4084,14 +4063,14 @@ function hasAppRole(
   return claims.roles?.includes(requiredRole) || false;
 }
 
-const clientCredsAuth = app.openapiClientCredentials({
+const clientCredsAuth = app.openAPIClientCredentials({
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
     "api://YOUR_API_CLIENT_ID/.default": "API access with roles",
   },
 });
 
-app.openapiPath("AdminService", "Admin service operation", {
+app.openAPIPath('AdminService', 'Admin service operation', {
   handler: async (request, context) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) return { status: 401, jsonBody: { error: "No token" } };
@@ -4135,8 +4114,8 @@ app.openapiPath("AdminService", "Admin service operation", {
 Full configuration with multiple scopes:
 
 ```typescript
-const advancedClientCreds = app.openapiClientCredentials({
-  name: "ServicePrincipal",
+const advancedClientCreds = app.openAPIClientCredentials({
+  name: 'ServicePrincipal',
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   refreshUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
@@ -4149,7 +4128,7 @@ const advancedClientCreds = app.openapiClientCredentials({
     "Azure AD Client Credentials flow for service-to-service authentication. Requires service principal with assigned app roles.",
 });
 
-app.openapiPath("ServiceEndpoint", "Service-only endpoint", {
+app.openAPIPath('ServiceEndpoint', 'Service-only endpoint', {
   handler: serviceHandler,
   methods: ["POST"],
   route: "service/operation",
@@ -4376,7 +4355,7 @@ API with multiple service endpoints:
 import { app } from "@azure/functions";
 import { z } from "zod";
 
-const clientCredsAuth = app.openapiClientCredentials({
+const clientCredsAuth = app.openAPIClientCredentials({
   tokenUrl: `https://login.microsoftonline.com/${process.env.AAD_TENANT_ID}/oauth2/v2.0/token`,
   scopes: {
     "api://my-api/.default": "API access",
@@ -4384,7 +4363,7 @@ const clientCredsAuth = app.openapiClientCredentials({
 });
 
 // Data processor service endpoint
-app.openapiPath("ProcessDataService", "Process data batch", {
+app.openAPIPath('ProcessDataService', 'Process data batch', {
   handler: async (request, context) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) return { status: 401, jsonBody: { error: "No token" } };
@@ -4421,7 +4400,7 @@ app.openapiPath("ProcessDataService", "Process data batch", {
 });
 
 // Analytics service endpoint
-app.openapiPath("GetAnalyticsService", "Get analytics data", {
+app.openAPIPath('GetAnalyticsService', 'Get analytics data', {
   handler: async (request, context) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) return { status: 401, jsonBody: { error: "No token" } };
@@ -4446,7 +4425,7 @@ app.openapiPath("GetAnalyticsService", "Get analytics data", {
 });
 
 // Admin service endpoint
-app.openapiPath("ResetDataService", "Reset all data", {
+app.openAPIPath('ResetDataService', 'Reset all data', {
   handler: async (request, context) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) return { status: 401, jsonBody: { error: "No token" } };
@@ -4548,7 +4527,7 @@ const CreateUserSchema = z.object({
   age: z.number().int().min(18).max(120),
 });
 
-app.openapiPath("CreateUser", "Create a new user", {
+app.openAPIPath('CreateUser', 'Create a new user', {
   handler: async (request, context) => {
     const body = await request.json();
 
@@ -4599,7 +4578,7 @@ const TodoSchema = z.object({
   completed: z.boolean().default(false),
 });
 
-app.openapiPath("CreateTodo", "Create a todo", {
+app.openAPIPath('CreateTodo', 'Create a todo', {
   handler: async (request, context) => {
     try {
       // parseBody automatically validates and returns typed data
@@ -4653,7 +4632,7 @@ const SearchQuerySchema = z.object({
   sortBy: z.enum(["name", "date", "popularity"]).default("date"),
 });
 
-app.openapiPath("SearchUsers", "Search users", {
+app.openAPIPath('SearchUsers', 'Search users', {
   handler: async (request, context) => {
     try {
       // Parse and validate query parameters
@@ -4717,7 +4696,7 @@ const RouteParamsSchema = z.object({
   action: z.enum(["approve", "reject", "pending"]),
 });
 
-app.openapiPath("UpdateStatus", "Update item status", {
+app.openAPIPath('UpdateStatus', 'Update item status', {
   handler: async (request, context) => {
     try {
       // Parse and validate route parameters
@@ -4768,7 +4747,7 @@ const HeadersSchema = z.object({
   "x-request-id": z.string().uuid().optional(),
 });
 
-app.openapiPath("VersionedEndpoint", "Versioned API endpoint", {
+app.openAPIPath('VersionedEndpoint', 'Versioned API endpoint', {
   handler: async (request, context) => {
     try {
       // Parse and validate headers
@@ -4844,7 +4823,7 @@ const CompanySchema = z.object({
   tags: z.array(z.string()).max(10).default([]),
 });
 
-app.openapiPath("CreateCompany", "Create a company", {
+app.openAPIPath('CreateCompany', 'Create a company', {
   handler: async (request, context) => {
     try {
       const company = await parseBody(request, CompanySchema);
@@ -4911,7 +4890,7 @@ const PaymentSchema = z.discriminatedUnion("method", [
   }),
 ]);
 
-app.openapiPath("ProcessPayment", "Process payment", {
+app.openAPIPath('ProcessPayment', 'Process payment', {
   handler: async (request, context) => {
     try {
       const payment = await parseBody(request, PaymentSchema);
@@ -5005,7 +4984,7 @@ const UpdateUserSchema = z
     message: "At least one field must be provided",
   });
 
-app.openapiPath("Register", "Register new user", {
+app.openAPIPath('Register', 'Register new user', {
   handler: async (request, context) => {
     try {
       const data = await parseBody(request, RegisterSchema);
@@ -5065,19 +5044,18 @@ Validate arrays with constraints:
 import { z } from "zod";
 
 const BulkCreateSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        name: z.string().min(1),
-        quantity: z.number().int().min(1),
-        price: z.number().positive(),
-      })
-    )
-    .min(1, "At least one item is required")
-    .max(100, "Maximum 100 items per request"),
+  items: z.array(
+    z.object({
+      name: z.string().min(1),
+      quantity: z.number().int().min(1),
+      price: z.number().positive()
+    })
+  )
+    .min(1, 'At least one item is required')
+    .max(100, 'Maximum 100 items per request')
 });
 
-app.openapiPath("BulkCreateItems", "Create multiple items", {
+app.openAPIPath('BulkCreateItems', 'Create multiple items', {
   handler: async (request, context) => {
     try {
       const data = await parseBody(request, BulkCreateSchema);
@@ -5139,7 +5117,7 @@ const FileUploadSchema = z.object({
   content: z.string().base64(), // Base64-encoded file content
 });
 
-app.openapiPath("UploadFile", "Upload a file", {
+app.openAPIPath('UploadFile', 'Upload a file', {
   handler: async (request, context) => {
     try {
       const upload = await parseBody(request, FileUploadSchema);
@@ -5251,7 +5229,7 @@ async function handleValidatedRequest<T>(
 }
 
 // Usage
-app.openapiPath("CreateTodo", "Create todo", {
+app.openAPIPath('CreateTodo', 'Create todo', {
   handler: async (request, context) => {
     return handleValidatedRequest(
       request,
@@ -5293,7 +5271,7 @@ const ErrorSchema = z.object({
   message: z.string().optional(),
 });
 
-app.openapiPath("GetTodo", "Get a todo by ID", {
+app.openAPIPath('GetTodo', 'Get a todo by ID', {
   handler: async (request, context) => {
     const { id } = request.params;
     const todo = await db.todos.findUnique({ where: { id } });
@@ -5351,7 +5329,7 @@ const UserSchema = z.object({
   email: z.string().email(),
 });
 
-app.openapiPath("GetUser", "Get user in different formats", {
+app.openAPIPath('GetUser', 'Get user in different formats', {
   handler: async (request, context) => {
     const { id } = request.params;
     const user = await db.users.findUnique({ where: { id } });
@@ -5430,7 +5408,7 @@ Document custom response headers:
 ```typescript
 import { z } from "zod";
 
-app.openapiPath("CreateResource", "Create a new resource", {
+app.openAPIPath('CreateResource', 'Create a new resource', {
   handler: async (request, context) => {
     const body = await request.json();
     const resource = await db.resources.create(body);
@@ -5494,7 +5472,7 @@ const ProductSchema = z.object({
   inStock: z.boolean(),
 });
 
-app.openapiPath("GetProduct", "Get product details", {
+app.openAPIPath('GetProduct', 'Get product details', {
   handler: async (request, context) => {
     const { id } = request.params;
     const product = await db.products.findUnique({ where: { id } });
@@ -5579,7 +5557,7 @@ const ErrorSchema = z.object({
 });
 
 // CREATE
-app.openapiPath("CreateTodo", "Create a new todo", {
+app.openAPIPath('CreateTodo', 'Create a new todo', {
   handler: async (request, context) => {
     const body = await request.json();
     const todo = await db.todos.create(body);
@@ -5636,7 +5614,7 @@ app.openapiPath("CreateTodo", "Create a new todo", {
 });
 
 // READ (single)
-app.openapiPath("GetTodo", "Get a specific todo", {
+app.openAPIPath('GetTodo', 'Get a specific todo', {
   handler: async (request, context) => {
     const { id } = request.params;
     const todo = await db.todos.findUnique({ where: { id } });
@@ -5673,7 +5651,7 @@ app.openapiPath("GetTodo", "Get a specific todo", {
 });
 
 // READ (list)
-app.openapiPath("ListTodos", "List all todos", {
+app.openAPIPath('ListTodos', 'List all todos', {
   handler: async (request, context) => {
     const todos = await db.todos.findMany();
 
@@ -5707,7 +5685,7 @@ app.openapiPath("ListTodos", "List all todos", {
 });
 
 // UPDATE
-app.openapiPath("UpdateTodo", "Update a todo", {
+app.openAPIPath('UpdateTodo', 'Update a todo', {
   handler: async (request, context) => {
     const { id } = request.params;
     const body = await request.json();
@@ -5773,7 +5751,7 @@ app.openapiPath("UpdateTodo", "Update a todo", {
 });
 
 // DELETE
-app.openapiPath("DeleteTodo", "Delete a todo", {
+app.openAPIPath('DeleteTodo', 'Delete a todo', {
   handler: async (request, context) => {
     const { id } = request.params;
 
@@ -5833,7 +5811,7 @@ const PaginatedResponseSchema = z.object({
   }),
 });
 
-app.openapiPath("ListPaginatedUsers", "List users with pagination", {
+app.openAPIPath('ListPaginatedUsers', 'List users with pagination', {
   handler: async (request, context) => {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1");
@@ -5911,7 +5889,7 @@ Document file downloads:
 ```typescript
 import { z } from "zod";
 
-app.openapiPath("DownloadReport", "Download report file", {
+app.openAPIPath('DownloadReport', 'Download report file', {
   handler: async (request, context) => {
     const { reportId } = request.params;
     const format = request.query.get("format") || "pdf";
@@ -6059,7 +6037,7 @@ function noContentResponse() {
 }
 
 // Usage
-app.openapiPath("GetItem", "Get an item", {
+app.openAPIPath('GetItem', 'Get an item', {
   handler: async (request, context) => {
     const { id } = request.params;
     const item = await db.items.findUnique({ where: { id } });
@@ -6096,7 +6074,7 @@ const CreateUserSchema = z.object({
   age: z.number().int().min(18),
 });
 
-app.openapiPath("CreateUser", "Create a user", {
+app.openAPIPath('CreateUser', 'Create a user', {
   handler: async (request, context) => {
     try {
       // Parse and validate body
@@ -6154,7 +6132,7 @@ const SearchSchema = z.object({
   sortBy: z.enum(["name", "date", "price"]).default("name"),
 });
 
-app.openapiPath("Search", "Search products", {
+app.openAPIPath('Search', 'Search products', {
   handler: async (request, context) => {
     try {
       // Parse and validate query parameters
@@ -6212,7 +6190,7 @@ const RouteSchema = z.object({
   action: z.enum(["approve", "reject"]),
 });
 
-app.openapiPath("PostAction", "Perform action on post", {
+app.openAPIPath('PostAction', 'Perform action on post', {
   handler: async (request, context) => {
     try {
       // Parse and validate route parameters
@@ -6265,7 +6243,7 @@ const HeadersSchema = z.object({
   "accept-language": z.string().default("en"),
 });
 
-app.openapiPath("VersionedAPI", "Versioned API endpoint", {
+app.openAPIPath('VersionedAPI', 'Versioned API endpoint', {
   handler: async (request, context) => {
     try {
       // Parse and validate headers
@@ -6315,7 +6293,7 @@ Extract user identity from EasyAuth headers:
 ```typescript
 import { parseEasyAuthPrincipal } from "@apvee/azure-functions-openapi";
 
-app.openapiPath("GetProfile", "Get user profile", {
+app.openAPIPath('GetProfile', 'Get user profile', {
   handler: async (request, context) => {
     // Parse EasyAuth principal
     const user = parseEasyAuthPrincipal(request);
@@ -6368,7 +6346,7 @@ Extract Azure Function key from request:
 ```typescript
 import { extractFunctionKey } from "@apvee/azure-functions-openapi";
 
-app.openapiPath("TrackUsage", "Track API usage", {
+app.openAPIPath('TrackUsage', 'Track API usage', {
   handler: async (request, context) => {
     // Extract function key (from query or header)
     const functionKey = extractFunctionKey(request);
@@ -6457,7 +6435,7 @@ const updatePostHandler = createTypedHandler(
   }
 );
 
-app.openapiPath("UpdatePost", "Update a post", {
+app.openAPIPath('UpdatePost', 'Update a post', {
   handler: updatePostHandler,
   methods: ["PUT"],
   route: "posts/{id}",
@@ -6579,7 +6557,7 @@ import {
 import { z } from "zod";
 
 // Example 1: Manual validation
-app.openapiPath("CreateOrder", "Create an order", {
+app.openAPIPath('CreateOrder', 'Create an order', {
   handler: async (request, context) => {
     try {
       // Parse all request parts
@@ -6641,7 +6619,7 @@ const createOrderHandler = createTypedHandler(
   }
 );
 
-app.openapiPath("CreateOrderTyped", "Create an order (typed)", {
+app.openAPIPath('CreateOrderTyped', 'Create an order (typed)', {
   handler: createOrderHandler,
   methods: ["POST"],
   route: "orders",
@@ -6691,7 +6669,7 @@ function handleError(
 }
 
 // Usage
-app.openapiPath("Example", "Example endpoint", {
+app.openAPIPath('Example', 'Example endpoint', {
   handler: async (request, context) => {
     try {
       const body = await parseBody(request, schema);
@@ -6744,7 +6722,7 @@ const UserSchema = z.object({
   age: z.number().int(),
 });
 
-app.openapiPath("CreateUser", "Create user", {
+app.openAPIPath('CreateUser', 'Create user', {
   handler: async (request, context) => {
     const user = await parseBody(request, UserSchema);
 
@@ -6778,7 +6756,7 @@ Handle common errors:
 import { ValidationError } from "@apvee/azure-functions-openapi";
 import { z } from "zod";
 
-app.openapiPath("GetUser", "Get user by ID", {
+app.openAPIPath('GetUser', 'Get user by ID', {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
@@ -6828,7 +6806,7 @@ const UserSchema = z.object({
   age: z.number().int().min(18),
 });
 
-app.openapiPath("CreateUser", "Create a user", {
+app.openAPIPath('CreateUser', 'Create a user', {
   handler: async (request, context) => {
     try {
       const userData = await parseBody(request, UserSchema);
@@ -6979,7 +6957,7 @@ function toErrorResponse(
 }
 
 // Usage
-app.openapiPath("GetPost", "Get a post", {
+app.openAPIPath('GetPost', 'Get a post', {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
@@ -7126,20 +7104,19 @@ function handleError(
 }
 
 // Usage
-app.openapiPath("CreateTodo", "Create a todo", {
-  handler: (request, context) =>
-    withErrorHandler(
-      async (request, context) => {
-        const body = await parseBody(request, TodoSchema);
-        const todo = await db.todos.create(body);
-        return { status: 201, jsonBody: todo };
-      },
-      request,
-      context
-    ),
-  methods: ["POST"],
-  route: "todos",
-  authLevel: "anonymous",
+app.openAPIPath('CreateTodo', 'Create a todo', {
+  handler: (request, context) => withErrorHandler(
+    async (request, context) => {
+      const body = await parseBody(request, TodoSchema);
+      const todo = await db.todos.create(body);
+      return { status: 201, jsonBody: todo };
+    },
+    request,
+    context
+  ),
+  methods: ['POST'],
+  route: 'todos',
+  authLevel: 'anonymous'
 });
 ```
 
@@ -7150,7 +7127,7 @@ Handle async operations safely:
 ```typescript
 import { z } from "zod";
 
-app.openapiPath("ProcessData", "Process data asynchronously", {
+app.openAPIPath('ProcessData', 'Process data asynchronously', {
   handler: async (request, context) => {
     try {
       const body = await parseBody(request, DataSchema);
@@ -7249,7 +7226,7 @@ async function withRetry<T>(
 }
 
 // Usage
-app.openapiPath("FetchExternalData", "Fetch data from external API", {
+app.openAPIPath('FetchExternalData', 'Fetch data from external API', {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
@@ -7352,7 +7329,7 @@ function logError(
 }
 
 // Usage
-app.openapiPath("MonitoredEndpoint", "Endpoint with error monitoring", {
+app.openAPIPath('MonitoredEndpoint', 'Endpoint with error monitoring', {
   handler: async (request, context) => {
     const user = parseEasyAuthPrincipal(request);
 
@@ -7428,7 +7405,7 @@ class CircuitBreaker {
 // Create circuit breaker for external service
 const externalServiceBreaker = new CircuitBreaker(5, 60000);
 
-app.openapiPath("CallExternalService", "Call external service", {
+app.openAPIPath('CallExternalService', 'Call external service', {
   handler: async (request, context) => {
     try {
       const result = await externalServiceBreaker.execute(() =>
@@ -7535,7 +7512,7 @@ function createErrorResponse(
 }
 
 // Usage
-app.openapiPath("Example", "Example with standard errors", {
+app.openAPIPath('Example', 'Example with standard errors', {
   handler: async (request, context) => {
     try {
       const { id } = request.params;
@@ -7578,15 +7555,15 @@ Version 2.0 is a major rewrite that introduces significant API changes and impro
 
 ### Breaking Changes Overview
 
-| Category                  | v1.x                         | v2.x                           | Impact                             |
-| ------------------------- | ---------------------------- | ------------------------------ | ---------------------------------- |
-| **API Design**            | Standalone functions         | Module augmentation on `app`   | 🔴 High - All registration code    |
-| **OpenAPI Setup**         | `registerOpenAPIHandler()`   | `app.openapiSetup()`           | 🔴 High - Configuration            |
-| **Endpoint Registration** | `registerFunction()`         | `app.openapiPath()`            | 🔴 High - All endpoints            |
-| **Type Inference**        | Manual type casting          | Automatic from schemas         | 🟢 Low - Optional but recommended  |
-| **Swagger UI**            | `registerSwaggerUIHandler()` | Built-in with `openapiSetup()` | 🟡 Medium - UI setup               |
-| **Security Schemes**      | Manual object creation       | Dedicated methods              | 🟡 Medium - Security configuration |
-| **Zod Version**           | 3.x                          | 4.x                            | 🟢 Low - Mostly compatible         |
+| Category | v1.x | v2.x | Impact |
+|----------|------|------|--------|
+| **API Design** | Standalone functions | Module augmentation on `app` | 🔴 High - All registration code |
+| **OpenAPI Setup** | `registerOpenAPIHandler()` | `app.openAPISetup()` | 🔴 High - Configuration |
+| **Endpoint Registration** | `registerFunction()` | `app.openAPIPath()` | 🔴 High - All endpoints |
+| **Type Inference** | Manual type casting | Automatic from schemas | 🟢 Low - Optional but recommended |
+| **Swagger UI** | `registerSwaggerUIHandler()` | Built-in with `openAPISetup()` | 🟡 Medium - UI setup |
+| **Security Schemes** | Manual object creation | Dedicated methods | 🟡 Medium - Security configuration |
+| **Zod Version** | 3.x | 4.x | 🟢 Low - Mostly compatible |
 
 ---
 
@@ -7664,7 +7641,7 @@ registerSwaggerUIHandler("anonymous", "api", documents);
 **After (v2.x):**
 
 ```typescript
-app.openapiSetup({
+app.openAPISetup({
   info: {
     title: "My API",
     version: "1.0.0",
@@ -7673,9 +7650,10 @@ app.openapiSetup({
       email: "hello@apvee.com",
     },
   },
-  tags: [{ name: "Users", description: "User management" }],
-  // Swagger UI is automatically configured!
-  // All three versions (2.0, 3.0.3, 3.1.0) are automatically available
+  tags: [{ name: 'Users', description: 'User management' }],
+  // Swagger UI is automatically configured
+  // To emit all three versions explicitly, opt-in via `versions`:
+  versions: ['3.1.0', '3.0.3', '2.0']
 });
 ```
 
@@ -7683,7 +7661,7 @@ app.openapiSetup({
 
 - ✅ Single method replaces three separate functions
 - ✅ Swagger UI is automatically configured
-- ✅ All OpenAPI versions (2.0, 3.0.3, 3.1.0) are automatically generated
+- ✅ You can opt-in to multiple OpenAPI versions (2.0, 3.0.3, 3.1.0) via `versions`
 - ✅ Simpler, cleaner configuration
 
 #### Step 4: Migrate Endpoint Registration
@@ -7729,7 +7707,7 @@ registerFunction("GetUser", "Get user by ID", {
 **After (v2.x) - Option 1: Standard Handler**
 
 ```typescript
-app.openapiPath("GetUser", "Get user by ID", {
+app.openAPIPath('GetUser', 'Get user by ID', {
   handler: async (request, context) => {
     const userId = request.params.id; // Still works
 
@@ -7755,7 +7733,7 @@ app.openapiPath("GetUser", "Get user by ID", {
 **After (v2.x) - Option 2: Typed Handler (Recommended)**
 
 ```typescript
-app.openapiPath("GetUser", "Get user by ID", {
+app.openAPIPath('GetUser', 'Get user by ID', {
   typedHandler: async ({ params, context }) => {
     // params.id is automatically typed as string from UUID schema!
     const user = await getUser(params.id);
@@ -7769,8 +7747,7 @@ app.openapiPath("GetUser", "Get user by ID", {
 ```
 
 **Key Changes:**
-
-- `registerFunction()` → `app.openapiPath()`
+- `registerFunction()` → `app.openAPIPath()`
 - Optional: Use `typedHandler` for automatic type inference
 - Simplified schema definitions with `params`, `query`, `body`, `response` shortcuts
 
@@ -7799,24 +7776,21 @@ registerFunction("SecureEndpoint", "Secure endpoint", {
 
 ```typescript
 // Dedicated security methods
-const apiKey = app.openapiKeySecurity("header", "X-API-Key");
+const apiKey = app.openAPIKeySecurity('header', 'X-API-Key');
 
-app.openapiPath("SecureEndpoint", "Secure endpoint", {
-  handler: async (request, context) => {
-    /* ... */
-  },
+app.openAPIPath('SecureEndpoint', 'Secure endpoint', {
+  handler: async (request, context) => { /* ... */ },
   security: [apiKey], // Much simpler!
   // ... rest of config
 });
 ```
 
 **Available Security Methods:**
-
-- `app.openapiKeySecurity(in, name)` - Custom API keys
-- `app.openapiAzureFunctionKey(name)` - Azure Function keys
-- `app.openapiEasyAuth()` - Azure EasyAuth
-- `app.openapiBearerSecurity(bearerFormat)` - JWT Bearer tokens
-- `app.openapiOAuth2ClientCredentials(tokenUrl, scopes)` - OAuth2
+- `app.openAPIKeySecurity(in, name)` - Custom API keys
+- `app.openAPIAzureFunctionKey(name)` - Azure Function keys
+- `app.openAPIEasyAuth()` - Azure EasyAuth
+- `app.openAPIBearerSecurity(bearerFormat)` - JWT Bearer tokens
+- `app.openAPIOAuth2ClientCredentials(tokenUrl, scopes)` - OAuth2
 
 #### Step 6: Migrate Complex Validation
 
@@ -7848,7 +7822,7 @@ registerFunction("CreateUser", "Create a new user", {
 ```typescript
 import { parseBody } from "@apvee/azure-functions-openapi";
 
-app.openapiPath("CreateUser", "Create a new user", {
+app.openAPIPath('CreateUser', 'Create a new user', {
   handler: async (request, context) => {
     // Utility function handles parsing and validation
     const user = await parseBody(request, UserSchema);
@@ -7870,7 +7844,7 @@ app.openapiPath("CreateUser", "Create a new user", {
 **Or even simpler with Typed Handler:**
 
 ```typescript
-app.openapiPath("CreateUser", "Create a new user", {
+app.openAPIPath('CreateUser', 'Create a new user', {
   typedHandler: async ({ body, context }) => {
     // body is already validated and typed!
     const created = await createUser(body);
@@ -7891,9 +7865,9 @@ Use this checklist to track your migration progress:
 - [ ] Update `package.json` dependencies
 - [ ] Install new versions (`npm install`)
 - [ ] Update imports (remove old functions, add module augmentation)
-- [ ] Migrate `registerOpenAPIHandler()` → `app.openapiSetup()`
+- [ ] Migrate `registerOpenAPIHandler()` → `app.openAPISetup()`
 - [ ] Remove `registerSwaggerUIHandler()` (now automatic)
-- [ ] Migrate all `registerFunction()` → `app.openapiPath()`
+- [ ] Migrate all `registerFunction()` → `app.openAPIPath()`
 - [ ] Update security scheme definitions
 - [ ] Consider migrating to `typedHandler` for better type safety
 - [ ] Update validation logic to use utility functions
@@ -7924,7 +7898,7 @@ registerFunction("ListUsers", "List all users", {
 **v2.x:**
 
 ```typescript
-app.openapiPath("ListUsers", "List all users", {
+app.openAPIPath('ListUsers', 'List all users', {
   handler: async (request, context) => {
     const users = await getAllUsers();
     return { jsonBody: users };
@@ -7962,7 +7936,7 @@ registerFunction("CreateItem", "Create item", {
 ```typescript
 import { parseBody } from "@apvee/azure-functions-openapi";
 
-app.openapiPath("CreateItem", "Create item", {
+app.openAPIPath('CreateItem', 'Create item', {
   handler: async (request, context) => {
     const validated = await parseBody(request, ItemSchema);
     // ... process
@@ -7981,7 +7955,7 @@ app.openapiPath("CreateItem", "Create item", {
 **v2.x (Option 2 - Typed Handler):**
 
 ```typescript
-app.openapiPath("CreateItem", "Create item", {
+app.openAPIPath('CreateItem', 'Create item', {
   typedHandler: async ({ body, context }) => {
     // body is already validated!
     // ... process
@@ -8017,16 +7991,14 @@ registerFunction("GetProfile", "Get user profile", {
 **v2.x:**
 
 ```typescript
-const bearer = app.openapiBearerSecurity("JWT");
+const bearer = app.openAPIBearerSecurity('JWT');
 
-app.openapiPath("GetProfile", "Get user profile", {
-  handler: async (request, context) => {
-    /* ... */
-  },
-  methods: ["GET"],
-  route: "profile",
-  authLevel: "anonymous",
-  security: [bearer],
+app.openAPIPath('GetProfile', 'Get user profile', {
+  handler: async (request, context) => { /* ... */ },
+  methods: ['GET'],
+  route: 'profile',
+  authLevel: 'anonymous',
+  security: [bearer]
 });
 ```
 
@@ -8039,7 +8011,7 @@ Take advantage of these new capabilities:
 #### 1. **Automatic Type Inference**
 
 ```typescript
-app.openapiPath("Example", "Example endpoint", {
+app.openAPIPath('Example', 'Example endpoint', {
   typedHandler: async ({ params, query, body, headers, context }) => {
     // All parameters are automatically typed from your schemas!
     // No more manual type casting or assertions
@@ -8067,19 +8039,19 @@ import {
 #### 3. **Reusable Schemas**
 
 ```typescript
-app.openapiSchema("User", UserSchema);
+app.openAPISchema('User', UserSchema);
 
 // Reference in multiple endpoints
-app.openapiPath("GetUser", "Get user", {
-  response: { $ref: "#/components/schemas/User" },
+app.openAPIPath('GetUser', 'Get user', {
+  response: { $ref: '#/components/schemas/User' }
 });
 ```
 
 #### 4. **Webhooks (OpenAPI 3.1.0)**
 
 ```typescript
-app.openapiWebhook("UserCreated", "Fired when user is created", {
-  methods: ["POST"],
+app.openAPIWebhook('UserCreated', 'Fired when user is created', {
+  methods: ['POST'],
   request: {
     body: {
       content: { "application/json": { schema: UserSchema } },
@@ -8091,7 +8063,7 @@ app.openapiWebhook("UserCreated", "Fired when user is created", {
 #### 5. **Multiple Response Status Codes**
 
 ```typescript
-app.openapiPath("GetUser", "Get user", {
+app.openAPIPath('GetUser', 'Get user', {
   responses: [
     {
       httpCode: 200,
@@ -8127,8 +8099,7 @@ app.openapiPath("GetUser", "Get user", {
 **Problem:** `/api/openapi/ui` returns 404 or blank page.
 
 **Solution:**
-
-1. Ensure `app.openapiSetup()` is called before any `app.openapiPath()` registrations
+1. Ensure `app.openAPISetup()` is called before any `app.openAPIPath()` registrations
 2. Check that your function app has `enableHttpStream: true` in the setup
 
 #### Issue: Type inference not working
@@ -8161,6 +8132,77 @@ If you encounter issues during migration:
 2. **Review the API documentation** for detailed method signatures
 3. **Open an issue** on GitHub: [github.com/apvee/azure-functions-nodejs-monorepo/issues](https://github.com/apvee/azure-functions-nodejs-monorepo/issues)
 4. **Search existing issues** for similar problems and solutions
+
+---
+
+## 🛡️ Production Deployment Checklist
+
+`@apvee/azure-functions-openapi` is **secure by default**, but a few configuration choices materially change the security and operational properties of your generated spec / Swagger UI. Review the items below before going to production.
+
+### 1. Choose the right `authLevel` for the OpenAPI surface
+
+| Setting                                  | Use when…                                                                              | Security implication                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `authLevel: 'anonymous'` (**default**)   | Public APIs whose schema is intentionally open knowledge                                | The full schema (routes, params, examples) is reachable by anyone                   |
+| `authLevel: 'function'`                  | Internal APIs, dev / staging, partner-only docs                                         | Requires a function key (`?code=…` or `x-functions-key` header) to view the spec    |
+| `authLevel: 'admin'`                     | Strictly internal, ops-only docs                                                        | Requires the host master key                                                        |
+| EasyAuth / APIM / Front Door in front    | You front the Function App with a separate identity / API gateway                       | Keep `authLevel: 'anonymous'` and let the gateway enforce auth                      |
+
+When `authLevel: 'anonymous'` is detected **together with** `WEBSITE_SITE_NAME` (the standard Azure App Service marker), the library logs a warning at startup so it is visible in App Insights.
+
+### 2. Configure `servers` explicitly — do not trust the `Host` header
+
+By default the generated spec **omits** the `servers` field unless you provide it via `OpenAPISetupConfig.servers`. The previous behaviour — derived from the incoming `Host` header — is a host-header injection vector and is now opt-in.
+
+```ts
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' },
+  servers: [{ url: 'https://api.example.com' }],
+});
+```
+
+If you really need to derive the server URL from the request, opt in **and** constrain it with an allowlist:
+
+```ts
+app.openAPISetup({
+  info: { title: 'My API', version: '1.0.0' },
+  trustHostHeader: true,
+  trustedHosts: ['api.example.com', 'api-staging.example.com'],
+});
+```
+
+Requests whose host is not on the allowlist will be served a spec without `servers` and the rejected host will be logged via the internal logger.
+
+### 3. Redact secrets in logs
+
+The library scrubs the following query parameters from URLs before passing them to `context.log`: `code`, `x-functions-key`, `access_token`, `token`, `api_key`, `apiKey`. If your application code also logs `request.url` directly, use the exported `redactSensitiveUrl` helper from `@apvee/azure-functions-openapi/internal` only as an internal pattern — for application logs, prefer logging structured fields you control rather than the full URL.
+
+### 4. Lock down Swagger UI in production
+
+Swagger UI is enabled by default and inherits the OpenAPI `authLevel`. For a production deployment:
+
+- Either disable it: `swaggerUI: { enabled: false }`.
+- Or keep it but raise the auth bar: `swaggerUI: { authLevel: 'function' }`.
+- Front the app with APIM / Azure Front Door and apply security headers (`Strict-Transport-Security`, `Content-Security-Policy`, etc.) there. The library does **not** set CSP because the appropriate policy depends on your deployment topology.
+
+### 5. Front the app with a gateway for rate-limiting and CORS
+
+The library does not implement rate-limiting or CORS — these are deliberately delegated to Azure API Management, Azure Front Door, or Functions' built-in CORS configuration. Apply per-endpoint quotas there.
+
+### 6. Keep dependencies fresh
+
+- The repository ships a `dependabot.yml` that groups dev tooling and surfaces runtime upgrades weekly.
+- CI runs `npm audit --omit=dev --audit-level=high` on every push; a failing job blocks merges.
+
+### 7. Validate inputs with Zod schemas
+
+Always declare `params`, `query`, `body`, and `headers` schemas in `app.openAPIPath(...)`. The library enforces them at runtime and rejects malformed input with a `400` response.
+
+### 8. EasyAuth specifics
+
+When `WEBSITE_AUTH_ENABLED=true` is detected, EasyAuth handles authentication **before** your function runs. Your Function must be `authLevel: 'anonymous'`; the library will emit an `AuthLevelWarning` when this rule is violated.
+
+`parseEasyAuthPrincipal` caps its input at 64 KiB and rejects malformed base64 / JSON with a `ValidationError`.
 
 ---
 

@@ -30,7 +30,7 @@ export async function DeleteTodo(request: HttpRequest, context: InvocationContex
     }
 }
 
-app.openapiPath('DeleteTodo', 'Delete Single Todo', {
+app.openAPIPath('DeleteTodo', 'Delete Single Todo', {
     handler: DeleteTodo,
     methods: ['DELETE'],
     route: 'todos/{id}',
