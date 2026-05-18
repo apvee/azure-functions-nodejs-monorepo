@@ -1,6 +1,5 @@
 import { HttpHandler, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import type { HttpRequestParams } from "@azure/functions";
-import type { Headers as UndiciHeaders } from "undici";
 import { z } from "zod";
 import { SafeHttpRequest, RequestSchemas, TypedHandler, ValidationError, parseRouteParams, parseQueryParams, parseBody, parseHeaders } from "../utils";
 
@@ -37,12 +36,12 @@ export type ParsedBody<T extends z.ZodTypeAny | undefined> =
 
 /**
  * Infers the parsed type for headers based on whether a schema is provided.
- * If schema is provided, returns the inferred Zod type. Otherwise, returns the original UndiciHeaders.
+ * If schema is provided, returns the inferred Zod type. Otherwise, returns the original Headers.
  * 
  * @internal
  */
 export type ParsedHeaders<T extends z.ZodTypeAny | undefined> = 
-    T extends z.ZodTypeAny ? z.infer<T> : UndiciHeaders;
+    T extends z.ZodTypeAny ? z.infer<T> : Headers;
 
 /**
  * Result interface for parseRequest function.

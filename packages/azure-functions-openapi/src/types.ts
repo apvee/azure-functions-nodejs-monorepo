@@ -314,6 +314,33 @@ export type OpenAPISetupConfig = {
         /** Authorization level for Swagger UI (default: same as authLevel) */
         authLevel?: 'anonymous' | 'function' | 'admin';
     };
+
+    /**
+     * When `true`, the OpenAPI document handler will fall back to the incoming
+     * request's origin (derived from the `Host` header) for the `servers`
+     * field when `servers` is not explicitly configured.
+     *
+     * **Defaults to `false`** because the `Host` header is fully controlled by
+     * the client and can be used to mount host-header injection attacks: the
+     * generated spec would point downstream consumers at an attacker-chosen
+     * origin. When `false` and `servers` is not configured, `servers` is
+     * omitted from the generated document.
+     *
+     * If you only need a subset of hosts to be honoured, use `trustedHosts`
+     * together with `trustHostHeader: true`.
+     *
+     * @default false
+     */
+    trustHostHeader?: boolean;
+
+    /**
+     * Optional allowlist of hostnames (case-insensitive, host only, no scheme
+     * or port) accepted when `trustHostHeader` is `true`. Requests whose host
+     * is not present in this list will not contribute a `servers` entry.
+     *
+     * Ignored when `trustHostHeader` is `false`.
+     */
+    trustedHosts?: string[];
 };
 
 /**

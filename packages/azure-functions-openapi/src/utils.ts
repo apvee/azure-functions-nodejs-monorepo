@@ -1,5 +1,4 @@
 import { HttpHandler, HttpRequest, HttpRequestParams, HttpResponseInit, InvocationContext } from "@azure/functions";
-import type { Headers as UndiciHeaders } from "undici";
 import { z } from "zod";
 import { wrapTypedHandler as internalWrapTypedHandler } from "./internal/parsing";
 
@@ -156,7 +155,7 @@ function convertQueryToObject(query: URLSearchParams): Record<string, string | s
  * Normalizes header names to lowercase for case-insensitive matching.
  * @internal
  */
-function convertHeadersToObject(headers: UndiciHeaders): Record<string, string> {
+function convertHeadersToObject(headers: Headers): Record<string, string> {
     const result: Record<string, string> = {};
     headers.forEach((value: string, key: string) => {
         result[key.toLowerCase()] = value;
@@ -322,7 +321,7 @@ export function isJsonContentType(contentType: string | null | undefined): boole
  * ```
  */
 export function parseHeaders<T extends z.ZodTypeAny>(
-    headers: UndiciHeaders,
+    headers: Headers,
     schema: T
 ): z.infer<T> {
     const headersObj = convertHeadersToObject(headers);
@@ -371,6 +370,19 @@ export function parseHeaders<T extends z.ZodTypeAny>(
  * ```
  */
 export function parseEasyAuthPrincipal(headerValue: string): import('./types').AzureEasyAuthPrincipal {
+    // Defense-in-depth: cap the size of the base64 input we are willing to decode
+    // to avoid expensive JSON parsing or memory pressure from an attacker-supplied
+    // header. 64 KiB of base64 is more than enough for any legitimate EasyAuth
+    // principal (which is typically <2 KiB).
+    const MAX_HEADER_LENGTH = 64 * 1024;
+    if (typeof headerValue !== 'string') {
+        throw new ValidationError('Failed to parse EasyAuth principal header: value must be a string');
+    }
+    if (headerValue.length > MAX_HEADER_LENGTH) {
+        throw new ValidationError(
+            `Failed to parse EasyAuth principal header: input exceeds ${MAX_HEADER_LENGTH} bytes`
+        );
+    }
     try {
         // Decode base64 header value
         const decoded = Buffer.from(headerValue, 'base64').toString('utf-8');

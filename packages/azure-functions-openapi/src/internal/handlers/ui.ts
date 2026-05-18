@@ -1,8 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { promises as fsp } from 'fs';
-import * as fs from 'fs';
-import * as path from 'path';
 import { OpenAPIDocumentInfo } from "../../types";
+import { escapeJsonForScript, redactSensitiveUrl } from "../sanitize";
 
 /**
  * Allowed Swagger UI static files with their content types.
@@ -39,23 +38,23 @@ interface CachedAsset {
 const ASSET_CACHE = new Map<string, CachedAsset>();
 
 /**
- * Resolves a Swagger UI asset path on disk, supporting both the package's own
- * `node_modules` and a hoisted monorepo root. Returned promise resolves to
- * `null` if the asset cannot be located.
+ * Resolves a Swagger UI asset path on disk using `require.resolve`, which honours
+ * the Node.js module-resolution algorithm (works with npm hoisting, pnpm, Yarn,
+ * monorepos and `WEBSITE_RUN_FROM_PACKAGE`). Returns `null` if the asset cannot
+ * be located.
  *
  * @internal
  */
 async function resolveAssetPath(relativePath: string): Promise<string | null> {
-    const candidates = [
-        path.join(process.cwd(), 'node_modules/swagger-ui-dist', relativePath),
-        path.join(process.cwd(), '../../node_modules/swagger-ui-dist', relativePath),
-    ];
-    for (const candidate of candidates) {
-        if (fs.existsSync(candidate)) {
-            return candidate;
-        }
+    try {
+        // `require.resolve` is available because the package is compiled to CommonJS.
+        // We avoid resolving the bare package name (which returns the entrypoint)
+        // and instead resolve the exact sub-path. `swagger-ui-dist` exposes its
+        // files at the package root, so the specifier is `swagger-ui-dist/<file>`.
+        return require.resolve(`swagger-ui-dist/${relativePath}`);
+    } catch {
+        return null;
     }
-    return null;
 }
 
 /**
@@ -83,6 +82,17 @@ async function loadAsset(file: string): Promise<CachedAsset | null> {
     };
     ASSET_CACHE.set(file, entry);
     return entry;
+}
+
+/**
+ * Test-only hook to clear the in-process Swagger UI asset cache. Not exported
+ * from the package; used by the internal test suite to verify cache behaviour
+ * without leaking state across tests.
+ *
+ * @internal
+ */
+export function __resetSwaggerUIAssetCache(): void {
+    ASSET_CACHE.clear();
 }
 
 /**
@@ -177,7 +187,7 @@ export function registerSwaggerUIHandler(
      * Handler for serving the main Swagger UI HTML page.
      */
     const uiHandler = async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-        context.log(`Serving Swagger UI for "${request.url}"`);
+        context.log(`Serving Swagger UI for "${redactSensitiveUrl(request.url)}"`);
         
         // Build URLs for OpenAPI documents
         const urls = openAPIDocuments.map(doc => ({
@@ -188,7 +198,10 @@ export function registerSwaggerUIHandler(
         // Construct base path for static assets (respecting routePrefix)
         const assetBase = routePrefix ? `/${routePrefix}/${assetsBasePath}` : `/${assetsBasePath}`;
         
-        // Generate Swagger UI HTML with local assets
+        // Generate Swagger UI HTML with local assets.
+        // `escapeJsonForScript` ensures that values like `</script>` or U+2028/U+2029
+        // inside doc titles or URLs cannot break out of the script element.
+        const safeUrls = escapeJsonForScript(urls);
         const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -204,7 +217,7 @@ export function registerSwaggerUIHandler(
     <div id="swagger-ui"></div>
     <script>
         window.swaggerUI = SwaggerUIBundle({
-            urls: ${JSON.stringify(urls)},
+            urls: ${safeUrls},
             dom_id: '#swagger-ui',
             presets: [
                 SwaggerUIBundle.presets.apis,
