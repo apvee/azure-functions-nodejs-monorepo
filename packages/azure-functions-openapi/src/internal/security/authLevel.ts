@@ -1,8 +1,8 @@
 /**
  * Azure Functions authLevel to OpenAPI security requirements mapping.
- * 
+ *
  * @see https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger#authorization-keys
- * 
+ *
  * @internal
  */
 
@@ -11,16 +11,16 @@ import type { AuthLevel, AuthLevelWarning, AzureEasyAuthConfig } from './types';
 
 /**
  * Checks if authLevel conflicts with EasyAuth configuration.
- * 
+ *
  * **IMPORTANT**: EasyAuth requires authLevel: 'anonymous'.
  * When Azure App Service Authentication (EasyAuth) is enabled, authentication
  * happens BEFORE the function executes. The function must be set to 'anonymous'
  * to allow Azure to handle authentication.
- * 
+ *
  * @param authLevel - The current authLevel setting
  * @param easyAuthConfig - EasyAuth configuration (if enabled)
  * @returns Warning if conflict detected, null otherwise
- * 
+ *
  * @internal
  */
 export function checkAuthLevelEasyAuthConflict(
@@ -39,7 +39,8 @@ export function checkAuthLevelEasyAuthConflict(
             functionPath,
             currentAuthLevel: authLevel,
             recommendedAuthLevel: 'anonymous',
-            reason: `EasyAuth is enabled but authLevel is '${authLevel}'. ` +
+            reason:
+                `EasyAuth is enabled but authLevel is '${authLevel}'. ` +
                 `Azure App Service Authentication requires authLevel: 'anonymous' because ` +
                 `authentication is handled by Azure BEFORE the function executes. ` +
                 `Change authLevel to 'anonymous' or disable EasyAuth for this endpoint.`,
@@ -52,10 +53,10 @@ export function checkAuthLevelEasyAuthConflict(
 /**
  * Gets default security requirements based on authLevel.
  * This is used when no explicit security is configured.
- * 
+ *
  * @param authLevel - The authLevel setting
  * @returns Security requirements array (empty for anonymous)
- * 
+ *
  * @internal
  */
 export function getDefaultSecurityForAuthLevel(authLevel: AuthLevel): SecurityRequirementObject[] {
@@ -63,12 +64,12 @@ export function getDefaultSecurityForAuthLevel(authLevel: AuthLevel): SecurityRe
         case 'anonymous':
             // No authentication required
             return [];
-        
+
         case 'function':
         case 'admin':
             // Function keys required (will be registered automatically if not already)
             return [{ AzureFunctionKey: [] }];
-        
+
         default:
             return [];
     }
@@ -76,17 +77,17 @@ export function getDefaultSecurityForAuthLevel(authLevel: AuthLevel): SecurityRe
 
 /**
  * Validates that authLevel is compatible with configured security schemes.
- * 
+ *
  * Rules:
  * - anonymous: Compatible with any security (security is opt-in)
  * - function/admin: Must have at least one security scheme OR rely on default function keys
  * - EasyAuth: MUST use anonymous authLevel
- * 
+ *
  * @param authLevel - The authLevel setting
  * @param security - Configured security requirements
  * @param hasEasyAuth - Whether EasyAuth is configured
  * @returns Validation result with warnings
- * 
+ *
  * @internal
  */
 export function validateAuthLevelSecurityCompatibility(
@@ -106,7 +107,10 @@ export function validateAuthLevelSecurityCompatibility(
     }
 
     // Rule 2: function/admin without security should use default function keys
-    if ((authLevel === 'function' || authLevel === 'admin') && (!security || security.length === 0)) {
+    if (
+        (authLevel === 'function' || authLevel === 'admin') &&
+        (!security || security.length === 0)
+    ) {
         // This is OK - default function keys will be used
         // No warning needed
         return null;
@@ -124,11 +128,11 @@ export function validateAuthLevelSecurityCompatibility(
 
 /**
  * Merges authLevel-based security with explicit security configuration.
- * 
+ *
  * @param authLevel - The authLevel setting
  * @param explicitSecurity - User-configured security requirements
  * @returns Merged security requirements
- * 
+ *
  * @internal
  */
 export function mergeSecurityRequirements(
@@ -146,10 +150,10 @@ export function mergeSecurityRequirements(
 
 /**
  * Formats authLevel warning for logging.
- * 
+ *
  * @param warning - The warning to format
  * @returns Formatted warning message
- * 
+ *
  * @internal
  */
 export function formatAuthLevelWarning(warning: AuthLevelWarning): string {
@@ -165,7 +169,7 @@ export function formatAuthLevelWarning(warning: AuthLevelWarning): string {
 
 /**
  * Collects all authLevel warnings for a set of functions.
- * 
+ *
  * @internal
  */
 export class AuthLevelWarningCollector {

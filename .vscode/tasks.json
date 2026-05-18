@@ -9,7 +9,7 @@
 			"isBackground": true,
 			"dependsOn": "npm watch (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/packages/test"
+				"cwd": "${workspaceFolder}/packages/test-functions"
 			}
 		},
 		{
@@ -19,7 +19,7 @@
 			"dependsOn": "npm clean (functions)",
 			"problemMatcher": "$tsc",
 			"options": {
-				"cwd": "${workspaceFolder}/packages/test"
+				"cwd": "${workspaceFolder}/packages/test-functions"
 			}
 		},
 		{
@@ -34,7 +34,7 @@
 			},
 			"isBackground": true,
 			"options": {
-				"cwd": "${workspaceFolder}/packages/test"
+				"cwd": "${workspaceFolder}/packages/test-functions"
 			}
 		},
 		{
@@ -42,7 +42,7 @@
 			"label": "npm install (functions)",
 			"command": "npm install",
 			"options": {
-				"cwd": "${workspaceFolder}/packages/test"
+				"cwd": "${workspaceFolder}/packages/test-functions"
 			}
 		},
 		{
@@ -52,7 +52,7 @@
 			"dependsOn": "npm build (functions)",
 			"problemMatcher": [],
 			"options": {
-				"cwd": "${workspaceFolder}/packages/test"
+				"cwd": "${workspaceFolder}/packages/test-functions"
 			}
 		},
 		{
@@ -61,7 +61,7 @@
 			"command": "npm run clean",
 			"dependsOn": "npm install (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/packages/test"
+				"cwd": "${workspaceFolder}/packages/test-functions"
 			}
 		}
 	]

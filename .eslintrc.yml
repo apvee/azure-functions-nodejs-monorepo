@@ -1,0 +1,32 @@
+root: true
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2022
+  sourceType: module
+plugins:
+  - '@typescript-eslint'
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+env:
+  node: true
+  es2022: true
+ignorePatterns:
+  - dist/
+  - node_modules/
+  - coverage/
+  - '**/*.d.ts'
+rules:
+  # 2.x is still hardening internal typings — keep "any" as warning, not error.
+  '@typescript-eslint/no-explicit-any': warn
+  # Internal helpers intentionally use unused vars in the public type surface.
+  '@typescript-eslint/no-unused-vars':
+    - warn
+    - argsIgnorePattern: '^_'
+      varsIgnorePattern: '^_'
+  # The library wraps Azure Functions' app namespace; some empty interfaces / signatures are intentional.
+  '@typescript-eslint/no-empty-interface': off
+  # Module augmentation for @azure/functions requires the `namespace` keyword.
+  '@typescript-eslint/no-namespace': off
+  '@typescript-eslint/ban-ts-comment': warn
+  no-empty: warn

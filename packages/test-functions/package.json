@@ -1,22 +1,27 @@
 {
   "name": "test-functions",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Sample Azure Functions app demonstrating @apvee/azure-functions-openapi v2.x",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "lint": "echo \"No lint configured for sample\"",
+    "test": "echo \"No tests yet for sample\""
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "@apvee/azure-functions-openapi": "file:../azure-functions-openapi",
     "@azure/functions": "^4.0.0",
-    "@ngneat/falso": "^7.2.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@ngneat/falso": "^7.2.0",
     "@types/node": "^20.x",
     "rimraf": "^5.0.0",
     "typescript": "^5.6.0"

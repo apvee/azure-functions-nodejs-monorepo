@@ -1,0 +1,8 @@
+# Default code owners for this repository. Apvee maintainers review every change.
+* @apvee/maintainers @fabiofranzini
+
+# The OpenAPI library is the security-sensitive surface of the repo.
+/packages/azure-functions-openapi/ @apvee/maintainers @fabiofranzini
+
+# CI / release pipelines.
+/.github/ @apvee/maintainers @fabiofranzini
