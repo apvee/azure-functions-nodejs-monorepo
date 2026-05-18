@@ -140,7 +140,7 @@ declare module '@azure/functions' {
             TParams extends z.ZodTypeAny | undefined = undefined,
             TQuery extends z.ZodTypeAny | undefined = undefined,
             TBody extends z.ZodTypeAny | undefined = undefined,
-            THeaders extends z.ZodObject<any> | undefined = undefined,
+            THeaders extends z.ZodObject<z.ZodRawShape> | undefined = undefined,
         >(
             name: string,
             summary: string,
@@ -200,7 +200,7 @@ declare module '@azure/functions' {
             TParams extends z.ZodTypeAny | undefined = undefined,
             TQuery extends z.ZodTypeAny | undefined = undefined,
             TBody extends z.ZodTypeAny | undefined = undefined,
-            THeaders extends z.ZodObject<any> | undefined = undefined,
+            THeaders extends z.ZodObject<z.ZodRawShape> | undefined = undefined,
         >(
             name: string,
             summary: string,
@@ -501,35 +501,42 @@ declare module '@azure/functions' {
 /**
  * Auto-extension of Azure Functions app with OpenAPI support.
  * This side-effect extends the app object with the OpenAPI methods when the package is imported.
+ *
+ * The library augments the `@azure/functions` `app` namespace at runtime. Because the
+ * `app` object is typed as a fixed namespace by upstream, we narrow it to a string-indexed
+ * record to attach the new methods. The companion `declare module` block above provides
+ * the user-facing typings.
  */
-if (!(app as any).openAPISetup) {
-    (app as any).openAPISetup = setupOpenAPI;
+const appAug = app as unknown as Record<string, unknown>;
+
+if (!appAug.openAPISetup) {
+    appAug.openAPISetup = setupOpenAPI;
 }
 
-if (!(app as any).openAPIPath) {
-    (app as any).openAPIPath = registerOpenAPIPath;
+if (!appAug.openAPIPath) {
+    appAug.openAPIPath = registerOpenAPIPath;
 }
 
-if (!(app as any).openAPIWebhook) {
-    (app as any).openAPIWebhook = registerOpenAPIWebhook;
+if (!appAug.openAPIWebhook) {
+    appAug.openAPIWebhook = registerOpenAPIWebhook;
 }
 
-if (!(app as any).openAPISchema) {
-    (app as any).openAPISchema = registerTypeSchema;
+if (!appAug.openAPISchema) {
+    appAug.openAPISchema = registerTypeSchema;
 }
 
-if (!(app as any).openAPIKeySecurity) {
-    (app as any).openAPIKeySecurity = registerApiKeySecuritySchema;
+if (!appAug.openAPIKeySecurity) {
+    appAug.openAPIKeySecurity = registerApiKeySecuritySchema;
 }
 
 // Alias for custom API key (backward compatibility + clarity)
-if (!(app as any).openAPICustomApiKey) {
-    (app as any).openAPICustomApiKey = registerApiKeySecuritySchema;
+if (!appAug.openAPICustomApiKey) {
+    appAug.openAPICustomApiKey = registerApiKeySecuritySchema;
 }
 
 // Azure Function Keys
-if (!(app as any).openAPIAzureFunctionKey) {
-    (app as any).openAPIAzureFunctionKey = (config: any) => {
+if (!appAug.openAPIAzureFunctionKey) {
+    appAug.openAPIAzureFunctionKey = (config: unknown) => {
         // Support simple string authLevel OR full config object
         if (typeof config === 'string') {
             return registerAzureFunctionKeySecurity({
@@ -537,13 +544,15 @@ if (!(app as any).openAPIAzureFunctionKey) {
                 authLevel: config as AuthLevel,
             });
         }
-        return registerAzureFunctionKeySecurity(config);
+        return registerAzureFunctionKeySecurity(
+            config as Parameters<typeof registerAzureFunctionKeySecurity>[0]
+        );
     };
 }
 
 // Azure EasyAuth
-if (!(app as any).openAPIEasyAuth) {
-    (app as any).openAPIEasyAuth = (config: any) => {
+if (!appAug.openAPIEasyAuth) {
+    appAug.openAPIEasyAuth = (config: unknown) => {
         // Support simple string provider OR full config object
         if (typeof config === 'string') {
             return registerAzureEasyAuthSecurity({
@@ -551,33 +560,39 @@ if (!(app as any).openAPIEasyAuth) {
                 providers: config as EasyAuthProvider,
             });
         }
-        return registerAzureEasyAuthSecurity(config);
+        return registerAzureEasyAuthSecurity(
+            config as Parameters<typeof registerAzureEasyAuthSecurity>[0]
+        );
     };
 }
 
 // Azure AD Bearer Token
-if (!(app as any).openAPIAzureADBearer) {
-    (app as any).openAPIAzureADBearer = (config: any) => {
+if (!appAug.openAPIAzureADBearer) {
+    appAug.openAPIAzureADBearer = (config: unknown) => {
         // Support simple string name OR full config object
         if (typeof config === 'string') {
             return registerAzureADBearerSecurity({
                 name: config,
             });
         }
-        return registerAzureADBearerSecurity(config);
+        return registerAzureADBearerSecurity(
+            config as Parameters<typeof registerAzureADBearerSecurity>[0]
+        );
     };
 }
 
 // Azure AD Client Credentials
-if (!(app as any).openAPIAzureADClientCredentials) {
-    (app as any).openAPIAzureADClientCredentials = (config: any) => {
+if (!appAug.openAPIAzureADClientCredentials) {
+    appAug.openAPIAzureADClientCredentials = (config: unknown) => {
         // Support simple string name OR full config object
         if (typeof config === 'string') {
             return registerAzureADClientCredentialsSecurity({
                 name: config,
             });
         }
-        return registerAzureADClientCredentialsSecurity(config);
+        return registerAzureADClientCredentialsSecurity(
+            config as Parameters<typeof registerAzureADClientCredentialsSecurity>[0]
+        );
     };
 }
 

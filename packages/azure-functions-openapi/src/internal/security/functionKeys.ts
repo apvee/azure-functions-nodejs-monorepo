@@ -81,6 +81,7 @@ export function registerAzureFunctionKey(
             in: 'query',
             description: `${schemeDescription} (query parameter 'code')`,
             ...azureVendorExtensions,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
         } as any);
 
         openAPIRegistry.registerComponent('securitySchemes', headerName, {
@@ -89,6 +90,7 @@ export function registerAzureFunctionKey(
             in: 'header',
             description: `${schemeDescription} (header 'x-functions-key')`,
             ...azureVendorExtensions,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
         } as any);
 
         // Single requirement listing both schemes => caller satisfies either.
@@ -102,6 +104,7 @@ export function registerAzureFunctionKey(
         in: allowQueryParameter ? 'query' : 'header',
         description: schemeDescription,
         ...azureVendorExtensions,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
     } as any);
 
     return { [name]: [] };

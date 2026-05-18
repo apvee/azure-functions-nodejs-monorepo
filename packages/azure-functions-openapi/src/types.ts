@@ -1,13 +1,7 @@
-import {
-    HttpHandler,
-    HttpMethod,
-    HttpRequest,
-    HttpResponseInit,
-    InvocationContext,
-} from '@azure/functions';
+import { HttpHandler, HttpMethod } from '@azure/functions';
 import { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
-import { RequestSchemas, TypedHandler, SafeHttpRequest } from './utils';
+import { TypedHandler } from './utils';
 import {
     ExternalDocumentationObject as OpenAPI3ExternalDocumentationObject,
     InfoObject as OpenAPI3InfoObject,
@@ -537,7 +531,7 @@ export type ResponseConfig = {
      * })
      * ```
      */
-    headers?: z.ZodObject<any>;
+    headers?: z.ZodObject<z.ZodRawShape>;
 
     // === SHORTCUT: Single content type (use this for 95% of cases) ===
 
@@ -641,7 +635,7 @@ export type FunctionRouteConfig<
     TParams extends z.ZodTypeAny | undefined = undefined,
     TQuery extends z.ZodTypeAny | undefined = undefined,
     TBody extends z.ZodTypeAny | undefined = undefined,
-    THeaders extends z.ZodObject<any> | undefined = undefined,
+    THeaders extends z.ZodObject<z.ZodRawShape> | undefined = undefined,
 > = {
     // === Azure Functions Configuration (required) ===
 

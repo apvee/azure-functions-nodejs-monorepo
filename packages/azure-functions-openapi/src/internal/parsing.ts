@@ -2,7 +2,6 @@ import { HttpHandler, HttpRequest, HttpResponseInit, InvocationContext } from '@
 import type { HttpRequestParams } from '@azure/functions';
 import { z } from 'zod';
 import {
-    SafeHttpRequest,
     RequestSchemas,
     TypedHandler,
     ValidationError,

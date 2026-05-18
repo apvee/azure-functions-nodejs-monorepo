@@ -70,6 +70,7 @@ export interface RequestSchemas {
  */
 export type TypedHandlerArgs<T extends RequestSchemas> = {
     /** Parsed and validated route parameters (e.g., /users/{id}) */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- public API fallback: when no schema is provided the type is unknowable at the call site, and `unknown` would force every consumer to narrow which is a breaking change.
     params: T['params'] extends z.ZodTypeAny ? z.infer<T['params']> : any;
 
     /** Parsed and validated query string parameters */
@@ -79,6 +80,7 @@ export type TypedHandlerArgs<T extends RequestSchemas> = {
     body: T['body'] extends z.ZodTypeAny ? z.infer<T['body']> : undefined;
 
     /** Parsed and validated request headers */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- public API fallback: see comment above.
     headers: T['headers'] extends z.ZodTypeAny ? z.infer<T['headers']> : any;
 
     /**

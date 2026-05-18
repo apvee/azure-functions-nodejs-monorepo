@@ -107,7 +107,8 @@ export function registerAzureADClientCredentials(
         'x-azure-ad-audience': audience,
         'x-azure-ad-roles': roles,
         'x-azure-ad-openIdConnectUrl': openIdConfigUrl,
-    } as any); // Cast to any to allow vendor extensions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
+    } as any);
 
     // Return security requirement with .default scope
     return { [name]: ['.default'] };

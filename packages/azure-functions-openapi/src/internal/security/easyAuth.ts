@@ -151,7 +151,8 @@ export function registerAzureEasyAuth(config: AzureEasyAuthConfig): SecurityRequ
         'x-azure-easyauth': true,
         'x-azure-easyauth-providers': providerList,
         'x-azure-easyauth-requirePrincipalHeader': requirePrincipalHeader,
-    } as any); // Cast to any to allow vendor extensions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- vendor extensions (`x-*`) are not part of the strict OpenAPI security-scheme type
+    } as any);
 
     // Return security requirement
     return { [name]: ['openid', 'profile', 'email'] };

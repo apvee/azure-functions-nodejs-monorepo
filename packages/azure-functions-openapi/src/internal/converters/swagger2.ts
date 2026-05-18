@@ -3,7 +3,18 @@
  * Original file: "openapi3_to_swagger2.js"
  * Repository: https://github.com/LucyBot-Inc/api-spec-converter
  * License: MIT
+ *
+ * NOTE on `@typescript-eslint/no-explicit-any`:
+ * This module is a TypeScript port of a JavaScript converter that walks
+ * arbitrarily-shaped OpenAPI 3.x / Swagger 2.0 documents. The traversal is
+ * fundamentally dynamic — fields are added, removed, renamed and re-shaped
+ * recursively, and modelling every intermediate node with a precise type
+ * would mean re-implementing the OpenAPI schema in TypeScript. We accept
+ * `any` for this dynamic-traversal layer; the public entry point is the
+ * `Swagger2Converter` class whose `convert()` return is consumed only as an
+ * OpenAPI document object by upstream callers (see `internal/handlers/docs.ts`).
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use strict';
 import camelCase from 'lodash.camelcase';

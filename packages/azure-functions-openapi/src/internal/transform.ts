@@ -83,11 +83,11 @@ function getStatusCodeDescription(code: number): string {
  * Transform ContentTypeConfig array to OpenAPI content object.
  * Handles both structured content (with schema) and binary content (without schema).
  */
-function transformContentTypes(contentTypes: ContentTypeConfig[]): any {
-    const content: Record<string, any> = {};
+function transformContentTypes(contentTypes: ContentTypeConfig[]): Record<string, unknown> {
+    const content: Record<string, Record<string, unknown>> = {};
 
     for (const ct of contentTypes) {
-        const contentDef: any = {};
+        const contentDef: Record<string, unknown> = {};
 
         // Schema is optional (for binary content like PDFs, images)
         if (ct.schema) {
@@ -111,7 +111,7 @@ function transformContentTypes(contentTypes: ContentTypeConfig[]): any {
 /**
  * Transform a single ResponseConfig to OpenAPI response format.
  */
-function transformResponse(response: ResponseConfig): any {
+function transformResponse(response: ResponseConfig): Record<string, unknown> {
     const description = response.description || getStatusCodeDescription(response.httpCode);
 
     // Validation: schema and content are mutually exclusive
@@ -182,8 +182,8 @@ function transformResponse(response: ResponseConfig): any {
 /**
  * Transform responses array to OpenAPI responses object.
  */
-function transformResponses(responses: ResponseConfig[]): any {
-    const result: Record<number, any> = {};
+function transformResponses(responses: ResponseConfig[]): Record<number, Record<string, unknown>> {
+    const result: Record<number, Record<string, unknown>> = {};
 
     // Validate no duplicate httpCodes
     const httpCodes = new Set<number>();
@@ -202,7 +202,7 @@ function transformResponses(responses: ResponseConfig[]): any {
 /**
  * Transform request shortcuts to OpenAPI request object.
  */
-function transformRequest(config: FunctionRouteConfig): any {
+function transformRequest(config: FunctionRouteConfig): RouteConfig['request'] | undefined {
     // Validation: shortcuts and request are mutually exclusive
     const hasShortcuts = !!(config.params || config.query || config.body || config.headers);
 
@@ -227,11 +227,17 @@ function transformRequest(config: FunctionRouteConfig): any {
     const request: RouteConfig['request'] = {};
 
     if (config.params) {
-        request.params = config.params as any;
+        // `RouteConfig['request']['params']` is a generic `ZodObject<…>` shape from astea;
+        // we re-narrow through `unknown` instead of using an explicit `any`.
+        request.params = config.params as unknown as NonNullable<
+            NonNullable<RouteConfig['request']>['params']
+        >;
     }
 
     if (config.query) {
-        request.query = config.query as any;
+        request.query = config.query as unknown as NonNullable<
+            NonNullable<RouteConfig['request']>['query']
+        >;
     }
 
     if (config.body) {
@@ -245,7 +251,9 @@ function transformRequest(config: FunctionRouteConfig): any {
     }
 
     if (config.headers) {
-        request.headers = config.headers as any;
+        request.headers = config.headers as unknown as NonNullable<
+            NonNullable<RouteConfig['request']>['headers']
+        >;
     }
 
     return request;
@@ -280,14 +288,17 @@ export function transformToRouteConfig(config: FunctionRouteConfig): RouteConfig
             },
         };
     } else if (config.responses) {
-        responses = transformResponses(config.responses);
+        responses = transformResponses(config.responses) as unknown as NonNullable<
+            RouteConfig['responses']
+        >;
     }
 
     // Build request
     const request = transformRequest(config);
 
-    // Build final RouteConfig (we use 'as any' because we're transforming to astea's format)
-    const routeConfig: any = {
+    // Build final RouteConfig (the loose `Record<string, unknown>` mirrors astea's format
+    // and avoids modelling the union of optional fields here).
+    const routeConfig: Record<string, unknown> = {
         ...(request && { request }),
         ...(responses && { responses }),
         ...(config.tags && { tags: config.tags }),
