@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@apvee/azure-functions-openapi": "file:../azure-functions-openapi",
-    "@azure/functions": "^4.0.0",
-    "zod": "^4.0.0"
+    "@azure/functions": "^4.16.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@ngneat/falso": "^7.2.0",
